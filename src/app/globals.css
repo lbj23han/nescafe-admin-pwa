@@ -24,3 +24,10 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.hidescroll {
+  scrollbar-width: none; /* Firefox */
+}
+.hidescroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
