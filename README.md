@@ -1,36 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# nescafe-ledger
 
-## Getting Started
+**nescafe-ledger**는 실제 카페(엄마 카페)의 예치금·미수금·예약 내역 등을 관리하기 위한 **내부 전용 장부(PWA) 웹앱**입니다.  
+실사용자인 엄마가 **스마트폰에서 앱처럼 간편하게 기록/조회**하는 것을 목표로 합니다.
 
-First, run the development server:
+현재는 **localStorage 기반 단일 기기용 v1**으로 시작하고,  
+추후 **구조 리팩토링(v2)** → **백엔드 연동 및 멀티 디바이스 지원(v3)** 을 단계적으로 진행합니다.
+
+---
+
+## ✨ Features
+
+### v1 (현재 목표) – localStorage 기반 단일 기기 장부
+
+- 📅 **날짜 기반 예약/매출 기록**
+
+  - 상단 캘린더에서 날짜를 선택
+  - 해당 날짜의 예약/주문/매출 내역 조회
+  - 기본 필드: 부서 / 메뉴 / 금액 / 메모 등
+
+- 💰 **예치금/미수금 관리**
+
+  - 부서별 예치금, 미수금, 메모 관리
+  - 단순하고 빠른 입력/수정 UX 지향
+
+- 🔒 **단일 기기 전용 데이터 보관**
+
+  - 모든 데이터는 브라우저 **`localStorage`** 에 저장
+  - 새로고침, 앱 종료, 기기 재부팅 후에도 데이터 유지
+  - 다른 사람이 같은 URL로 접속해도 **각자 브라우저에만 데이터가 생성**되므로  
+    엄마 데이터는 엄마 기기에만 존재
+
+- 📱 **PWA 지원**
+  - 스마트폰 홈 화면에 설치 가능
+  - 앱 아이콘으로 실행
+  - 오프라인 상태에서도 기록/조회 가능
+
+---
+
+## 🎯 Roadmap
+
+### v1 – MVP (현재 단계)
+
+- [ ] 기본 페이지 구조
+  - [ ] 로그인/간단 진입 화면 (선택: PIN 또는 단순 진입 버튼)
+  - [ ] 홈 화면: 상단 캘린더, 하단 예치금/예약으로 이동하는 버튼
+  - [ ] 날짜별 예약/매출 리스트 및 입력 폼
+  - [ ] 예치금/미수금 리스트 및 입력 폼
+- [ ] `localStorage` 기반 데이터 저장/불러오기
+- [ ] 모바일 우선 레이아웃 + PWA 설정
+- [ ] 실제 사용 시작 및 피드백 수집
+
+---
+
+### v2 – 구조 개선 & 리팩토링
+
+- [ ] **폴더 구조 정리**
+  - `features/` 단위로 예약, 예치금 등 도메인 분리
+  - `shared/ui/` 에 공통 UI 컴포넌트 모음
+- [ ] **스토리지 레이어 추상화**
+  - `lib/storage/`에 `getDeposits`, `saveDeposits` 등 유틸 함수로 localStorage 접근 캡슐화
+  - 나중에 백엔드로 교체 시 이 레이어만 수정
+- [ ] **상태 관리 정리**
+  - 필요 시 React Context / Zustand / Recoil / SWR 등 도입 검토
+- [ ] (옵션) 간단 PIN 잠금 화면 추가
+
+---
+
+### v3 – Backend & 멀티 디바이스 지원
+
+- [ ] 백엔드 도입 (예: Supabase / Firebase / Custom API)
+- [ ] 로그인 & 권한 관리
+  - 엄마 계정만 해당 카페 장부에 접근 가능
+- [ ] 여러 기기(폰/PC)에서 동일 데이터 동기화
+- [ ] 월별 통계, 매출 합산, 차트 대시보드 등 확장 기능
+
+---
+
+## 🧱 Tech Stack
+
+- **Framework**: Next.js (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS (예정)
+- **State**: React hooks (`useState`, `useEffect` 등) 기반 → 필요 시 추후 라이브러리 도입
+- **PWA**: Next.js + Workbox/next-pwa 등 (구체 구현은 추후 확정)
+- **Storage (v1)**: `window.localStorage`
+
+---
+
+## 📂 Project Structure (예정 예시)
+
+> 실제 구조는 진행하면서 변경될 수 있음.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+nescafe-ledger/
+├─ app/
+│  ├─ page.tsx                # 진입/로그인 or 메인 화면
+│  ├─ layout.tsx
+│  ├─ deposit/                # 예치금 관련 페이지
+│  └─ reservations/           # 예약/매출 관련 페이지
+├─ features/
+│  ├─ deposit/                # 예치금 도메인 UI + 로직
+│  └─ reservations/           # 예약/매출 도메인 UI + 로직
+├─ shared/
+│  └─ ui/                     # 공통 버튼, 카드 등
+├─ lib/
+│  └─ storage/
+│     ├─ depositStorage.ts    # 예치금용 localStorage 유틸
+│     └─ reservationStorage.ts# 예약용 localStorage 유틸
+├─ public/
+│  ├─ icons/                  # PWA 아이콘
+│  └─ manifest.json           # PWA 설정
+├─ package.json
+└─ README.md
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
