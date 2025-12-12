@@ -58,7 +58,7 @@ export function DayCard({
             <div>
               <p className="text-sm font-semibold text-black">오늘</p>
               <p className="text-lg font-bold text-black">
-                {month}월 {day}일{" "}
+                {month}월 {day}일
                 <span className="text-xs font-normal">{weekday}</span>
               </p>
             </div>

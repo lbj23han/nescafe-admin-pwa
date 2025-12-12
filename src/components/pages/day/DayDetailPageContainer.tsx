@@ -3,8 +3,8 @@
 
 import { useRouter } from "next/navigation";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
-import { useDayReservation } from "@/hooks/useDayReservation";
-import { DayPageUI as UI } from "@/components/ui/dayPage";
+import { Reservation } from "@/hooks/reservation";
+import { DayPageUI as UI } from "@/components/ui/day/DayPage.view";
 
 type Props = {
   date: string;
@@ -31,11 +31,8 @@ export function DayDetailPageContainer({ date }: Props) {
     handleAddButtonClick,
     handleComplete,
     handleCancel,
-  } = useDayReservation(date);
+  } = Reservation.useDay(date);
 
-  // ✅ 여기서는 어떤 렌더에서도
-  // useRouter → useAuthGuard → useDayReservation
-  // 이 순서로 항상 호출되기 때문에 hook 규칙 위반 없음
   if (!isReady) return null;
 
   return (
