@@ -1,22 +1,31 @@
-// components/ui/mainPage.tsx
+// components/ui/main/MainUI.tsx
 "use client";
 
 import type { ReactNode } from "react";
 
-export const MainPageUI = {
+export const MainUI = {
   Layout({ children }: { children: ReactNode }) {
     return <div className="flex flex-col min-h-screen">{children}</div>;
   },
 
-  Header({ title, description }: { title: string; description: string }) {
+  HeaderContainer({ children }: { children: ReactNode }) {
     return (
       <header className="px-4 pt-5 pb-3 border-b border-zinc-100">
-        <h1 className="text-lg font-semibold tracking-tight text-black">
-          {title}
-        </h1>
-        <p className="text-xs text-black mt-1">{description}</p>
+        {children}
       </header>
     );
+  },
+
+  Title({ children }: { children: ReactNode }) {
+    return (
+      <h1 className="text-lg font-semibold tracking-tight text-black">
+        {children}
+      </h1>
+    );
+  },
+
+  Description({ children }: { children: ReactNode }) {
+    return <p className="text-xs text-black mt-1">{children}</p>;
   },
 
   Footer({ children }: { children: ReactNode }) {

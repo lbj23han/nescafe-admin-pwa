@@ -3,8 +3,8 @@
 
 import { useRouter } from "next/navigation";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
-import { useDayReservation } from "@/hooks/useDayReservation";
-import { DayPageUI as UI } from "@/components/ui/dayPage";
+import { Reservation } from "@/hooks/reservation";
+import { DayPageUI as UI } from "@/components/ui/day/DayPage.view";
 
 type Props = {
   date: string;
@@ -15,6 +15,7 @@ export function DayDetailPageContainer({ date }: Props) {
   const isReady = useAuthGuard();
 
   const {
+    // 리스트 & 폼 상태
     list,
     department,
     menu,
@@ -23,19 +24,25 @@ export function DayDetailPageContainer({ date }: Props) {
     location,
     showForm,
     formattedDate,
+    // 폼 setter
     setDepartment,
     setMenu,
     setTime,
     setLocation,
+    // 액션
     handleAmountChange,
     handleAddButtonClick,
     handleComplete,
     handleCancel,
-  } = useDayReservation(date);
+    // ✅ 수정 관련 (useReservationStatus에서 온 것들)
+    handleEdit,
+    editingId,
+    editForm,
+    handleChangeEditField,
+    handleSubmitEdit,
+    handleCancelEdit,
+  } = Reservation.useDay(date);
 
-  // ✅ 여기서는 어떤 렌더에서도
-  // useRouter → useAuthGuard → useDayReservation
-  // 이 순서로 항상 호출되기 때문에 hook 규칙 위반 없음
   if (!isReady) return null;
 
   return (
@@ -46,6 +53,13 @@ export function DayDetailPageContainer({ date }: Props) {
           list={list}
           onComplete={handleComplete}
           onCancel={handleCancel}
+          // 수정 관련 props 연결
+          onEdit={handleEdit}
+          editingId={editingId}
+          editForm={editForm}
+          onChangeEditField={handleChangeEditField}
+          onSubmitEdit={handleSubmitEdit}
+          onCancelEdit={handleCancelEdit}
         />
 
         {showForm && (
@@ -63,7 +77,9 @@ export function DayDetailPageContainer({ date }: Props) {
           />
         )}
 
-        <UI.AddButton showForm={showForm} onClick={handleAddButtonClick} />
+        {editingId === null && (
+          <UI.AddButton showForm={showForm} onClick={handleAddButtonClick} />
+        )}
       </UI.Main>
     </UI.Layout>
   );
