@@ -1,4 +1,3 @@
-// app/departments/page.tsx
 "use client";
 
 import { DepartmentPageContainer } from "@/components/pages/departments/DepartmentPageContainer";

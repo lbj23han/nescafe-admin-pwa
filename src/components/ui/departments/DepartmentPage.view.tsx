@@ -1,4 +1,3 @@
-// components/ui/departments/DepartmentPage.view.tsx
 "use client";
 
 import type { ReactNode } from "react";
