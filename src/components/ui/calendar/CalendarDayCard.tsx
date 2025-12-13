@@ -1,4 +1,4 @@
-// components/ui/calendar/DayCard.tsx
+// components/ui/calendar/CalendarDayCard.tsx
 import Link from "next/link";
 import { CalendarUI } from "./CalendarUI";
 import { CALENDAR_COPY } from "@/constants/calendar";

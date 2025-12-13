@@ -2,24 +2,23 @@
 "use client";
 
 import { MainUI } from "./MainUI";
-import { MAIN_PAGE_COPY } from "@/constants/mainPage";
-import type { ReactNode } from "react";
+import type { LayoutProps, HeaderProps, FooterProps } from "./MainPage.types";
 
 export const MainPageUI = {
-  Layout({ children }: { children: ReactNode }) {
+  Layout({ children }: LayoutProps) {
     return <MainUI.Layout>{children}</MainUI.Layout>;
   },
 
-  Header() {
+  Header({ title, description }: HeaderProps) {
     return (
       <MainUI.HeaderContainer>
-        <MainUI.Title>{MAIN_PAGE_COPY.title}</MainUI.Title>
-        <MainUI.Description>{MAIN_PAGE_COPY.description}</MainUI.Description>
+        <MainUI.Title>{title}</MainUI.Title>
+        <MainUI.Description>{description}</MainUI.Description>
       </MainUI.HeaderContainer>
     );
   },
 
-  Footer({ children }: { children: ReactNode }) {
+  Footer({ children }: FooterProps) {
     return <MainUI.Footer>{children}</MainUI.Footer>;
   },
 };

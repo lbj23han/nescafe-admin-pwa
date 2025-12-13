@@ -2,7 +2,7 @@
 "use client";
 
 import { useAuthGuard } from "@/hooks/useAuthGuard";
-import { MainPageUI as UI } from "@/components/ui/mainPage";
+import { MainPageUI as UI } from "@/components/ui/main/MainPage.view";
 import { MAIN_PAGE_COPY } from "@/constants/mainPage";
 import { CalendarList } from "@/components/CalendarList";
 import { PrimaryButton } from "@/components/PrimaryButton";
