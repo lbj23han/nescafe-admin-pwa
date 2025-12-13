@@ -3,7 +3,7 @@
 
 import type { ReactNode } from "react";
 
-type ActionButtonVariant = "complete" | "cancel";
+type ActionButtonVariant = "complete" | "cancel" | "edit";
 
 export const DayUI = {
   Layout({ children }: { children: ReactNode }) {
@@ -22,8 +22,25 @@ export const DayUI = {
     return <section className="mb-4">{children}</section>;
   },
 
+  /** 상단 헤더 레이아웃 (좌측/우측 정렬) */
+  HeaderRow({ children }: { children: ReactNode }) {
+    return (
+      <div className="flex items-center justify-between mb-4">{children}</div>
+    );
+  },
+
   Label({ children }: { children: ReactNode }) {
     return <label className="block text-xs text-black mb-1">{children}</label>;
+  },
+
+  /** 라벨 + 인풋(혹은 다른 컴포넌트)을 묶는 필드 래퍼 */
+  Field({ label, children }: { label: string; children: ReactNode }) {
+    return (
+      <div>
+        <DayUI.Label>{label}</DayUI.Label>
+        {children}
+      </div>
+    );
   },
 
   TextInput({
@@ -83,6 +100,42 @@ export const DayUI = {
     );
   },
 
+  /** 카드 안의 타이틀 텍스트 (부서 · 메뉴) */
+  ReservationTitle({ children }: { children: ReactNode }) {
+    return <p className="font-medium text-black">{children}</p>;
+  },
+
+  /** 카드 안의 보조 정보 텍스트 (금액/시간/위치) */
+  MetaText({ children }: { children: ReactNode }) {
+    return <p className="mt-1 text-[11px] text-black">{children}</p>;
+  },
+
+  /** 상태 + 액션 버튼이 들어가는 하단 행 */
+  FooterRow({ children }: { children: ReactNode }) {
+    return (
+      <div className="mt-2 flex items-center justify-between">{children}</div>
+    );
+  },
+
+  /** 상태 텍스트 */
+  StatusText({ children }: { children: ReactNode }) {
+    return <span className="text-[11px] text-black">{children}</span>;
+  },
+
+  /** 액션 버튼 묶음 (완료/취소/수정 등) */
+  ActionGroup({ children }: { children: ReactNode }) {
+    return <div className="flex gap-2">{children}</div>;
+  },
+
+  /** 수정 모드일 때 카드 아래쪽 확장 영역 */
+  EditSection({ children }: { children: ReactNode }) {
+    return (
+      <div className="mt-3 border-t border-zinc-200 pt-3 space-y-2">
+        {children}
+      </div>
+    );
+  },
+
   ActionButton({
     children,
     variant,
@@ -96,12 +149,18 @@ export const DayUI = {
   }) {
     const base = "px-2 py-1 rounded-lg text-[11px] border transition";
 
-    const variantClass =
-      variant === "complete"
-        ? disabled
-          ? "border-zinc-300 text-zinc-500 bg-zinc-100 cursor-default"
-          : "border-emerald-500 text-emerald-700 bg-emerald-50"
-        : "border-red-400 text-red-600 bg-red-50";
+    let variantClass = "";
+
+    if (variant === "complete") {
+      variantClass = disabled
+        ? "border-zinc-300 text-zinc-500 bg-zinc-100 cursor-default"
+        : "border-emerald-500 text-emerald-700 bg-emerald-50";
+    } else if (variant === "cancel") {
+      variantClass = "border-red-400 text-red-600 bg-red-50";
+    } else {
+      // edit
+      variantClass = "border-zinc-300 text-zinc-700 bg-zinc-100";
+    }
 
     return (
       <button

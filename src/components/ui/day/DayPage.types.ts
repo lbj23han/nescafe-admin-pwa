@@ -7,10 +7,27 @@ export type HeaderProps = {
   onBack: () => void;
 };
 
+// 수정 폼에서 사용할 필드 타입
+export type ReservationEditForm = {
+  department: string;
+  menu: string;
+  location: string;
+  time: string;
+  amount: string;
+};
+
 export type ReservationListProps = {
   list: Reservation[];
   onComplete: (id: string) => void;
   onCancel: (id: string) => void;
+
+  // 수정 관련 props
+  onEdit: (id: string) => void;
+  editingId?: string | null;
+  editForm?: ReservationEditForm | null;
+  onChangeEditField?: (field: keyof ReservationEditForm, value: string) => void;
+  onSubmitEdit?: () => void;
+  onCancelEdit?: () => void;
 };
 
 export type ReservationFormProps = {

@@ -15,12 +15,16 @@ export const DAY_PAGE_COPY = {
     submit: "입력 완료 (예약 추가하기)",
     complete: "완료",
     cancel: "취소",
+    edit: "수정",
+    editSave: "수정 완료",
+    editCancel: "수정 취소",
   },
 
   alerts: {
     requiredDepartmentAndMenu: "부서와 메뉴는 필수입니다.",
     confirmComplete: "완료된 예약입니까?",
     confirmCancel: "예약을 취소하시겠습니까?",
+    editConfirm: "수정 사항을 저장하시겠습니까?",
   },
 
   form: {
