@@ -1,4 +1,3 @@
-// components/ui/day/DayPage.view.tsx
 "use client";
 
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
@@ -21,15 +20,12 @@ export const DayPageUI = {
 
   Header({ dateText, onBack }: HeaderProps) {
     return (
-      <DayUI.HeaderRow>
-        <button onClick={onBack} className="text-xs text-black">
-          {DAY_PAGE_COPY.backButton}
-        </button>
-        <div className="text-right">
-          <p className="text-sm text-black">{DAY_PAGE_COPY.title}</p>
-          <p className="text-lg font-semibold text-black">{dateText}</p>
-        </div>
-      </DayUI.HeaderRow>
+      <DayUI.Header
+        backLabel={DAY_PAGE_COPY.backButton}
+        title={DAY_PAGE_COPY.title}
+        dateText={dateText}
+        onBack={onBack}
+      />
     );
   },
 
