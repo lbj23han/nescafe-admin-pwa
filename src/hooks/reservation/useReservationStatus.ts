@@ -11,7 +11,7 @@ import {
 } from "@/lib/storage";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 
-// 수정 폼 상태 타입 (UI 쪽 ReservationEditForm과 모양을 맞춰둔 버전)
+// 수정 폼 상태 타입
 type ReservationEditForm = {
   department: string;
   menu: string;

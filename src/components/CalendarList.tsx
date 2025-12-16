@@ -21,10 +21,6 @@ function buildTodaySummary(
   const total = todayReservations.length;
   const first = todayReservations[0];
   const second = todayReservations[1];
-  const totalAmount = todayReservations.reduce(
-    (sum, r) => sum + (r.amount || 0),
-    0
-  );
 
   let mainText = "";
   let subText = "";
@@ -39,11 +35,17 @@ function buildTodaySummary(
     subText = `외 ${total - 1}건 예약`;
   }
 
-  if (totalAmount > 0) {
-    subText += (subText ? " · " : "") + `총 ${totalAmount.toLocaleString()}원`;
-  }
-
   return { mainText, subText };
+}
+
+function buildTodayMeta(all?: Reservation[], pending?: Reservation[]) {
+  const total = all?.length ?? 0;
+  const remaining = pending?.length ?? 0;
+
+  // ✅ 완료 여부 상관없이 “오늘 예약 총 매출”
+  const totalAmount = all?.reduce((sum, r) => sum + (r.amount || 0), 0) ?? 0;
+
+  return { total, remaining, totalAmount };
 }
 
 export function CalendarList() {
@@ -52,6 +54,7 @@ export function CalendarList() {
     todayStr,
     summary,
     todayReservations,
+    todayAllReservations,
     containerRef,
     todayItemRef,
   } = useCalendarList();
@@ -60,15 +63,23 @@ export function CalendarList() {
     <CalendarUI.ScrollContainer containerRef={containerRef}>
       {days.map((date) => {
         const isToday = date === todayStr;
+
         const [year, month, day] = date.split("-").map(Number);
         const d = new Date(year, month - 1, day);
         const weekday = WEEKDAY_LABELS[d.getDay()];
 
         const dateLabel = `${month}월 ${day}일`;
+
+        // 오늘 카드 하단 텍스트(첫 예약/요약)
         const { mainText, subText } = buildTodaySummary(
           isToday,
           isToday ? todayReservations : undefined
         );
+
+        // ✅ 오늘 카드 우측 텍스트(남은/총/총매출)
+        const todayMeta = isToday
+          ? buildTodayMeta(todayAllReservations, todayReservations)
+          : null;
 
         return (
           <div key={date} ref={isToday ? todayItemRef : undefined}>
@@ -80,6 +91,7 @@ export function CalendarList() {
               summaryCount={summary[date] ?? 0}
               mainText={mainText}
               subText={subText}
+              todayMeta={todayMeta}
             />
           </div>
         );

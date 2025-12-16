@@ -27,7 +27,7 @@ function readSummaryFromLocalStorage(): ReservationSummaryMap {
     Object.entries(parsed as Record<string, unknown>).forEach(
       ([date, value]) => {
         if (Array.isArray(value)) {
-          map[date] = value.length;
+          map[date] = value.length; // ✅ 총 예약 수 (완료/미완료 상관없이)
         }
       }
     );
@@ -42,18 +42,21 @@ export function useCalendarList() {
   // 과거 60일 ~ 미래 60일 + 오늘 문자열
   const { days, todayStr } = getDateRangeWithToday(60, 60);
 
-  // 날짜별 예약 개수 요약
+  // 날짜별 예약 개수 요약(총 예약 수)
   const [summary] = useState<ReservationSummaryMap>(() =>
     readSummaryFromLocalStorage()
   );
 
-  // 오늘 예약 목록 (완료 제외)
-  const [todayReservations] = useState<Reservation[]>(() =>
+  // ✅ 오늘 예약 전체 목록 (완료 포함)
+  const [todayAllReservations] = useState<Reservation[]>(() =>
     typeof window === "undefined" || !todayStr
       ? []
-      : loadReservationsByDate(todayStr).filter(
-          (r) => (r.status ?? "pending") === "pending"
-        )
+      : loadReservationsByDate(todayStr)
+  );
+
+  // ✅ 오늘 예약 목록 (미완료만 = pending)
+  const [todayReservations] = useState<Reservation[]>(() =>
+    todayAllReservations.filter((r) => (r.status ?? "pending") === "pending")
   );
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -75,7 +78,8 @@ export function useCalendarList() {
     days,
     todayStr,
     summary,
-    todayReservations,
+    todayReservations, // 오늘 남은 예약 (pending)
+    todayAllReservations, // 오늘 총 예약 (전체)
     containerRef,
     todayItemRef,
   };
