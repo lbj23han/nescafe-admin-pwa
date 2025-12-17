@@ -16,4 +16,4 @@ export const CALENDAR_COPY = {
     `(총 매출 ${amount.toLocaleString()}원)`,
 };
 
-export const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
+export const WEEKDAY_LABELS = [" 일", " 월", " 화", " 수", " 목", " 금", " 토"];
