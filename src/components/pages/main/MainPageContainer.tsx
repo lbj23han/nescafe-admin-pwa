@@ -1,23 +1,27 @@
-// components/pages/main/MainPageContainer.tsx
 "use client";
 
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { MainPageUI as UI } from "@/components/ui/main/MainPage.view";
 import { MAIN_PAGE_COPY } from "@/constants/mainPage";
 import { CalendarList } from "@/components/CalendarList";
-import { PrimaryButton } from "@/components/PrimaryButton";
-import { useRouter } from "next/navigation"; // ✅ 추가
 
 export function MainPageContainer() {
   const isReady = useAuthGuard();
-  const router = useRouter(); // ✅ 추가
+  const pathname = usePathname();
+
+  // /main 진입 시 항상 스크롤 최상단
+  useEffect(() => {
+    if (!isReady) return;
+    if (pathname !== "/main") return;
+
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    });
+  }, [isReady, pathname]);
 
   if (!isReady) return null;
-
-  // 장부관리 페이지로 이동
-  const handleClickDepartment = () => {
-    router.push("/departments");
-  };
 
   return (
     <UI.Layout>
@@ -28,18 +32,6 @@ export function MainPageContainer() {
 
       {/* 캘린더 영역 */}
       <CalendarList />
-
-      {/* 하단 버튼 영역 */}
-      <UI.Footer>
-        {/*  장부관리 버튼 활성화 */}
-        <PrimaryButton onClick={handleClickDepartment}>
-          {MAIN_PAGE_COPY.buttons.department}
-        </PrimaryButton>
-
-        <PrimaryButton disabled>
-          {MAIN_PAGE_COPY.buttons.aiHelper}
-        </PrimaryButton>
-      </UI.Footer>
     </UI.Layout>
   );
 }
