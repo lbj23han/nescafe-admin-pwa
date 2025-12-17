@@ -3,6 +3,12 @@ import Link from "next/link";
 import { CalendarUI } from "./CalendarUI";
 import { CALENDAR_COPY } from "@/constants/calendar";
 
+type TodayMeta = {
+  total: number;
+  remaining: number;
+  totalAmount: number;
+};
+
 type Props = {
   href: string;
   isToday: boolean;
@@ -11,6 +17,7 @@ type Props = {
   summaryCount: number;
   mainText: string;
   subText?: string;
+  todayMeta?: TodayMeta | null;
 };
 
 export function CalendarDayCard({
@@ -21,6 +28,7 @@ export function CalendarDayCard({
   summaryCount,
   mainText,
   subText,
+  todayMeta,
 }: Props) {
   if (isToday) {
     // ✅ 오늘 카드
@@ -32,18 +40,37 @@ export function CalendarDayCard({
               <CalendarUI.TodayLabel>
                 {CALENDAR_COPY.todayLabel}
               </CalendarUI.TodayLabel>
+
               <CalendarUI.DateText as="big">
-                {dateLabel}{" "}
+                {dateLabel}
                 <CalendarUI.WeekdayText>{weekdayLabel}</CalendarUI.WeekdayText>
               </CalendarUI.DateText>
             </CalendarUI.CardTitleBlock>
 
-            {summaryCount > 0 && (
+            {/* 오늘 카드 오른쪽 요약 정보 */}
+            {todayMeta && todayMeta.total > 0 ? (
               <CalendarUI.RightInfoColumn>
                 <CalendarUI.ReservationCountText>
-                  {CALENDAR_COPY.reservationCount(summaryCount)}
+                  {CALENDAR_COPY.todayTotalCount(todayMeta.total)}
                 </CalendarUI.ReservationCountText>
+
+                <CalendarUI.ReservationCountText>
+                  {CALENDAR_COPY.todayRemainingCount(todayMeta.remaining)}
+                </CalendarUI.ReservationCountText>
+
+                <CalendarUI.SubText>
+                  {CALENDAR_COPY.todayTotalAmount(todayMeta.totalAmount)}
+                </CalendarUI.SubText>
               </CalendarUI.RightInfoColumn>
+            ) : (
+              // fallback (오늘 예약 0건일 때)
+              summaryCount > 0 && (
+                <CalendarUI.RightInfoColumn>
+                  <CalendarUI.ReservationCountText>
+                    {CALENDAR_COPY.reservationCount(summaryCount)}
+                  </CalendarUI.ReservationCountText>
+                </CalendarUI.RightInfoColumn>
+              )
             )}
           </CalendarUI.CardHeaderRow>
 
@@ -62,7 +89,7 @@ export function CalendarDayCard({
       <CalendarUI.NormalCardOuter>
         <CalendarUI.CardTitleBlock>
           <CalendarUI.DateText>
-            {dateLabel}{" "}
+            {dateLabel}
             <CalendarUI.WeekdayText>{weekdayLabel}</CalendarUI.WeekdayText>
           </CalendarUI.DateText>
         </CalendarUI.CardTitleBlock>

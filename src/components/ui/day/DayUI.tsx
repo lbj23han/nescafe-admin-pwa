@@ -1,4 +1,3 @@
-// components/ui/day/DayUI.tsx
 "use client";
 
 import type { ReactNode } from "react";
@@ -26,6 +25,51 @@ export const DayUI = {
   HeaderRow({ children }: { children: ReactNode }) {
     return (
       <div className="flex items-center justify-between mb-4">{children}</div>
+    );
+  },
+
+  /** 헤더 좌측 Back 버튼 */
+  BackButton({
+    children,
+    onClick,
+  }: {
+    children: ReactNode;
+    onClick: () => void;
+  }) {
+    return (
+      <button onClick={onClick} className="text-xs text-black">
+        {children}
+      </button>
+    );
+  },
+
+  /** 헤더 우측: 타이틀 + 날짜 묶음 */
+  HeaderTitleBlock({ title, dateText }: { title: string; dateText: string }) {
+    return (
+      <div className="text-right">
+        <p className="text-sm text-black">{title}</p>
+        <p className="text-lg font-semibold text-black">{dateText}</p>
+      </div>
+    );
+  },
+
+  /** Day 헤더 완전체 */
+  Header({
+    backLabel,
+    title,
+    dateText,
+    onBack,
+  }: {
+    backLabel: string;
+    title: string;
+    dateText: string;
+    onBack: () => void;
+  }) {
+    return (
+      <DayUI.HeaderRow>
+        <DayUI.BackButton onClick={onBack}>{backLabel}</DayUI.BackButton>
+        <DayUI.HeaderTitleBlock title={title} dateText={dateText} />
+      </DayUI.HeaderRow>
     );
   },
 
