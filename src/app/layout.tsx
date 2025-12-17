@@ -20,7 +20,7 @@ export default function RootLayout({
     <html lang="ko">
       <body className="bg-zinc-50 text-black">
         <div className="min-h-screen flex items-center justify-center">
-          <main className="w-full max-w-md min-h-screen bg-white shadow-sm">
+          <main className="w-full max-w-md min-h-screen bg-white shadow-sm pb-14">
             {children}
           </main>
         </div>

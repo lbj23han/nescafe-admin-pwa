@@ -14,7 +14,7 @@ export const CalendarUI = {
     return (
       <div
         ref={containerRef}
-        className="h-[68vh] overflow-y-auto px-4 pb-6 hidescroll"
+        className="h-[90vh] overflow-y-auto px-4 pb-6 hidescroll"
       >
         {children}
       </div>
