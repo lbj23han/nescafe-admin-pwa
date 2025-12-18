@@ -5,6 +5,7 @@ import type {
   HeaderProps,
   MainProps,
 } from "./DepartmentPage.types";
+import { PrimaryButton } from "@/components/PrimaryButton";
 
 export function Layout({ children }: LayoutProps) {
   return (
@@ -27,4 +28,41 @@ export function Header({ title, description }: HeaderProps) {
 
 export function Main({ children }: MainProps) {
   return <main className="flex-1">{children}</main>;
+}
+
+export function BackButton({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <div className="mb-2">
+      <button
+        type="button"
+        onClick={onClick}
+        className="inline-flex items-center text-[11px] text-zinc-600"
+      >
+        <span className="mr-1">←</span>
+        {label}
+      </button>
+    </div>
+  );
+}
+
+export function AddToggleButton({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <div className="mb-3 flex w-full">
+      <PrimaryButton onClick={onClick} className="flex-1 justify-center">
+        {label}
+      </PrimaryButton>
+    </div>
+  );
 }

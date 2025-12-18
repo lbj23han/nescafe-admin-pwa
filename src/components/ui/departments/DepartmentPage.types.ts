@@ -16,7 +16,9 @@ export type DepartmentPageProps = {
   activeDepartmentId: string | null;
 
   onBack: () => void;
-  onAdd: () => void;
+  onAdd: (name: string) => void;
   onToggle: (id: string) => void;
   onChange: (updated: Department) => void;
+
+  onDelete?: (id: string) => void;
 };

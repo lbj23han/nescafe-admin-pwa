@@ -16,15 +16,10 @@ export function DepartmentPageContainer() {
     addDepartment,
     updateDepartment,
     toggleDepartment,
+    // deleteDepartment, // 다음 작업에서 추가하면 연결
   } = useDepartments();
 
   if (!isReady) return null;
-
-  const handleAddDepartment = () => {
-    const name = window.prompt("부서 이름을 입력하세요.");
-    if (!name) return;
-    addDepartment(name);
-  };
 
   return (
     <UI.Page
@@ -35,9 +30,10 @@ export function DepartmentPageContainer() {
       addButtonText={DEPARTMENT_PAGE_COPY.addButton}
       departments={departments}
       activeDepartmentId={activeDepartmentId}
-      onAdd={handleAddDepartment}
+      onAdd={addDepartment} // ✅ prompt 제거 완료
       onToggle={toggleDepartment}
       onChange={updateDepartment}
+      // onDelete={deleteDepartment}   // ✅ 3번 작업 때 연결
     />
   );
 }
