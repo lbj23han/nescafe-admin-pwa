@@ -1,30 +1,16 @@
 "use client";
 
-import type { ReactNode, FormHTMLAttributes } from "react";
-import type { DepartmentHistory } from "@/lib/departmentStorage";
-import { DEPARTMENT_CARD_COPY } from "@/constants/department";
-
-type RootProps = {
-  expanded: boolean;
-  onClick: () => void;
-  children: ReactNode;
-};
-
-type HeaderProps = {
-  name: string;
-  deposit: number;
-  debt: number;
-  expanded: boolean;
-  onToggleClick: () => void;
-};
-
-type FormProps = FormHTMLAttributes<HTMLFormElement> & {
-  children: ReactNode;
-};
-type HistoryListProps = {
-  items: DepartmentHistory[];
-  renderItem: (h: DepartmentHistory) => ReactNode;
-};
+import type { ReactNode } from "react";
+import { DEPARTMENT_CARD_COPY } from "@/constants/departments/card";
+import type {
+  RootProps,
+  HeaderProps,
+  ExpandedContainerProps,
+  FormProps,
+  HistoryListProps,
+  HistoryItemProps,
+  HistoryContentProps,
+} from "./DepartmentCard.types";
 
 export function Root({ expanded, onClick, children }: RootProps) {
   return (
@@ -52,11 +38,19 @@ export function Header({
       <div>
         <h2 className="text-base font-semibold text-black">{name}</h2>
       </div>
+
       <div className="text-right text-xs text-zinc-700">
-        <div>예치금 {deposit.toLocaleString()}원</div>
-        <div className="text-[11px] text-zinc-500">
-          미수금 {debt.toLocaleString()}원
+        <div>
+          {DEPARTMENT_CARD_COPY.summary.depositPrefix}{" "}
+          {deposit.toLocaleString()}
+          {DEPARTMENT_CARD_COPY.summary.currencySuffix}
         </div>
+
+        <div className="text-[11px] text-zinc-500">
+          {DEPARTMENT_CARD_COPY.summary.debtPrefix} {debt.toLocaleString()}
+          {DEPARTMENT_CARD_COPY.summary.currencySuffix}
+        </div>
+
         <button
           type="button"
           onClick={(e) => {
@@ -68,14 +62,19 @@ export function Header({
           {expanded
             ? DEPARTMENT_CARD_COPY.toggle.collapse
             : DEPARTMENT_CARD_COPY.toggle.expand}
-          <span className="ml-1 text-[9px]">{expanded ? "▲" : "▼"}</span>
+
+          <span className="ml-1 text-[9px]">
+            {expanded
+              ? DEPARTMENT_CARD_COPY.toggle.icon.expanded
+              : DEPARTMENT_CARD_COPY.toggle.icon.collapsed}
+          </span>
         </button>
       </div>
     </div>
   );
 }
 
-export function ExpandedContainer({ children }: { children: ReactNode }) {
+export function ExpandedContainer({ children }: ExpandedContainerProps) {
   return (
     <div
       className="mt-4 space-y-3"
@@ -97,7 +96,7 @@ export function FormContainer({ children, ...formProps }: FormProps) {
       }`}
     >
       <p className="text-[11px] font-semibold text-zinc-700">
-        입·출금 / 주문 기록 추가
+        {DEPARTMENT_CARD_COPY.formTitle}
       </p>
       {children}
     </form>
@@ -191,17 +190,42 @@ export function HistoryList({ items, renderItem }: HistoryListProps) {
   );
 }
 
-export function HistoryItem({
-  left,
-  right,
-}: {
-  left: ReactNode;
-  right: ReactNode;
-}) {
+export function HistoryItem({ left, right }: HistoryItemProps) {
   return (
     <li className="flex items-start justify-between gap-2 text-[11px]">
       {left}
       {right}
     </li>
+  );
+}
+
+export function HistoryItemContent({
+  typeLabel,
+  memo,
+  dateLabel,
+  amountLabel,
+  positive,
+}: HistoryContentProps) {
+  return (
+    <HistoryItem
+      left={
+        <div>
+          <div className="font-medium text-zinc-700">{typeLabel}</div>
+
+          {memo && <div className="text-zinc-600">{memo}</div>}
+
+          <div className="text-[10px] text-zinc-400">{dateLabel}</div>
+        </div>
+      }
+      right={
+        <div
+          className={`shrink-0 font-semibold ${
+            positive ? "text-emerald-600" : "text-red-600"
+          }`}
+        >
+          {amountLabel}
+        </div>
+      }
+    />
   );
 }

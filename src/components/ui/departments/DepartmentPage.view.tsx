@@ -1,52 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { PrimaryButton } from "@/components/PrimaryButton";
-import { DepartmentCard } from "@/components/ui/departments/DepartmentCard";
-import type { Department } from "@/lib/departmentStorage";
-
-type LayoutProps = { children: ReactNode };
-type HeaderProps = { title: string; description?: string };
-type MainProps = { children: ReactNode };
-
-function Layout({ children }: LayoutProps) {
-  return (
-    <div className="flex flex-col min-h-screen px-4 pt-5 pb-4">{children}</div>
-  );
-}
-
-function Header({ title, description }: HeaderProps) {
-  return (
-    <header className="mb-4">
-      <h1 className="text-lg font-semibold tracking-tight text-black">
-        {title}
-      </h1>
-      {description && (
-        <p className="mt-1 text-xs text-zinc-600">{description}</p>
-      )}
-    </header>
-  );
-}
-
-function Main({ children }: MainProps) {
-  return <main className="flex-1">{children}</main>;
-}
-
-type PageProps = {
-  title: string;
-  description?: string;
-
-  emptyText: string;
-  addButtonText: string;
-
-  departments: Department[];
-  activeDepartmentId: string | null;
-
-  onBack: () => void;
-  onAdd: () => void;
-  onToggle: (id: string) => void;
-  onChange: (updated: Department) => void;
-};
+import { DepartmentCard } from "@/components/ui/departments/card/DepartmentCard";
+import type { DepartmentPageProps } from "./DepartmentPage.types";
+import * as UI from "./DepartmentPageUI";
 
 function Page({
   title,
@@ -59,11 +16,11 @@ function Page({
   onAdd,
   onToggle,
   onChange,
-}: PageProps) {
+}: DepartmentPageProps) {
   const isEmpty = departments.length === 0;
 
   return (
-    <Layout>
+    <UI.Layout>
       <div className="mb-2">
         <button
           type="button"
@@ -75,9 +32,9 @@ function Page({
         </button>
       </div>
 
-      <Header title={title} description={description} />
+      <UI.Header title={title} description={description} />
 
-      <Main>
+      <UI.Main>
         {isEmpty ? (
           <div className="mt-8 flex flex-col items-center space-y-4">
             <p className="text-xs text-zinc-500">{emptyText}</p>
@@ -104,14 +61,14 @@ function Page({
             )}
           </>
         )}
-      </Main>
-    </Layout>
+      </UI.Main>
+    </UI.Layout>
   );
 }
 
 export const DepartmentPageUI = {
-  Layout,
-  Header,
-  Main,
+  Layout: UI.Layout,
+  Header: UI.Header,
+  Main: UI.Main,
   Page,
 };

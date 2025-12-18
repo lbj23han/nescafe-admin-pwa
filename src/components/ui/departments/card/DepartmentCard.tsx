@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import type { Department } from "@/lib/departmentStorage";
 import { addHistory } from "@/lib/departmentStorage";
 import type { DepartmentCardProps } from "./DepartmentCard.types";
-import * as UI from "./DepartmentCard.view";
+import * as UI from "./DepartmentCardUI";
 import {
   formatHistoryAmount,
   formatHistoryDate,
@@ -14,7 +13,7 @@ import {
 import {
   DEPARTMENT_CARD_COPY,
   DEPARTMENT_HISTORY_LABEL,
-} from "@/constants/department";
+} from "@/constants/departments/card";
 
 export function DepartmentCard({
   department,
@@ -57,11 +56,11 @@ export function DepartmentCard({
 
       {expanded && (
         <UI.ExpandedContainer>
-          {/* 폼 */}
           <UI.FormContainer onSubmit={handleSubmit}>
             <UI.FormRow>
               <div className="flex-1">
                 <UI.FieldLabel>{DEPARTMENT_CARD_COPY.field.type}</UI.FieldLabel>
+
                 <UI.SelectField
                   value={historyType}
                   onChange={(e) =>
@@ -72,7 +71,7 @@ export function DepartmentCard({
                     {DEPARTMENT_HISTORY_LABEL.deposit}
                   </option>
                   <option value="order">
-                    {DEPARTMENT_HISTORY_LABEL.payment}
+                    {DEPARTMENT_HISTORY_LABEL.order}
                   </option>
                   <option value="debtPayment">
                     {DEPARTMENT_HISTORY_LABEL.debtPayment}
@@ -84,6 +83,7 @@ export function DepartmentCard({
                 <UI.FieldLabel>
                   {DEPARTMENT_CARD_COPY.field.amount}
                 </UI.FieldLabel>
+
                 <UI.AmountInput
                   type="number"
                   placeholder={DEPARTMENT_CARD_COPY.placeholder.amount}
@@ -102,42 +102,25 @@ export function DepartmentCard({
               />
             </div>
 
-            <UI.SubmitButton type="submit">기록 추가</UI.SubmitButton>
+            <UI.SubmitButton type="submit">
+              {DEPARTMENT_CARD_COPY.submit}
+            </UI.SubmitButton>
           </UI.FormContainer>
 
-          {/* 히스토리 */}
           <UI.HistoryContainer>
             {!hasHistory && <UI.HistoryEmpty />}
+
             {hasHistory && (
               <UI.HistoryList
                 items={department.history.slice().reverse()}
                 renderItem={(h) => (
-                  <UI.HistoryItem
+                  <UI.HistoryItemContent
                     key={h.id}
-                    left={
-                      <div>
-                        <div className="font-medium text-zinc-700">
-                          {formatHistoryType(h.type)}
-                        </div>
-                        {h.memo && (
-                          <div className="text-zinc-600">{h.memo}</div>
-                        )}
-                        <div className="text-[10px] text-zinc-400">
-                          {formatHistoryDate(h.date)}
-                        </div>
-                      </div>
-                    }
-                    right={
-                      <div
-                        className={`shrink-0 font-semibold ${
-                          isPositiveHistory(h)
-                            ? "text-emerald-600"
-                            : "text-red-600"
-                        }`}
-                      >
-                        {formatHistoryAmount(h)}
-                      </div>
-                    }
+                    typeLabel={formatHistoryType(h.type)}
+                    memo={h.memo}
+                    dateLabel={formatHistoryDate(h.date)}
+                    amountLabel={formatHistoryAmount(h)}
+                    positive={isPositiveHistory(h)}
                   />
                 )}
               />

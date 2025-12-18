@@ -1,5 +1,5 @@
 import type { DepartmentHistory, HistoryType } from "./departmentStorage";
-import { DEPARTMENT_HISTORY_LABEL } from "@/constants/department";
+import { DEPARTMENT_HISTORY_LABEL } from "@/constants/departments/card";
 
 export function formatHistoryType(type: HistoryType): string {
   return DEPARTMENT_HISTORY_LABEL[type];

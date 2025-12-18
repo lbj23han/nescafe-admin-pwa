@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { DepartmentPageUI as UI } from "@/components/ui/departments/DepartmentPage.view";
-import { DEPARTMENT_PAGE_COPY } from "@/constants/departmentPage";
+import { DEPARTMENT_PAGE_COPY } from "@/constants/departments/page";
 import { useDepartments } from "@/hooks/useDepartment";
 
 export function DepartmentPageContainer() {
