@@ -32,6 +32,7 @@ export function Header({
   debt,
   expanded,
   onToggleClick,
+  onDeleteClick,
 }: HeaderProps) {
   return (
     <div className="flex items-start justify-between gap-2">
@@ -40,6 +41,23 @@ export function Header({
       </div>
 
       <div className="text-right text-xs text-zinc-700">
+        {onDeleteClick && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDeleteClick();
+            }}
+            style={{
+              marginBottom: "0.8vh", // 아래 여백
+              transform: "translateY(-0.4vh)", // 위로 0.2vh 이동
+            }}
+            className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-[2px] text-[10px] text-zinc-600"
+          >
+            삭제
+          </button>
+        )}
+
         <div>
           {DEPARTMENT_CARD_COPY.summary.depositPrefix}{" "}
           {deposit.toLocaleString()}
@@ -51,24 +69,26 @@ export function Header({
           {DEPARTMENT_CARD_COPY.summary.currencySuffix}
         </div>
 
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleClick();
-          }}
-          className="mt-1 inline-flex items-center rounded-full bg-zinc-100 px-2 py-[2px] text-[10px] text-zinc-600"
-        >
-          {expanded
-            ? DEPARTMENT_CARD_COPY.toggle.collapse
-            : DEPARTMENT_CARD_COPY.toggle.expand}
-
-          <span className="ml-1 text-[9px]">
+        <div className="mt-1 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleClick();
+            }}
+            className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-[2px] text-[10px] text-zinc-600"
+          >
             {expanded
-              ? DEPARTMENT_CARD_COPY.toggle.icon.expanded
-              : DEPARTMENT_CARD_COPY.toggle.icon.collapsed}
-          </span>
-        </button>
+              ? DEPARTMENT_CARD_COPY.toggle.collapse
+              : DEPARTMENT_CARD_COPY.toggle.expand}
+
+            <span className="ml-1 text-[9px]">
+              {expanded
+                ? DEPARTMENT_CARD_COPY.toggle.icon.expanded
+                : DEPARTMENT_CARD_COPY.toggle.icon.collapsed}
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   );

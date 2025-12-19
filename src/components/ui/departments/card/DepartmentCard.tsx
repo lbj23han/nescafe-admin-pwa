@@ -20,6 +20,7 @@ export function DepartmentCard({
   expanded,
   onToggle,
   onChange,
+  onDelete,
 }: DepartmentCardProps) {
   const [historyType, setHistoryType] =
     useState<Parameters<typeof formatHistoryType>[0]>("deposit");
@@ -42,6 +43,15 @@ export function DepartmentCard({
     setMemo("");
   };
 
+  const handleDelete = () => {
+    if (!onDelete) return;
+
+    const ok = window.confirm("정말 부서를 삭제합니까?");
+    if (!ok) return;
+
+    onDelete(department.id);
+  };
+
   const hasHistory = department.history.length > 0;
 
   return (
@@ -52,6 +62,7 @@ export function DepartmentCard({
         debt={department.debt}
         expanded={expanded}
         onToggleClick={onToggle}
+        onDeleteClick={onDelete ? handleDelete : undefined}
       />
 
       {expanded && (

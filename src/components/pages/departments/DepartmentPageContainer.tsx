@@ -16,7 +16,7 @@ export function DepartmentPageContainer() {
     addDepartment,
     updateDepartment,
     toggleDepartment,
-    // deleteDepartment, // 다음 작업에서 추가하면 연결
+    deleteDepartment,
   } = useDepartments();
 
   if (!isReady) return null;
@@ -30,10 +30,10 @@ export function DepartmentPageContainer() {
       addButtonText={DEPARTMENT_PAGE_COPY.addButton}
       departments={departments}
       activeDepartmentId={activeDepartmentId}
-      onAdd={addDepartment} // ✅ prompt 제거 완료
+      onAdd={addDepartment}
       onToggle={toggleDepartment}
       onChange={updateDepartment}
-      // onDelete={deleteDepartment}   // ✅ 3번 작업 때 연결
+      onDelete={deleteDepartment}
     />
   );
 }

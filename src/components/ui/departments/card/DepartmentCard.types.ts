@@ -6,6 +6,8 @@ export type DepartmentCardProps = {
   expanded: boolean;
   onToggle: () => void;
   onChange: (updated: Department) => void;
+
+  onDelete?: (id: string) => void;
 };
 
 /** UI primitives 타입들 */
@@ -21,6 +23,7 @@ export type HeaderProps = {
   debt: number;
   expanded: boolean;
   onToggleClick: () => void;
+  onDeleteClick?: () => void;
 };
 
 export type ExpandedContainerProps = {

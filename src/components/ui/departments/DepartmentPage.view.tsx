@@ -94,7 +94,7 @@ function Page({
                 expanded={activeDepartmentId === dept.id}
                 onToggle={() => onToggle(dept.id)}
                 onChange={onChange}
-                {...(onDelete ? { onDelete: () => onDelete(dept.id) } : {})}
+                onDelete={onDelete}
               />
             ))}
           </div>

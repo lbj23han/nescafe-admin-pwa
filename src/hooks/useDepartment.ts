@@ -45,6 +45,17 @@ export function useDepartments() {
     setActiveDepartmentId((prev) => (prev === id ? null : id));
   };
 
+  // 삭제
+  const deleteDepartment = (id: string) => {
+    setDepartments((prev) => {
+      const next = prev.filter((d) => d.id !== id);
+      saveDepartments(next);
+      return next;
+    });
+
+    setActiveDepartmentId((prev) => (prev === id ? null : prev));
+  };
+
   return {
     departments,
     activeDepartmentId,
@@ -52,6 +63,7 @@ export function useDepartments() {
     addDepartment,
     updateDepartment,
     toggleDepartment,
+    deleteDepartment,
     setActiveDepartmentId,
   };
 }
