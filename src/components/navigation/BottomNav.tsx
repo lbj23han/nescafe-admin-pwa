@@ -12,7 +12,7 @@ function formatYmd(date: Date) {
 }
 
 function isMainActive(pathname: string) {
-  return pathname === NAV_HREF.main || pathname.startsWith(`${NAV_HREF.day}/`);
+  return pathname === NAV_HREF.main;
 }
 
 export function BottomNav() {

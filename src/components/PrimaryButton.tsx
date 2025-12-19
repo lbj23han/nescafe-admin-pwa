@@ -1,10 +1,15 @@
 // components/PrimaryButton.tsx
+"use client";
+
+import type React from "react";
+
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "ghost";
 };
 
 export function PrimaryButton({
   variant = "primary",
+  className,
   children,
   ...rest
 }: Props) {
@@ -16,7 +21,7 @@ export function PrimaryButton({
       : "bg-zinc-100 text-zinc-700";
 
   return (
-    <button className={`${base} ${styles}`} {...rest}>
+    <button className={`${base} ${styles} ${className ?? ""}`} {...rest}>
       {children}
     </button>
   );
