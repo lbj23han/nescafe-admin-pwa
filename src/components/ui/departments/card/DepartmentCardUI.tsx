@@ -28,37 +28,53 @@ export function Root({ expanded, onClick, children }: RootProps) {
 
 export function Header({
   name,
+  nameNode,
   deposit,
   debt,
   expanded,
   onToggleClick,
   onDeleteClick,
+  onEditNameToggleClick,
+  editingName,
 }: HeaderProps) {
   return (
     <div className="flex items-start justify-between gap-2">
-      <div>
-        <h2 className="text-base font-semibold text-black">{name}</h2>
+      <div className="min-w-0">
+        {nameNode ?? (
+          <h2 className="text-base font-semibold text-black">{name}</h2>
+        )}
       </div>
 
       <div className="text-right text-xs text-zinc-700">
-        {onDeleteClick && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteClick();
-            }}
-            style={{
-              marginBottom: "0.8vh", // 아래 여백
-              transform: "translateY(-0.4vh)", // 위로 0.2vh 이동
-            }}
-            className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-[2px] text-[10px] text-zinc-600"
-          >
-            삭제
-          </button>
-        )}
+        <div className="flex items-center justify-end gap-2">
+          {onEditNameToggleClick && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditNameToggleClick();
+              }}
+              className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-[2px] text-[10px] text-zinc-600"
+            >
+              {editingName ? "이름 취소" : "이름 수정"}
+            </button>
+          )}
 
-        <div>
+          {onDeleteClick && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteClick();
+              }}
+              className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-[2px] text-[10px] text-zinc-600"
+            >
+              삭제
+            </button>
+          )}
+        </div>
+
+        <div className="mt-2">
           {DEPARTMENT_CARD_COPY.summary.depositPrefix}{" "}
           {deposit.toLocaleString()}
           {DEPARTMENT_CARD_COPY.summary.currencySuffix}
@@ -81,7 +97,6 @@ export function Header({
             {expanded
               ? DEPARTMENT_CARD_COPY.toggle.collapse
               : DEPARTMENT_CARD_COPY.toggle.expand}
-
             <span className="ml-1 text-[9px]">
               {expanded
                 ? DEPARTMENT_CARD_COPY.toggle.icon.expanded
@@ -152,9 +167,11 @@ export function AmountInput(
   return (
     <input
       {...props}
-      className={`w-full rounded-md border border-zinc-300 px-2 py-1 text-xs text-right placeholder:text-zinc-400 ${
-        props.className ?? ""
-      }`}
+      className={`w-full rounded-md border border-zinc-300
+        px-2 py-1 text-xs text-zinc-500
+        placeholder:text-zinc-500
+        ${props.className ?? ""}
+      `}
     />
   );
 }
@@ -163,7 +180,7 @@ export function MemoInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`w-full rounded-md border border-zinc-300 px-2 py-1 text-xs placeholder:text-zinc-400 ${
+      className={`w-full rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-500 placeholder:text-zinc-400 ${
         props.className ?? ""
       }`}
     />
@@ -180,6 +197,25 @@ export function SubmitButton(
         props.className ?? ""
       }`}
     />
+  );
+}
+
+export function TinyButton(
+  props: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    variant?: "primary" | "ghost";
+  }
+) {
+  const { variant = "ghost", className, ...rest } = props;
+
+  const base =
+    "inline-flex items-center rounded-md px-2 py-1 text-[10px] font-medium";
+  const styles =
+    variant === "primary"
+      ? "bg-zinc-900 text-white"
+      : "bg-zinc-100 text-zinc-700";
+
+  return (
+    <button {...rest} className={`${base} ${styles} ${className ?? ""}`} />
   );
 }
 
@@ -225,6 +261,7 @@ export function HistoryItemContent({
   dateLabel,
   amountLabel,
   positive,
+  actions,
 }: HistoryContentProps) {
   return (
     <HistoryItem
@@ -238,12 +275,15 @@ export function HistoryItemContent({
         </div>
       }
       right={
-        <div
-          className={`shrink-0 font-semibold ${
-            positive ? "text-emerald-600" : "text-red-600"
-          }`}
-        >
-          {amountLabel}
+        <div className="flex flex-col items-end gap-1">
+          <div
+            className={`shrink-0 font-semibold ${
+              positive ? "text-emerald-600" : "text-red-600"
+            }`}
+          >
+            {amountLabel}
+          </div>
+          {actions}
         </div>
       }
     />

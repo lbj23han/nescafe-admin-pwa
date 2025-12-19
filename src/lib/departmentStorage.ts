@@ -7,7 +7,7 @@ export type DepartmentHistory = {
   type: HistoryType;
   amount: number;
   memo?: string;
-  date: string; // ISO string
+  date: string;
 };
 
 export type Department = {
@@ -56,14 +56,57 @@ export function createDepartment(name: string): Department {
   };
 }
 
+function toSafeAmount(amount: number) {
+  return Math.max(0, Math.floor(amount));
+}
+
 /**
- * 입출금/주문/미수금 상환 기록을 추가하면서
- * 예치금(deposit) / 미수금(debt)을 자동으로 갱신한다.
- *
- * type:
- * - "deposit": 예치금 입금 → deposit += amount
- * - "order": 주문으로 차감 → deposit에서 우선 차감, 부족분은 debt(미수금)로 전환
- * - "debtPayment": 미수금 상환 → debt -= amount (0 미만은 0으로)
+ * history 배열을 기준으로 deposit/debt를 "처음부터" 다시 계산한다.
+ * - deposit: 예치금 입금
+ * - order: 예치금 우선 차감 + 부족분은 debt로 전환
+ * - debtPayment: 미수금 상환 (0 미만 방지)
+ * - payment: 예치금만 차감 (debt 전환 없음)
+ */
+export function recomputeDepartment(department: Department): Department {
+  let deposit = 0;
+  let debt = 0;
+
+  for (const h of department.history) {
+    const amt = toSafeAmount(h.amount);
+
+    if (h.type === "deposit") {
+      deposit += amt;
+      continue;
+    }
+
+    if (h.type === "order") {
+      if (deposit >= amt) {
+        deposit -= amt;
+      } else {
+        const shortage = amt - deposit;
+        deposit = 0;
+        debt += shortage;
+      }
+      continue;
+    }
+
+    if (h.type === "payment") {
+      // 예치금만 차감 (미수금 전환 없음)
+      deposit = Math.max(0, deposit - amt);
+      continue;
+    }
+
+    if (h.type === "debtPayment") {
+      debt = Math.max(0, debt - amt);
+      continue;
+    }
+  }
+
+  return { ...department, deposit, debt };
+}
+
+/**
+ * 기록 추가하면서 deposit/debt 갱신(기존 로직 유지)
  */
 export function addHistory(
   department: Department,
@@ -75,7 +118,7 @@ export function addHistory(
   let deposit = department.deposit;
   let debt = department.debt;
 
-  const safeAmount = Math.max(0, Math.floor(amount));
+  const safeAmount = toSafeAmount(amount);
 
   if (type === "deposit") {
     deposit += safeAmount;
@@ -83,14 +126,16 @@ export function addHistory(
 
   if (type === "order") {
     if (deposit >= safeAmount) {
-      // 예치금으로 전액 처리
       deposit -= safeAmount;
     } else {
-      // 예치금 다 쓰고, 모자란 금액은 미수금으로
       const shortage = safeAmount - deposit;
       deposit = 0;
       debt += shortage;
     }
+  }
+
+  if (type === "payment") {
+    deposit = Math.max(0, deposit - safeAmount);
   }
 
   if (type === "debtPayment") {
@@ -111,4 +156,48 @@ export function addHistory(
     debt,
     history: [...department.history, history],
   };
+}
+
+/**
+ * 내역 1건 수정 (종류/금액/메모)
+ * - history 항목을 업데이트한 후
+ * - history 전체 기준으로 deposit/debt를 재계산한다.
+ */
+export function updateHistory(
+  department: Department,
+  historyId: string,
+  patch: Partial<Pick<DepartmentHistory, "type" | "amount" | "memo">>
+): Department {
+  const nextHistory = department.history.map((h) => {
+    if (h.id !== historyId) return h;
+
+    const nextAmount =
+      patch.amount === undefined ? h.amount : toSafeAmount(patch.amount);
+
+    const nextMemo =
+      patch.memo === undefined ? h.memo : patch.memo.trim() || undefined;
+
+    const nextType = patch.type ?? h.type;
+
+    return {
+      ...h,
+      type: nextType,
+      amount: nextAmount,
+      memo: nextMemo,
+    };
+  });
+
+  return recomputeDepartment({ ...department, history: nextHistory });
+}
+
+/**
+ * 부서명 수정
+ */
+export function renameDepartment(
+  department: Department,
+  name: string
+): Department {
+  const trimmed = name.trim();
+  if (!trimmed) return department;
+  return { ...department, name: trimmed };
 }

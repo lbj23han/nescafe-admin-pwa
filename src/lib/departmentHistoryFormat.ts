@@ -13,11 +13,11 @@ export function formatHistoryDate(date: string): string {
   }
 }
 
-export function formatHistoryAmount(h: DepartmentHistory): string {
-  const sign = h.type === "deposit" ? "+" : "-";
-  return `${sign}${h.amount.toLocaleString()}원`;
-}
-
 export function isPositiveHistory(h: DepartmentHistory): boolean {
   return h.type === "deposit" || h.type === "debtPayment";
+}
+
+export function formatHistoryAmount(h: DepartmentHistory): string {
+  const sign = isPositiveHistory(h) ? "+" : "-";
+  return `${sign}${h.amount.toLocaleString()}원`;
 }
