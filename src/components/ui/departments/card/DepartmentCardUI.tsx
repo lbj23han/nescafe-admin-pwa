@@ -10,6 +10,7 @@ import type {
   HistoryListProps,
   HistoryItemProps,
   HistoryContentProps,
+  HistoryContainerProps,
 } from "./DepartmentCard.types";
 
 export function Root({ expanded, onClick, children }: RootProps) {
@@ -46,33 +47,37 @@ export function Header({
       </div>
 
       <div className="text-right text-xs text-zinc-700">
-        <div className="flex items-center justify-end gap-2">
-          {onEditNameToggleClick && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditNameToggleClick();
-              }}
-              className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-[2px] text-[10px] text-zinc-600"
-            >
-              {editingName ? "이름 취소" : "이름 수정"}
-            </button>
-          )}
+        {(onEditNameToggleClick || onDeleteClick) && (
+          <div className="flex items-center justify-end gap-2">
+            {onEditNameToggleClick && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEditNameToggleClick();
+                }}
+                className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-[2px] text-[10px] text-zinc-600"
+              >
+                {editingName
+                  ? DEPARTMENT_CARD_COPY.headerAction.cancelEditName
+                  : DEPARTMENT_CARD_COPY.headerAction.editName}
+              </button>
+            )}
 
-          {onDeleteClick && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteClick();
-              }}
-              className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-[2px] text-[10px] text-zinc-600"
-            >
-              삭제
-            </button>
-          )}
-        </div>
+            {onDeleteClick && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteClick();
+                }}
+                className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-[2px] text-[10px] text-zinc-600"
+              >
+                {DEPARTMENT_CARD_COPY.headerAction.deleteDepartment}
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="mt-2">
           {DEPARTMENT_CARD_COPY.summary.depositPrefix}{" "}
@@ -111,10 +116,7 @@ export function Header({
 
 export function ExpandedContainer({ children }: ExpandedContainerProps) {
   return (
-    <div
-      className="mt-4 space-y-3"
-      onClick={(e) => e.stopPropagation()} // 내부 클릭은 카드 토글 방지
-    >
+    <div className="mt-4 space-y-3" onClick={(e) => e.stopPropagation()}>
       {children}
     </div>
   );
@@ -154,7 +156,7 @@ export function SelectField(
   return (
     <select
       {...props}
-      className={`w-full rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-500 ${
+      className={`w-full rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-800 ${
         props.className ?? ""
       }`}
     />
@@ -167,11 +169,9 @@ export function AmountInput(
   return (
     <input
       {...props}
-      className={`w-full rounded-md border border-zinc-300
-        px-2 py-1 text-xs text-zinc-500
-        placeholder:text-zinc-500
-        ${props.className ?? ""}
-      `}
+      className={`w-full rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-800 placeholder:text-zinc-500 ${
+        props.className ?? ""
+      }`}
     />
   );
 }
@@ -180,7 +180,7 @@ export function MemoInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`w-full rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-500 placeholder:text-zinc-400 ${
+      className={`w-full rounded-md border border-zinc-300 px-2 py-1 text-xs text-zinc-800 placeholder:text-zinc-500 ${
         props.className ?? ""
       }`}
     />
@@ -219,13 +219,42 @@ export function TinyButton(
   );
 }
 
-export function HistoryContainer({ children }: { children: ReactNode }) {
+export function HistoryContainer({
+  title = DEPARTMENT_CARD_COPY.historyTitle,
+  actions,
+  children,
+  editMode = false,
+  stickyHeader = true,
+}: HistoryContainerProps) {
   return (
-    <div className="p-3 border border-zinc-100 rounded-lg">
-      <h3 className="mb-2 text-xs font-semibold text-zinc-700">
-        {DEPARTMENT_CARD_COPY.historyTitle}
-      </h3>
-      {children}
+    <div
+      className={[
+        "rounded-lg border p-3",
+        editMode ? "border-zinc-300 bg-zinc-50" : "border-zinc-100 bg-white",
+      ].join(" ")}
+    >
+      <div
+        className={[
+          "flex items-center justify-between",
+          stickyHeader ? "sticky top-0 z-10 -mx-3 px-3 py-2" : "mb-2",
+          editMode ? "bg-zinc-50" : "bg-white",
+          stickyHeader ? "border-b border-zinc-100" : "",
+        ].join(" ")}
+      >
+        <div className="flex items-center gap-2">
+          <h3 className="text-xs font-semibold text-zinc-700">{title}</h3>
+
+          {editMode && (
+            <span className="rounded-full bg-zinc-900 px-2 py-[2px] text-[10px] font-medium text-white">
+              {DEPARTMENT_CARD_COPY.historyEdit.badge}
+            </span>
+          )}
+        </div>
+
+        {actions}
+      </div>
+
+      <div className={stickyHeader ? "pt-2" : ""}>{children}</div>
     </div>
   );
 }
@@ -268,9 +297,7 @@ export function HistoryItemContent({
       left={
         <div>
           <div className="font-medium text-zinc-700">{typeLabel}</div>
-
           {memo && <div className="text-zinc-600">{memo}</div>}
-
           <div className="text-[10px] text-zinc-400">{dateLabel}</div>
         </div>
       }

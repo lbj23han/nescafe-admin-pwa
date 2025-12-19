@@ -22,14 +22,12 @@ export type RootProps = {
 
 export type HeaderProps = {
   name: string;
-  nameNode?: ReactNode; // ✅ 부서명 수정 UI용
+  nameNode?: ReactNode;
   deposit: number;
   debt: number;
   expanded: boolean;
   onToggleClick: () => void;
   onDeleteClick?: () => void;
-
-  // ✅ 부서명 수정 토글 버튼(헤더 우측)
   onEditNameToggleClick?: () => void;
   editingName?: boolean;
 };
@@ -40,6 +38,18 @@ export type ExpandedContainerProps = {
 
 export type FormProps = FormHTMLAttributes<HTMLFormElement> & {
   children: ReactNode;
+};
+
+export type HistoryContainerProps = {
+  title?: string;
+  actions?: ReactNode;
+  children: ReactNode;
+
+  /** ✅ 마감 퀄리티: 편집 모드 스타일링 */
+  editMode?: boolean;
+
+  /** ✅ 마감 퀄리티: 헤더 sticky */
+  stickyHeader?: boolean;
 };
 
 export type HistoryListProps = {
@@ -58,8 +68,7 @@ export type HistoryContentProps = {
   dateLabel: string;
   amountLabel: string;
   positive: boolean;
-
-  actions?: ReactNode; // ✅ 수정/저장/취소 버튼 영역
+  actions?: ReactNode;
 };
 
 export type HistoryEditDraft = {

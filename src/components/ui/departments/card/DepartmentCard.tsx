@@ -1,14 +1,16 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   addHistory,
   renameDepartment,
   updateHistory,
-  HistoryType,
+  type HistoryType,
 } from "@/lib/departmentStorage";
-import type { DepartmentCardProps } from "./DepartmentCard.types";
-import type { HistoryEditDraft } from "./DepartmentCard.types";
+import type {
+  DepartmentCardProps,
+  HistoryEditDraft,
+} from "./DepartmentCard.types";
 import * as UI from "./DepartmentCardUI";
 import {
   formatHistoryAmount,
@@ -28,17 +30,18 @@ export function DepartmentCard({
   onChange,
   onDelete,
 }: DepartmentCardProps) {
-  // ✅ 추가 폼 상태
   const [historyType, setHistoryType] =
     useState<Parameters<typeof formatHistoryType>[0]>("deposit");
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
 
-  // ✅ 부서명 편집 상태
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(department.name);
 
-  // ✅ 내역 편집 상태
+  // ✅ 패턴 A: 내역 편집 모드
+  const [historyEditMode, setHistoryEditMode] = useState(false);
+
+  // ✅ 단일 row 편집
   const [editingHistoryId, setEditingHistoryId] = useState<string | null>(null);
   const [historyDraft, setHistoryDraft] = useState<HistoryEditDraft>({
     type: "deposit",
@@ -46,11 +49,65 @@ export function DepartmentCard({
     memo: "",
   });
 
-  // department가 바뀌었는데 편집중이면 draft 싱크가 꼬일 수 있어 최소 방어
   useMemo(() => {
     if (!editingName) setNameDraft(department.name);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [department.name]);
+
+  // ✅ 카드 접힘 시 상태 정리
+  useEffect(() => {
+    if (!expanded) {
+      setHistoryEditMode(false);
+      setEditingHistoryId(null);
+      setEditingName(false);
+      setNameDraft(department.name);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expanded]);
+
+  // ---------------------------
+  // ✅ 저장 안함 경고(dirty 체크)
+  // ---------------------------
+  const trimmedNameDraft = nameDraft.trim();
+  const nameDirty =
+    editingName &&
+    trimmedNameDraft.length > 0 &&
+    trimmedNameDraft !== department.name;
+
+  const editingHistoryOriginal = useMemo(() => {
+    if (!editingHistoryId) return null;
+    return department.history.find((h) => h.id === editingHistoryId) ?? null;
+  }, [department.history, editingHistoryId]);
+
+  const historyDirty = useMemo(() => {
+    if (!editingHistoryId || !editingHistoryOriginal) return false;
+
+    const draftAmount = Number(historyDraft.amount);
+    const originAmount = Number(editingHistoryOriginal.amount);
+
+    const draftMemo = (historyDraft.memo ?? "").trim();
+    const originMemo = (editingHistoryOriginal.memo ?? "").trim();
+
+    return (
+      historyDraft.type !== editingHistoryOriginal.type ||
+      (Number.isFinite(draftAmount) ? draftAmount : NaN) !== originAmount ||
+      draftMemo !== originMemo
+    );
+  }, [editingHistoryId, editingHistoryOriginal, historyDraft]);
+
+  const confirmDiscardIfDirty = () => {
+    if (!nameDirty && !historyDirty) return true;
+    return window.confirm(DEPARTMENT_CARD_COPY.dialog.confirm.discardOnClose);
+  };
+
+  const guardedToggle = () => {
+    // 펼친 상태에서 접히려 할 때만 확인
+    if (expanded) {
+      const ok = confirmDiscardIfDirty();
+      if (!ok) return;
+    }
+    onToggle();
+  };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -58,7 +115,7 @@ export function DepartmentCard({
 
     const parsed = Number(amount);
     if (!parsed || parsed <= 0) {
-      alert("금액을 0보다 크게 입력해주세요.");
+      alert(DEPARTMENT_CARD_COPY.dialog.alert.amountMustBePositive);
       return;
     }
 
@@ -70,28 +127,34 @@ export function DepartmentCard({
 
   const handleDelete = () => {
     if (!onDelete) return;
-
-    const ok = window.confirm("정말 부서를 삭제합니까?");
+    const ok = window.confirm(
+      DEPARTMENT_CARD_COPY.dialog.confirm.deleteDepartment
+    );
     if (!ok) return;
-
     onDelete(department.id);
   };
 
-  // ✅ 부서명 저장
   const saveName = () => {
     const trimmed = nameDraft.trim();
     if (!trimmed) {
-      alert("부서명을 입력해주세요.");
+      alert(DEPARTMENT_CARD_COPY.dialog.alert.nameRequired);
       return;
     }
-
-    const updated = renameDepartment(department, trimmed);
-    onChange(updated);
+    onChange(renameDepartment(department, trimmed));
     setEditingName(false);
   };
 
-  // ✅ 내역 편집 시작
   const startEditHistory = (id: string) => {
+    // 다른 row로 넘어가기 전에 dirty면 경고
+    if (editingHistoryId && editingHistoryId !== id) {
+      if (historyDirty) {
+        const ok = window.confirm(
+          DEPARTMENT_CARD_COPY.dialog.confirm.discardOnSwitchHistory
+        );
+        if (!ok) return;
+      }
+    }
+
     const target = department.history.find((h) => h.id === id);
     if (!target) return;
 
@@ -104,6 +167,13 @@ export function DepartmentCard({
   };
 
   const cancelEditHistory = () => {
+    // 취소 시에도 dirty면 경고(안전장치)
+    if (historyDirty) {
+      const ok = window.confirm(
+        DEPARTMENT_CARD_COPY.dialog.confirm.discardOnClose
+      );
+      if (!ok) return;
+    }
     setEditingHistoryId(null);
   };
 
@@ -112,17 +182,18 @@ export function DepartmentCard({
 
     const parsed = Number(historyDraft.amount);
     if (!parsed || parsed <= 0) {
-      alert("금액을 0보다 크게 입력해주세요.");
+      alert(DEPARTMENT_CARD_COPY.dialog.alert.amountMustBePositive);
       return;
     }
 
-    const updated = updateHistory(department, editingHistoryId, {
-      type: historyDraft.type,
-      amount: parsed,
-      memo: historyDraft.memo,
-    });
+    onChange(
+      updateHistory(department, editingHistoryId, {
+        type: historyDraft.type,
+        amount: parsed,
+        memo: historyDraft.memo,
+      })
+    );
 
-    onChange(updated);
     setEditingHistoryId(null);
   };
 
@@ -130,16 +201,16 @@ export function DepartmentCard({
   const reversedHistory = department.history.slice().reverse();
 
   return (
-    <UI.Root expanded={expanded} onClick={onToggle}>
+    <UI.Root expanded={expanded} onClick={guardedToggle}>
       <UI.Header
         name={department.name}
         nameNode={
-          editingName ? (
+          expanded && editingName ? (
             <div className="flex items-center gap-2">
               <input
                 value={nameDraft}
                 onChange={(e) => setNameDraft(e.target.value)}
-                className="w-full max-w-[220px] rounded-md border border-zinc-300 px-2 py-1 text-sm"
+                className="w-full max-w-[220px] rounded-md border border-zinc-300 px-2 py-1 text-sm text-zinc-900 placeholder:text-zinc-500"
                 onClick={(e) => e.stopPropagation()}
               />
               <UI.TinyButton
@@ -150,7 +221,7 @@ export function DepartmentCard({
                   saveName();
                 }}
               >
-                저장
+                {DEPARTMENT_CARD_COPY.headerAction.save}
               </UI.TinyButton>
             </div>
           ) : undefined
@@ -158,16 +229,27 @@ export function DepartmentCard({
         deposit={department.deposit}
         debt={department.debt}
         expanded={expanded}
-        onToggleClick={onToggle}
-        onDeleteClick={onDelete ? handleDelete : undefined}
-        editingName={editingName}
-        onEditNameToggleClick={() => {
-          setEditingName((prev) => {
-            const next = !prev;
-            if (!next) setNameDraft(department.name);
-            return next;
-          });
-        }}
+        onToggleClick={guardedToggle}
+        onDeleteClick={expanded && onDelete ? handleDelete : undefined}
+        editingName={expanded ? editingName : false}
+        onEditNameToggleClick={
+          expanded
+            ? () => {
+                // 이름 편집을 끄려는데 dirty면 경고
+                if (editingName && nameDirty) {
+                  const ok = window.confirm(
+                    DEPARTMENT_CARD_COPY.dialog.confirm.discardOnClose
+                  );
+                  if (!ok) return;
+                }
+                setEditingName((prev) => {
+                  const next = !prev;
+                  if (!next) setNameDraft(department.name);
+                  return next;
+                });
+              }
+            : undefined
+        }
       />
 
       {expanded && (
@@ -226,7 +308,35 @@ export function DepartmentCard({
             </UI.SubmitButton>
           </UI.FormContainer>
 
-          <UI.HistoryContainer>
+          <UI.HistoryContainer
+            editMode={historyEditMode}
+            stickyHeader
+            actions={
+              hasHistory ? (
+                <UI.TinyButton
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+
+                    // 편집모드 끄려는데 row 편집중 + dirty면 경고
+                    if (historyEditMode && editingHistoryId && historyDirty) {
+                      const ok = window.confirm(
+                        DEPARTMENT_CARD_COPY.dialog.confirm.discardOnClose
+                      );
+                      if (!ok) return;
+                    }
+
+                    setHistoryEditMode((prev) => !prev);
+                    setEditingHistoryId(null);
+                  }}
+                >
+                  {historyEditMode
+                    ? DEPARTMENT_CARD_COPY.historyEdit.toggleOff
+                    : DEPARTMENT_CARD_COPY.historyEdit.toggleOn}
+                </UI.TinyButton>
+              ) : undefined
+            }
+          >
             {!hasHistory && <UI.HistoryEmpty />}
 
             {hasHistory && (
@@ -235,39 +345,64 @@ export function DepartmentCard({
                 renderItem={(h) => {
                   const editing = editingHistoryId === h.id;
 
+                  // ✅ 보기 모드 row
                   if (!editing) {
                     return (
-                      <UI.HistoryItemContent
+                      <div
                         key={h.id}
-                        typeLabel={formatHistoryType(h.type)}
-                        memo={h.memo}
-                        dateLabel={formatHistoryDate(h.date)}
-                        amountLabel={formatHistoryAmount(h)}
-                        positive={isPositiveHistory(h)}
-                        actions={
-                          <UI.TinyButton
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              startEditHistory(h.id);
-                            }}
-                          >
-                            수정
-                          </UI.TinyButton>
-                        }
-                      />
+                        className={[
+                          "rounded-md px-2 py-1",
+                          historyEditMode ? "hover:bg-zinc-50" : "",
+                        ].join(" ")}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <UI.HistoryItemContent
+                          typeLabel={formatHistoryType(h.type)}
+                          memo={h.memo}
+                          dateLabel={formatHistoryDate(h.date)}
+                          amountLabel={formatHistoryAmount(h)}
+                          positive={isPositiveHistory(h)}
+                          actions={
+                            historyEditMode ? (
+                              <UI.TinyButton
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  startEditHistory(h.id);
+                                }}
+                                aria-label={
+                                  DEPARTMENT_CARD_COPY.historyEdit
+                                    .editActionAria
+                                }
+                                title={
+                                  DEPARTMENT_CARD_COPY.historyEdit
+                                    .editActionTitle
+                                }
+                              >
+                                {
+                                  DEPARTMENT_CARD_COPY.historyEdit
+                                    .editActionIcon
+                                }
+                              </UI.TinyButton>
+                            ) : undefined
+                          }
+                        />
+                      </div>
                     );
                   }
 
+                  // ✅ 편집 중 row 하이라이트 (ring + bg)
                   return (
                     <li
                       key={h.id}
-                      className="rounded-md border border-zinc-200 bg-white p-2"
+                      className="rounded-md border border-zinc-300 bg-white p-2 ring-2 ring-zinc-300/60"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="flex gap-2">
                         <div className="flex-1">
-                          <UI.FieldLabel>종류</UI.FieldLabel>
+                          <UI.FieldLabel>
+                            {DEPARTMENT_CARD_COPY.historyEditRow.label.type}
+                          </UI.FieldLabel>
                           <UI.SelectField
                             value={historyDraft.type}
                             onChange={(e) =>
@@ -293,7 +428,9 @@ export function DepartmentCard({
                         </div>
 
                         <div className="w-28">
-                          <UI.FieldLabel>금액</UI.FieldLabel>
+                          <UI.FieldLabel>
+                            {DEPARTMENT_CARD_COPY.historyEditRow.label.amount}
+                          </UI.FieldLabel>
                           <UI.AmountInput
                             type="number"
                             value={historyDraft.amount}
@@ -308,7 +445,9 @@ export function DepartmentCard({
                       </div>
 
                       <div className="mt-2">
-                        <UI.FieldLabel>메모</UI.FieldLabel>
+                        <UI.FieldLabel>
+                          {DEPARTMENT_CARD_COPY.historyEditRow.label.memo}
+                        </UI.FieldLabel>
                         <UI.MemoInput
                           value={historyDraft.memo}
                           onChange={(e) =>
@@ -328,7 +467,7 @@ export function DepartmentCard({
                             cancelEditHistory();
                           }}
                         >
-                          취소
+                          {DEPARTMENT_CARD_COPY.historyEditRow.button.cancel}
                         </UI.TinyButton>
 
                         <UI.TinyButton
@@ -339,7 +478,7 @@ export function DepartmentCard({
                             saveEditHistory();
                           }}
                         >
-                          저장
+                          {DEPARTMENT_CARD_COPY.historyEditRow.button.save}
                         </UI.TinyButton>
                       </div>
                     </li>
