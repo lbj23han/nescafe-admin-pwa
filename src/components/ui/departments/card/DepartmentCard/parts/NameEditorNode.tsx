@@ -1,6 +1,6 @@
 "use client";
 
-import * as UI from "../../DepartmentCardUI";
+import * as UI from "../DepartmentCardUI";
 import { DEPARTMENT_CARD_COPY } from "@/constants/departments/card";
 
 export function NameEditorNode({

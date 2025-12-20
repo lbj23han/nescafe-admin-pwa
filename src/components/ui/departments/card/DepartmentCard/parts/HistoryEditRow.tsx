@@ -1,6 +1,6 @@
 "use client";
 
-import * as UI from "../../DepartmentCardUI";
+import * as UI from "../DepartmentCardUI";
 import {
   DEPARTMENT_CARD_COPY,
   DEPARTMENT_HISTORY_LABEL,

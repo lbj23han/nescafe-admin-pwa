@@ -1,7 +1,7 @@
 "use client";
 
 import type { DepartmentCardProps } from "../DepartmentCard.types";
-import * as UI from "../DepartmentCardUI";
+import * as UI from "./DepartmentCardUI";
 import { DEPARTMENT_CARD_COPY } from "@/constants/departments/card";
 import { useDepartmentCard } from "./useDepartmentCard";
 import { NameEditorNode } from "./parts/NameEditorNode";
