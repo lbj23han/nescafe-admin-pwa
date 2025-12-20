@@ -42,7 +42,6 @@ function buildTodayMeta(all?: Reservation[], pending?: Reservation[]) {
   const total = all?.length ?? 0;
   const remaining = pending?.length ?? 0;
 
-  // ✅ 완료 여부 상관없이 “오늘 예약 총 매출”
   const totalAmount = all?.reduce((sum, r) => sum + (r.amount || 0), 0) ?? 0;
 
   return { total, remaining, totalAmount };
@@ -66,17 +65,21 @@ export function CalendarList() {
 
         const [year, month, day] = date.split("-").map(Number);
         const d = new Date(year, month - 1, day);
-        const weekday = WEEKDAY_LABELS[d.getDay()];
+
+        const dayOfWeek = d.getDay(); // 0:일 ... 6:토
+        const weekday = WEEKDAY_LABELS[dayOfWeek];
+
+        // ✅ 지금 요구사항: 토/일만 빨간색(holiday) 처리
+        const weekdayVariant =
+          dayOfWeek === 0 || dayOfWeek === 6 ? "holiday" : "default";
 
         const dateLabel = `${month}월 ${day}일`;
 
-        // 오늘 카드 하단 텍스트(첫 예약/요약)
         const { mainText, subText } = buildTodaySummary(
           isToday,
           isToday ? todayReservations : undefined
         );
 
-        // ✅ 오늘 카드 우측 텍스트(남은/총/총매출)
         const todayMeta = isToday
           ? buildTodayMeta(todayAllReservations, todayReservations)
           : null;
@@ -88,6 +91,7 @@ export function CalendarList() {
               isToday={isToday}
               dateLabel={dateLabel}
               weekdayLabel={weekday}
+              weekdayVariant={weekdayVariant}
               summaryCount={summary[date] ?? 0}
               mainText={mainText}
               subText={subText}

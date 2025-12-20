@@ -1,4 +1,3 @@
-// components/ui/calendar/CalendarDayCard.tsx
 import Link from "next/link";
 import { CalendarUI } from "./CalendarUI";
 import { CALENDAR_COPY } from "@/constants/calendar";
@@ -9,11 +8,14 @@ type TodayMeta = {
   totalAmount: number;
 };
 
+type WeekdayVariant = "default" | "holiday";
+
 type Props = {
   href: string;
   isToday: boolean;
-  dateLabel: string; // "12월 13일"
-  weekdayLabel: string; // "월", "화" ...
+  dateLabel: string;
+  weekdayLabel: string;
+  weekdayVariant: WeekdayVariant;
   summaryCount: number;
   mainText: string;
   subText?: string;
@@ -25,13 +27,14 @@ export function CalendarDayCard({
   isToday,
   dateLabel,
   weekdayLabel,
+  weekdayVariant,
   summaryCount,
   mainText,
   subText,
   todayMeta,
 }: Props) {
+  // ✅ 오늘 카드
   if (isToday) {
-    // ✅ 오늘 카드
     return (
       <Link href={href}>
         <CalendarUI.TodayCardOuter>
@@ -41,13 +44,14 @@ export function CalendarDayCard({
                 {CALENDAR_COPY.todayLabel}
               </CalendarUI.TodayLabel>
 
-              <CalendarUI.DateText as="big">
+              <CalendarUI.DateText as="big" variant={weekdayVariant}>
                 {dateLabel}
-                <CalendarUI.WeekdayText>{weekdayLabel}</CalendarUI.WeekdayText>
+                <CalendarUI.WeekdayText variant={weekdayVariant}>
+                  {weekdayLabel}
+                </CalendarUI.WeekdayText>
               </CalendarUI.DateText>
             </CalendarUI.CardTitleBlock>
 
-            {/* 오늘 카드 오른쪽 요약 정보 */}
             {todayMeta && todayMeta.total > 0 ? (
               <CalendarUI.RightInfoColumn>
                 <CalendarUI.ReservationCountText>
@@ -63,7 +67,6 @@ export function CalendarDayCard({
                 </CalendarUI.SubText>
               </CalendarUI.RightInfoColumn>
             ) : (
-              // fallback (오늘 예약 0건일 때)
               summaryCount > 0 && (
                 <CalendarUI.RightInfoColumn>
                   <CalendarUI.ReservationCountText>
@@ -88,9 +91,11 @@ export function CalendarDayCard({
     <Link href={href}>
       <CalendarUI.NormalCardOuter>
         <CalendarUI.CardTitleBlock>
-          <CalendarUI.DateText>
+          <CalendarUI.DateText variant={weekdayVariant}>
             {dateLabel}
-            <CalendarUI.WeekdayText>{weekdayLabel}</CalendarUI.WeekdayText>
+            <CalendarUI.WeekdayText variant={weekdayVariant}>
+              {weekdayLabel}
+            </CalendarUI.WeekdayText>
           </CalendarUI.DateText>
         </CalendarUI.CardTitleBlock>
 
