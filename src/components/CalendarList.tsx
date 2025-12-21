@@ -1,6 +1,6 @@
-// components/CalendarList.tsx
 "use client";
 
+import { HOLIDAY_LABEL_MAP } from "@/lib/holidays/holidayLabelMap";
 import { useMemo } from "react";
 import { useCalendarList } from "@/hooks/useCalenderList";
 import { useHolidayMap } from "@/lib/holidays/useHolidayMap";
@@ -84,7 +84,10 @@ export function CalendarList() {
         const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
         // 공휴일명 (예: "설날", "광복절") - 없으면 undefined
-        const holidayName = holidayMap[date];
+        const rawHolidayName = holidayMap[date];
+        const holidayName = rawHolidayName
+          ? HOLIDAY_LABEL_MAP[rawHolidayName] ?? rawHolidayName
+          : undefined;
 
         // 주말 OR 공휴일이면 빨간색(holiday)
         const weekdayVariant =
