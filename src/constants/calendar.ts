@@ -4,7 +4,7 @@ export const CALENDAR_COPY = {
   todayLabel: "오늘",
 
   emptyTodaySummary: "남은 예약이 없습니다.",
-  emptyDayLabel: "예약 없음",
+  emptyDayLabel: "",
 
   // 일반 날짜 카드
   reservationCount: (count: number) => `예약 ${count}건`,
