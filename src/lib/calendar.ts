@@ -1,6 +1,3 @@
-// lib/calendar.ts
-
-// YYYY-MM-DD 포맷으로 변환
 export function formatDate(date: Date): string {
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, "0");

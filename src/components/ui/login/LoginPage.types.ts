@@ -1,4 +1,3 @@
-// components/ui/login/LoginPage.types.ts
 import type { ReactNode } from "react";
 
 export type LayoutProps = {

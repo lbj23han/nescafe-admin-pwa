@@ -1,5 +1,3 @@
-// constants/calendar.ts
-
 export const CALENDAR_COPY = {
   todayLabel: "오늘",
 

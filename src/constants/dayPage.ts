@@ -1,4 +1,3 @@
-// constants/dayPage.ts
 export const DAY_PAGE_COPY = {
   backButton: "← 뒤로",
   title: "예약 입력",
