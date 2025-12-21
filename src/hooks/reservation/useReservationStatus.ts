@@ -1,4 +1,3 @@
-// hooks/reservation/useReservationStatus.ts
 "use client";
 
 import { useState } from "react";
@@ -61,7 +60,7 @@ export function useReservationStatus({
     });
   };
 
-  // ✅ 수정 버튼 클릭
+  // 수정 버튼 클릭
   const handleEdit = (id: string) => {
     const target = list.find((r) => r.id === id);
     if (!target) return;
@@ -110,7 +109,7 @@ export function useReservationStatus({
     // 상태 업데이트
     setList((prev) => prev.map((r) => (r.id === editingId ? updated : r)));
 
-    // 로컬스토리지에도 반영
+    // 로컬스토리지에 반영
     deleteReservation(date, editingId);
     saveReservation(date, updated);
 
@@ -118,17 +117,15 @@ export function useReservationStatus({
     setEditForm(null);
   };
 
-  // ✅ 수정 취소
+  // 수정 취소
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditForm(null);
   };
 
   return {
-    // 기존 기능
     handleComplete,
     handleCancel,
-    // 새로 추가된 수정 관련
     handleEdit,
     editingId,
     editForm,

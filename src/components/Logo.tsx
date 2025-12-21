@@ -1,4 +1,3 @@
-// components/Logo.tsx
 import Image from "next/image";
 import { BRAND } from "@/constants/brand";
 

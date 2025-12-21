@@ -1,4 +1,3 @@
-// hooks/useCalendarList.ts
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -47,14 +46,14 @@ export function useCalendarList() {
     readSummaryFromLocalStorage()
   );
 
-  // ✅ 오늘 예약 전체 목록 (완료 포함)
+  // 오늘 예약 전체 목록 (완료 포함)
   const [todayAllReservations] = useState<Reservation[]>(() =>
     typeof window === "undefined" || !todayStr
       ? []
       : loadReservationsByDate(todayStr)
   );
 
-  // ✅ 오늘 예약 목록 (미완료만 = pending)
+  // 오늘 예약 목록 (미완료만 = pending)
   const [todayReservations] = useState<Reservation[]>(() =>
     todayAllReservations.filter((r) => (r.status ?? "pending") === "pending")
   );

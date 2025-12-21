@@ -1,4 +1,3 @@
-// constants/mainPage.ts
 export const MAIN_PAGE_COPY = {
   title: "예약 캘린더",
   description: "날짜를 눌러 예약 내용을 확인하고 입력하세요.",

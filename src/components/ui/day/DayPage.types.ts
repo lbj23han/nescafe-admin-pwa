@@ -1,4 +1,3 @@
-// components/ui/day/DayPage.types.ts
 import type { ReactNode } from "react";
 import type { Reservation } from "@/lib/storage";
 

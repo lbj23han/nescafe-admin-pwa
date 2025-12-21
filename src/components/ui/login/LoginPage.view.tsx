@@ -1,4 +1,3 @@
-// components/ui/login/LoginPage.view.tsx
 "use client";
 
 import { LoginUI } from "./LoginUI";

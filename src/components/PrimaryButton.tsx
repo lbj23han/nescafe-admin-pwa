@@ -1,4 +1,3 @@
-// components/PrimaryButton.tsx
 "use client";
 
 import type React from "react";

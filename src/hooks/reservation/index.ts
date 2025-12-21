@@ -1,4 +1,3 @@
-// hooks/reservation/index.ts
 import { useReservationForm } from "./useReservationForm";
 import { useReservationStatus } from "./useReservationStatus";
 import { useDayReservation } from "./useDayReservation";

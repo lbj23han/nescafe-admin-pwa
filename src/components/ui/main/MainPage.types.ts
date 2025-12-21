@@ -1,4 +1,3 @@
-// components/ui/main/MainPage.types.ts
 import type { ReactNode } from "react";
 
 export type LayoutProps = {

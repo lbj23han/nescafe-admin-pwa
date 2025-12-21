@@ -1,4 +1,3 @@
-// components/ui/main/MainPage.view.tsx
 "use client";
 
 import { MainUI } from "./MainUI";

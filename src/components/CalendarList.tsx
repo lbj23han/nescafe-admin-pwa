@@ -1,7 +1,9 @@
-// components/CalendarList.tsx
 "use client";
 
+import { HOLIDAY_LABEL_MAP } from "@/lib/holidays/holidayLabelMap";
+import { useMemo } from "react";
 import { useCalendarList } from "@/hooks/useCalenderList";
+import { useHolidayMap } from "@/lib/holidays/useHolidayMap";
 import type { Reservation } from "@/lib/storage";
 import { CalendarDayCard } from "./ui/calendar/CalendarDayCard";
 import { CalendarUI } from "@/components/ui/calendar/CalendarUI";
@@ -42,7 +44,6 @@ function buildTodayMeta(all?: Reservation[], pending?: Reservation[]) {
   const total = all?.length ?? 0;
   const remaining = pending?.length ?? 0;
 
-  // ✅ 완료 여부 상관없이 “오늘 예약 총 매출”
   const totalAmount = all?.reduce((sum, r) => sum + (r.amount || 0), 0) ?? 0;
 
   return { total, remaining, totalAmount };
@@ -59,6 +60,16 @@ export function CalendarList() {
     todayItemRef,
   } = useCalendarList();
 
+  // days 범위(과거 60일~미래 60일)에서 연도가 바뀔 수 있으므로, 연도 집합을 추출
+  const years = useMemo(() => {
+    const set = new Set<number>();
+    days.forEach((d) => set.add(Number(d.slice(0, 4))));
+    return Array.from(set);
+  }, [days]);
+
+  // 공휴일 맵 로드 (폴백 + 캐시 + 온라인 덮어쓰기)
+  const { holidayMap } = useHolidayMap({ years });
+
   return (
     <CalendarUI.ScrollContainer containerRef={containerRef}>
       {days.map((date) => {
@@ -66,17 +77,29 @@ export function CalendarList() {
 
         const [year, month, day] = date.split("-").map(Number);
         const d = new Date(year, month - 1, day);
-        const weekday = WEEKDAY_LABELS[d.getDay()];
+
+        const dayOfWeek = d.getDay(); // 0:일 ... 6:토
+        const weekday = WEEKDAY_LABELS[dayOfWeek];
+
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+        // 공휴일명 (예: "설날", "광복절") - 없으면 undefined
+        const rawHolidayName = holidayMap[date];
+        const holidayName = rawHolidayName
+          ? HOLIDAY_LABEL_MAP[rawHolidayName] ?? rawHolidayName
+          : undefined;
+
+        // 주말 OR 공휴일이면 빨간색(holiday)
+        const weekdayVariant =
+          isWeekend || Boolean(holidayName) ? "holiday" : "default";
 
         const dateLabel = `${month}월 ${day}일`;
 
-        // 오늘 카드 하단 텍스트(첫 예약/요약)
         const { mainText, subText } = buildTodaySummary(
           isToday,
           isToday ? todayReservations : undefined
         );
 
-        // ✅ 오늘 카드 우측 텍스트(남은/총/총매출)
         const todayMeta = isToday
           ? buildTodayMeta(todayAllReservations, todayReservations)
           : null;
@@ -88,6 +111,8 @@ export function CalendarList() {
               isToday={isToday}
               dateLabel={dateLabel}
               weekdayLabel={weekday}
+              weekdayVariant={weekdayVariant}
+              holidayName={!isToday ? holidayName : undefined}
               summaryCount={summary[date] ?? 0}
               mainText={mainText}
               subText={subText}

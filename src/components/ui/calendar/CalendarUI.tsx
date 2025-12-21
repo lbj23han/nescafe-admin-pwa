@@ -1,7 +1,9 @@
-// components/ui/calendar/CalendarUI.tsx
 "use client";
 
 import type { ReactNode, RefObject } from "react";
+
+type WeekdayVariant = "default" | "holiday";
+type DateVariant = "default" | "holiday";
 
 export const CalendarUI = {
   ScrollContainer({
@@ -51,15 +53,41 @@ export const CalendarUI = {
     return <p className="text-sm font-semibold text-black">{children}</p>;
   },
 
-  DateText({ children, as }: { children: ReactNode; as?: "big" | "normal" }) {
+  DateText({
+    children,
+    as,
+    variant = "default",
+  }: {
+    children: ReactNode;
+    as?: "big" | "normal";
+    variant?: DateVariant;
+  }) {
+    const color = variant === "holiday" ? "text-red-600" : "text-black";
+
     if (as === "big") {
-      return <p className="text-lg font-bold text-black">{children}</p>;
+      return <p className={`text-lg font-bold ${color}`}>{children}</p>;
     }
-    return <p className="text-base font-medium text-black">{children}</p>;
+
+    return <p className={`text-base font-medium ${color}`}>{children}</p>;
   },
 
-  WeekdayText({ children }: { children: ReactNode }) {
-    return <span className="text-xs font-normal text-black">{children}</span>;
+  WeekdayText({
+    children,
+    variant = "default",
+  }: {
+    children: ReactNode;
+    variant?: WeekdayVariant;
+  }) {
+    const color = variant === "holiday" ? "text-red-600" : "text-black";
+
+    return <span className={`text-xs font-normal ${color}`}>{children}</span>;
+  },
+
+  // ✅ 공휴일명 텍스트(배지 X) - 날짜 옆에 자연스럽게 붙이는 용도
+  HolidayNameText({ children }: { children: ReactNode }) {
+    return (
+      <span className="ml-1 text-xs font-normal text-red-600">{children}</span>
+    );
   },
 
   ReservationCountText({ children }: { children: ReactNode }) {
