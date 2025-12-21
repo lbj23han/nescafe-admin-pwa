@@ -1,7 +1,9 @@
 // components/CalendarList.tsx
 "use client";
 
+import { useMemo } from "react";
 import { useCalendarList } from "@/hooks/useCalenderList";
+import { useHolidayMap } from "@/lib/holidays/useHolidayMap";
 import type { Reservation } from "@/lib/storage";
 import { CalendarDayCard } from "./ui/calendar/CalendarDayCard";
 import { CalendarUI } from "@/components/ui/calendar/CalendarUI";
@@ -58,6 +60,16 @@ export function CalendarList() {
     todayItemRef,
   } = useCalendarList();
 
+  // days 범위(과거 60일~미래 60일)에서 연도가 바뀔 수 있으므로, 연도 집합을 추출
+  const years = useMemo(() => {
+    const set = new Set<number>();
+    days.forEach((d) => set.add(Number(d.slice(0, 4))));
+    return Array.from(set);
+  }, [days]);
+
+  // ✅ 공휴일 맵 로드 (폴백 + 캐시 + 온라인 덮어쓰기)
+  const { holidayMap } = useHolidayMap({ years });
+
   return (
     <CalendarUI.ScrollContainer containerRef={containerRef}>
       {days.map((date) => {
@@ -69,9 +81,13 @@ export function CalendarList() {
         const dayOfWeek = d.getDay(); // 0:일 ... 6:토
         const weekday = WEEKDAY_LABELS[dayOfWeek];
 
-        // ✅ 지금 요구사항: 토/일만 빨간색(holiday) 처리
-        const weekdayVariant =
-          dayOfWeek === 0 || dayOfWeek === 6 ? "holiday" : "default";
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+        // ✅ 공휴일(YYYY-MM-DD 키) 여부
+        const isHoliday = Boolean(holidayMap[date]);
+
+        // ✅ 요구사항: 주말 OR 공휴일이면 빨간색(holiday)
+        const weekdayVariant = isWeekend || isHoliday ? "holiday" : "default";
 
         const dateLabel = `${month}월 ${day}일`;
 
