@@ -1,4 +1,3 @@
-// src/lib/holidays/useHolidayMap.ts
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -26,8 +25,6 @@ async function fetchHolidayJson(url: string): Promise<HolidayMap> {
   return data;
 }
 
-// ✅ 너의 GitHub raw base로 변경
-// 예: https://raw.githubusercontent.com/<githubId>/<repoName>/main
 const REMOTE_BASE =
   "https://raw.githubusercontent.com/lbj23han/nescafe-admin-pwa-holidays/main";
 
@@ -42,7 +39,7 @@ export function useHolidayMap({ years }: Params) {
     return uniq;
   }, [years]);
 
-  // ✅ 1) 초기: 캐시를 즉시 합쳐서(동기) 먼저 보여줌
+  //  1) 초기: 캐시를 즉시 합쳐서(동기) 먼저 보여줌
   const [holidayMap, setHolidayMap] = useState<HolidayMap>(() => {
     if (typeof window === "undefined") return {};
     const merged: HolidayMap = {};
@@ -63,8 +60,8 @@ export function useHolidayMap({ years }: Params) {
 
       setLoading(true);
 
-      // ✅ 2) public 폴백 로드: /holidays/{year}.json
-      // ✅ 3) 온라인이면 remote(GitHub raw)로 최신 덮어쓰기 + 캐시 저장
+      // 2) public 폴백 로드: /holidays/{year}.json
+      // 3) 온라인이면 remote(GitHub raw)로 최신 덮어쓰기 + 캐시 저장
       try {
         await Promise.all(
           normalizedYears.map(async (year) => {
@@ -74,7 +71,7 @@ export function useHolidayMap({ years }: Params) {
               if (!cancelled) {
                 setHolidayMap((prev) => ({ ...prev, ...local }));
               }
-              // 폴백도 캐시에 저장해두면 오프라인 첫 렌더가 더 안정적
+              // 폴백도 캐시에 저장 -> 오프라인 첫 렌더가 더 안정적
               writeHolidayCache(year, local);
             } catch {
               // local 파일이 없으면 그냥 스킵 (예: 연도 파일 미생성)

@@ -1,4 +1,3 @@
-// components/ui/day/ReservationListSection.tsx
 "use client";
 
 import { DAY_PAGE_COPY } from "@/constants/dayPage";

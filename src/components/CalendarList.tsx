@@ -67,7 +67,7 @@ export function CalendarList() {
     return Array.from(set);
   }, [days]);
 
-  // ✅ 공휴일 맵 로드 (폴백 + 캐시 + 온라인 덮어쓰기)
+  // 공휴일 맵 로드 (폴백 + 캐시 + 온라인 덮어쓰기)
   const { holidayMap } = useHolidayMap({ years });
 
   return (

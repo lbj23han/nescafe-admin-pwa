@@ -1,4 +1,3 @@
-// lib/storage.ts
 import { STORAGE_KEYS } from "@/constants/config";
 const STORAGE_KEY = STORAGE_KEYS.reservations;
 
@@ -11,7 +10,7 @@ export type Reservation = {
   amount?: number;
   time?: string;
   location?: string;
-  status: ReservationStatus; // ✅ v1 이전 데이터 호환 위해 optional
+  status: ReservationStatus; // v1 이전 데이터 호환 위해 optional
 };
 
 type ReservationStore = Record<string, Reservation[]>;
@@ -37,7 +36,7 @@ function saveAll(store: ReservationStore) {
 export function loadReservationsByDate(date: string): Reservation[] {
   const all = loadAll();
   const list = all[date] ?? [];
-  // ✅ 예전 데이터(status 없는 것)를 pending으로 취급
+  // 예전 데이터(status 없는 것)를 pending으로 취급
   return list.map((r) => ({
     ...r,
     status: r.status ?? "pending",
@@ -57,7 +56,7 @@ export function saveReservation(date: string, reservation: Reservation) {
   saveAll(all);
 }
 
-// ✅ 완료/미완료 상태 변경
+// 완료/미완료 상태 변경
 export function setReservationStatus(
   date: string,
   id: string,
@@ -70,7 +69,7 @@ export function setReservationStatus(
   saveAll(all);
 }
 
-// ✅ 예약 삭제 (취소)
+// 예약 삭제 (취소)
 export function deleteReservation(date: string, id: string) {
   const all = loadAll();
   const list = all[date] ?? [];
