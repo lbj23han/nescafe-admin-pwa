@@ -16,6 +16,7 @@ type Props = {
   dateLabel: string;
   weekdayLabel: string;
   weekdayVariant: WeekdayVariant;
+  holidayName?: string; // 예: "설날", "광복절"
   summaryCount: number;
   mainText: string;
   subText?: string;
@@ -28,12 +29,13 @@ export function CalendarDayCard({
   dateLabel,
   weekdayLabel,
   weekdayVariant,
+  holidayName,
   summaryCount,
   mainText,
   subText,
   todayMeta,
 }: Props) {
-  // ✅ 오늘 카드
+  // 오늘 카드 (오늘 카드는 공휴일명 표시 제외)
   if (isToday) {
     return (
       <Link href={href}>
@@ -86,7 +88,7 @@ export function CalendarDayCard({
     );
   }
 
-  // ✅ 일반 날짜 카드
+  // 일반 날짜 카드 (공휴일일 때만 공휴일명 텍스트 추가)
   return (
     <Link href={href}>
       <CalendarUI.NormalCardOuter>
@@ -96,6 +98,13 @@ export function CalendarDayCard({
             <CalendarUI.WeekdayText variant={weekdayVariant}>
               {weekdayLabel}
             </CalendarUI.WeekdayText>
+
+            {/* ✅ 공휴일 텍스트 (배지 X) */}
+            {holidayName ? (
+              <CalendarUI.HolidayNameText>
+                {holidayName}
+              </CalendarUI.HolidayNameText>
+            ) : null}
           </CalendarUI.DateText>
         </CalendarUI.CardTitleBlock>
 

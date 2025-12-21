@@ -83,11 +83,12 @@ export function CalendarList() {
 
         const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-        // ✅ 공휴일(YYYY-MM-DD 키) 여부
-        const isHoliday = Boolean(holidayMap[date]);
+        // 공휴일명 (예: "설날", "광복절") - 없으면 undefined
+        const holidayName = holidayMap[date];
 
-        // ✅ 요구사항: 주말 OR 공휴일이면 빨간색(holiday)
-        const weekdayVariant = isWeekend || isHoliday ? "holiday" : "default";
+        // 주말 OR 공휴일이면 빨간색(holiday)
+        const weekdayVariant =
+          isWeekend || Boolean(holidayName) ? "holiday" : "default";
 
         const dateLabel = `${month}월 ${day}일`;
 
@@ -108,6 +109,7 @@ export function CalendarList() {
               dateLabel={dateLabel}
               weekdayLabel={weekday}
               weekdayVariant={weekdayVariant}
+              holidayName={!isToday ? holidayName : undefined}
               summaryCount={summary[date] ?? 0}
               mainText={mainText}
               subText={subText}
