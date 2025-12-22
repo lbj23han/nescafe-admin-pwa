@@ -57,7 +57,12 @@ export function BottomNavUI({ items }: Props) {
   return (
     <nav className="fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-zinc-200 bg-white">
       <div className="px-4">
-        <div className="grid h-14 grid-cols-3 items-center">
+        <div
+          className="grid h-14 items-center"
+          style={{
+            gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))`,
+          }}
+        >
           {items.map((item) =>
             item.href ? (
               <NavLink
