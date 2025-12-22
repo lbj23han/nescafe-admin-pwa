@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { Department } from "@/lib/departmentStorage";
+import type { Department } from "@/lib/storage/departments.local";
 
 export type LayoutProps = { children: ReactNode };
 export type HeaderProps = { title: string; description?: string };

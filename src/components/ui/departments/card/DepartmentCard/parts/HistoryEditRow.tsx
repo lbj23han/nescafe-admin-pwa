@@ -5,7 +5,7 @@ import {
   DEPARTMENT_CARD_COPY,
   DEPARTMENT_HISTORY_LABEL,
 } from "@/constants/departments/card";
-import type { HistoryType } from "@/lib/departmentStorage";
+import type { HistoryType } from "@/lib/storage/departments.local";
 import type { HistoryEditDraft } from "../../DepartmentCard.types";
 
 export function HistoryEditRow({

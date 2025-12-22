@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   readHolidayCache,
   writeHolidayCache,
@@ -39,6 +39,12 @@ export function useHolidayMap({ years }: Params) {
     return uniq;
   }, [years]);
 
+  // ✅ 배열 의존성 대신 안정적인 key 사용
+  const yearsKey = useMemo(() => normalizedYears.join(","), [normalizedYears]);
+
+  // ✅ 동일 key로는 effect를 중복 실행하지 않게 막아줌 (dev StrictMode 포함)
+  const ranKeyRef = useRef<string>("");
+
   //  1) 초기: 캐시를 즉시 합쳐서(동기) 먼저 보여줌
   const [holidayMap, setHolidayMap] = useState<HolidayMap>(() => {
     if (typeof window === "undefined") return {};
@@ -58,11 +64,15 @@ export function useHolidayMap({ years }: Params) {
     async function run() {
       if (normalizedYears.length === 0) return;
 
+      // ✅ 같은 yearsKey로는 다시 실행하지 않음 (폭발 방지)
+      if (ranKeyRef.current === yearsKey) return;
+      ranKeyRef.current = yearsKey;
+
       setLoading(true);
 
-      // 2) public 폴백 로드: /holidays/{year}.json
-      // 3) 온라인이면 remote(GitHub raw)로 최신 덮어쓰기 + 캐시 저장
       try {
+        // 2) public 폴백 로드: /holidays/{year}.json
+        // 3) 온라인이면 remote(GitHub raw)로 최신 덮어쓰기 + 캐시 저장
         await Promise.all(
           normalizedYears.map(async (year) => {
             // (a) local/public 폴백
@@ -74,7 +84,7 @@ export function useHolidayMap({ years }: Params) {
               // 폴백도 캐시에 저장 -> 오프라인 첫 렌더가 더 안정적
               writeHolidayCache(year, local);
             } catch {
-              // local 파일이 없으면 그냥 스킵 (예: 연도 파일 미생성)
+              // local 파일이 없으면 그냥 스킵
             }
 
             // (b) remote overwrite
@@ -103,7 +113,8 @@ export function useHolidayMap({ years }: Params) {
     return () => {
       cancelled = true;
     };
-  }, [normalizedYears]);
+    // ✅ 핵심: normalizedYears(배열) 대신 yearsKey(문자열)만 의존성으로
+  }, [yearsKey]); // ← 여기 바뀜
 
   return { holidayMap, loading };
 }

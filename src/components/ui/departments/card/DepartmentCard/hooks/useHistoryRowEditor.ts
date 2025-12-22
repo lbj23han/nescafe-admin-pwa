@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
-import { updateHistory, type HistoryType } from "@/lib/departmentStorage";
+import { useMemo, useState, useCallback, useRef } from "react";
 import type {
   DepartmentCardProps,
   HistoryEditDraft,
 } from "../../DepartmentCard.types";
 import { DEPARTMENT_CARD_COPY } from "@/constants/departments/card";
+import { DepartmentHistoryRepo } from "@/lib/data";
+import type { HistoryType } from "@/lib/storage/departments.local";
 
 export function useHistoryRowEditor(
   p: Pick<DepartmentCardProps, "department" | "onChange">
@@ -17,6 +18,9 @@ export function useHistoryRowEditor(
     amount: "",
     memo: "",
   });
+  const [loading, setLoading] = useState(false);
+
+  const savingRef = useRef(false);
 
   const original = useMemo(() => {
     if (!editingId) return null;
@@ -39,10 +43,8 @@ export function useHistoryRowEditor(
     );
   }, [draft, editingId, original]);
 
-  // ✅ onStartEdit: (id: string) => void 로 맞춤
   const start = useCallback(
     (id: string) => {
-      // 다른 row로 넘어가기 전에 dirty면 경고
       if (editingId && editingId !== id && dirty) {
         const ok = window.confirm(
           DEPARTMENT_CARD_COPY.dialog.confirm.discardOnSwitchHistory
@@ -63,9 +65,7 @@ export function useHistoryRowEditor(
     [editingId, dirty, p.department.history]
   );
 
-  // ✅ onCancel: () => void 로 맞춤
   const cancel = useCallback(() => {
-    // 취소 시에도 dirty면 경고
     if (dirty) {
       const ok = window.confirm(
         DEPARTMENT_CARD_COPY.dialog.confirm.discardOnClose
@@ -75,8 +75,9 @@ export function useHistoryRowEditor(
     setEditingId(null);
   }, [dirty]);
 
-  const save = useCallback(() => {
+  const save = useCallback(async () => {
     if (!editingId) return;
+    if (savingRef.current) return;
 
     const parsed = Number(draft.amount);
     if (!parsed || parsed <= 0) {
@@ -84,20 +85,50 @@ export function useHistoryRowEditor(
       return;
     }
 
-    p.onChange(
-      updateHistory(p.department, editingId, {
-        type: draft.type as HistoryType,
-        amount: parsed,
-        memo: draft.memo,
-      })
-    );
+    try {
+      savingRef.current = true;
+      setLoading(true);
 
-    setEditingId(null);
+      const res = await DepartmentHistoryRepo.updateDepartmentHistory({
+        departmentId: p.department.id,
+        historyId: editingId,
+        patch: {
+          type: draft.type as HistoryType,
+          amount: parsed,
+          memo: draft.memo,
+        },
+      });
+
+      p.onChange({
+        ...p.department,
+        deposit: res.next.deposit,
+        debt: res.next.debt,
+        history: res.next.history,
+      });
+
+      setEditingId(null);
+    } catch (err) {
+      console.error(err);
+      alert("내역 수정에 실패했습니다.");
+    } finally {
+      savingRef.current = false;
+      setLoading(false);
+    }
   }, [draft, editingId, p]);
 
   const reset = useCallback(() => {
     setEditingId(null);
   }, []);
 
-  return { editingId, draft, setDraft, dirty, start, cancel, save, reset };
+  return {
+    editingId,
+    draft,
+    setDraft,
+    dirty,
+    start,
+    cancel,
+    save,
+    reset,
+    loading,
+  };
 }

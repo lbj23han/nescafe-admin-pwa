@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { Reservation } from "@/lib/storage";
-import { saveReservation } from "@/lib/storage";
+import type { Reservation } from "@/lib/domain/reservation";
+import { ReservationsRepo } from "@/lib/data";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 
 type UseReservationFormArgs = {
@@ -30,13 +30,13 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
     setLocation("");
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!department || !menu) {
       alert(DAY_PAGE_COPY.alerts.requiredDepartmentAndMenu);
       return;
     }
 
-    const newItem: Reservation = {
+    const draft: Reservation = {
       id: `${Date.now()}`,
       department,
       menu,
@@ -46,10 +46,15 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
       status: "pending",
     };
 
-    saveReservation(date, newItem);
-    onAdded(newItem);
-    resetForm();
-    setShowForm(false);
+    try {
+      const saved = await ReservationsRepo.saveReservation(date, draft);
+      onAdded(saved);
+      resetForm();
+      setShowForm(false);
+    } catch (e) {
+      console.error(e);
+      alert("저장에 실패했어요. 잠시 후 다시 시도해주세요.");
+    }
   };
 
   const handleAddButtonClick = () => {
@@ -57,23 +62,20 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
       setShowForm(true);
       return;
     }
-    handleAdd();
+    void handleAdd();
   };
 
   return {
-    // state
     department,
     menu,
     amount,
     time,
     location,
     showForm,
-    // setters
     setDepartment,
     setMenu,
     setTime,
     setLocation,
-    // actions
     handleAmountChange,
     handleAddButtonClick,
   };

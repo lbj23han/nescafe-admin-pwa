@@ -43,6 +43,12 @@ export function BottomNav() {
       onClick: goToday,
       active: pathname.startsWith(`${NAV_HREF.day}/`),
     },
+    {
+      key: "mypage",
+      label: NAV_COPY.myPage,
+      href: NAV_HREF.myPage,
+      active: pathname === NAV_HREF.myPage,
+    },
   ];
 
   return <BottomNavUI items={items} />;

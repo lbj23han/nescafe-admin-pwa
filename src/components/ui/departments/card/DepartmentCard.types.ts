@@ -3,7 +3,7 @@ import type {
   Department,
   DepartmentHistory,
   HistoryType,
-} from "@/lib/departmentStorage";
+} from "@/lib/storage/departments.local";
 
 export type DepartmentCardProps = {
   department: Department;
