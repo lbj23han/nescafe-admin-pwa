@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { Reservation } from "@/lib/storage";
+import type { Reservation } from "@/lib/storage/reservations.local";
 
 export type HeaderProps = {
   dateText: string;

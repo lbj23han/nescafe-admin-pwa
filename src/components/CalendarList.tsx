@@ -4,7 +4,7 @@ import { HOLIDAY_LABEL_MAP } from "@/lib/holidays/holidayLabelMap";
 import { useMemo } from "react";
 import { useCalendarList } from "@/hooks/useCalenderList";
 import { useHolidayMap } from "@/lib/holidays/useHolidayMap";
-import type { Reservation } from "@/lib/storage";
+import type { Reservation } from "@/lib/storage/reservations.local";
 import { CalendarDayCard } from "./ui/calendar/CalendarDayCard";
 import { CalendarUI } from "@/components/ui/calendar/CalendarUI";
 import { CALENDAR_COPY, WEEKDAY_LABELS } from "@/constants/calendar";

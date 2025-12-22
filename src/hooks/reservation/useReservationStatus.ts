@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import type { Reservation } from "@/lib/storage";
+import type { Reservation } from "@/lib/storage/reservations.local";
 import {
   saveReservation,
   setReservationStatus,
   deleteReservation,
-} from "@/lib/storage";
+} from "@/lib/storage/reservations.local";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 
 // 수정 폼 상태 타입

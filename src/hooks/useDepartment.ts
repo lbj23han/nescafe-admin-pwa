@@ -6,7 +6,7 @@ import {
   createDepartment,
   getDepartments,
   saveDepartments,
-} from "@/lib/departmentStorage";
+} from "@/lib/storage/departments.local";
 
 export function useDepartments() {
   const [departments, setDepartments] = useState<Department[]>(() => {

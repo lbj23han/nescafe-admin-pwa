@@ -8,7 +8,7 @@ import {
   isPositiveHistory,
 } from "@/lib/departmentHistoryFormat";
 import { DEPARTMENT_CARD_COPY } from "@/constants/departments/card";
-import type { Department } from "@/lib/departmentStorage";
+import type { Department } from "@/lib/storage/departments.local";
 import type { HistoryEditDraft } from "../../DepartmentCard.types";
 import { HistoryEditRow } from "./HistoryEditRow";
 

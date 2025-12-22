@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getDateRangeWithToday } from "@/lib/calendar";
-import { loadReservationsByDate, type Reservation } from "@/lib/storage";
+import {
+  loadReservationsByDate,
+  type Reservation,
+} from "@/lib/storage/reservations.local";
 
 export type ReservationSummaryMap = Record<string, number>;
 

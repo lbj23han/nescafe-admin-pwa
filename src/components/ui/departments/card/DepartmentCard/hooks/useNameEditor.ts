@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { renameDepartment } from "@/lib/departmentStorage";
+import { renameDepartment } from "@/lib/storage/departments.local";
 import type { DepartmentCardProps } from "../../DepartmentCard.types";
 import { DEPARTMENT_CARD_COPY } from "@/constants/departments/card";
 

@@ -1,7 +1,10 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
-import { updateHistory, type HistoryType } from "@/lib/departmentStorage";
+import {
+  updateHistory,
+  type HistoryType,
+} from "@/lib/storage/departments.local";
 import type {
   DepartmentCardProps,
   HistoryEditDraft,

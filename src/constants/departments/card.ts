@@ -1,4 +1,4 @@
-import type { HistoryType } from "@/lib/departmentStorage";
+import type { HistoryType } from "@/lib/storage/departments.local";
 
 export const DEPARTMENT_HISTORY_LABEL: Record<HistoryType, string> = {
   deposit: "예치금 입금",

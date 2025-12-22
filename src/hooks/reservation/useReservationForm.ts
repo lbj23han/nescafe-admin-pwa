@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { Reservation } from "@/lib/storage";
-import { saveReservation } from "@/lib/storage";
+import type { Reservation } from "@/lib/storage/reservations.local";
+import { saveReservation } from "@/lib/storage/reservations.local";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 
 type UseReservationFormArgs = {

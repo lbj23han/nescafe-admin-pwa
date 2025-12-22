@@ -1,7 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { loadReservationsByDate, type Reservation } from "@/lib/storage";
+import {
+  loadReservationsByDate,
+  type Reservation,
+} from "@/lib/storage/reservations.local";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 import { useReservationForm } from "./useReservationForm";
 import { useReservationStatus } from "./useReservationStatus";

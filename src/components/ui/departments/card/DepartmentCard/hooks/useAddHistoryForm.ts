@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { addHistory } from "@/lib/departmentStorage";
+import { addHistory } from "@/lib/storage/departments.local";
 import type { DepartmentCardProps } from "../../DepartmentCard.types";
 import { DEPARTMENT_CARD_COPY } from "@/constants/departments/card";
 import { formatHistoryType } from "@/lib/departmentHistoryFormat";
