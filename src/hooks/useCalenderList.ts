@@ -2,10 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getDateRangeWithToday } from "@/lib/calendar";
-import {
-  loadReservationsByDate,
-  type Reservation,
-} from "@/lib/storage/reservations.local";
+import { loadReservationsByDate } from "@/lib/storage/reservations.local";
+import type { Reservation } from "@/lib/domain/reservation";
 
 export type ReservationSummaryMap = Record<string, number>;
 
@@ -29,7 +27,7 @@ function readSummaryFromLocalStorage(): ReservationSummaryMap {
     Object.entries(parsed as Record<string, unknown>).forEach(
       ([date, value]) => {
         if (Array.isArray(value)) {
-          map[date] = value.length; // ✅ 총 예약 수 (완료/미완료 상관없이)
+          map[date] = value.length; // 총 예약 수 (완료/미완료 상관없이)
         }
       }
     );

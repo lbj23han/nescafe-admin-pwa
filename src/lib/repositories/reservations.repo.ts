@@ -1,27 +1,43 @@
 import { supabase } from "@/lib/supabaseClient";
-import { getMyProfile } from "./profile.repo";
+import { getMyProfile } from "@/lib/repositories/profile.repo";
+import type { Reservation, ReservationStatus } from "@/lib/domain/reservation";
 
-export type Reservation = {
+type ReservationRow = {
   id: string;
+
   shop_id: string;
-  date: string; // YYYY-MM-DD
+  date: string;
+
   department_id: string | null;
+  department: string | null;
+
   menu: string | null;
-  amount: number;
+  amount: number | null;
+
+  time: string | null;
+  location: string | null;
+
   memo: string | null;
+  status: ReservationStatus | null;
+
   created_at: string;
   updated_at: string;
 };
 
-export type ReservationInput = {
-  date: string;
-  department_id?: string | null;
-  menu?: string | null;
-  amount?: number;
-  memo?: string | null;
-};
+function rowToReservation(r: ReservationRow): Reservation {
+  return {
+    id: r.id,
+    department: r.department ?? "",
+    menu: r.menu ?? "",
+    amount: r.amount ?? undefined,
+    time: r.time ?? undefined,
+    location: r.location ?? undefined,
+    memo: r.memo ?? undefined,
+    status: r.status ?? "pending",
+  };
+}
 
-export async function listReservationsByDate(
+export async function loadReservationsByDate(
   date: string
 ): Promise<Reservation[]> {
   const profile = await getMyProfile();
@@ -35,11 +51,14 @@ export async function listReservationsByDate(
     .order("created_at", { ascending: true });
 
   if (error) throw error;
-  return (data ?? []) as Reservation[];
+
+  const rows = (data ?? []) as ReservationRow[];
+  return rows.map(rowToReservation);
 }
 
-export async function createReservation(
-  input: ReservationInput
+export async function saveReservation(
+  date: string,
+  reservation: Reservation
 ): Promise<Reservation> {
   const profile = await getMyProfile();
   if (!profile.shop_id) throw new Error("No shop");
@@ -48,22 +67,30 @@ export async function createReservation(
     .from("reservations")
     .insert({
       shop_id: profile.shop_id,
-      date: input.date,
-      department_id: input.department_id ?? null,
-      menu: input.menu ?? null,
-      amount: input.amount ?? 0,
-      memo: input.memo ?? null,
+      date,
+
+      // TODO: department(string) -> department_id 매핑은 departments supabase 이전 후 처리
+      department_id: null,
+      department: reservation.department ?? "",
+
+      menu: reservation.menu ?? null,
+      amount: reservation.amount ?? null,
+      time: reservation.time ?? "",
+      location: reservation.location ?? "",
+
+      memo: reservation.memo ?? null,
+      status: reservation.status ?? "pending",
     })
     .select("*")
     .single();
 
   if (error) throw error;
-  return data as Reservation;
+  return rowToReservation(data as ReservationRow);
 }
 
 export async function updateReservation(
-  id: string,
-  patch: Partial<Omit<ReservationInput, "date">> & { date?: string }
+  date: string,
+  reservation: Reservation
 ): Promise<Reservation> {
   const profile = await getMyProfile();
   if (!profile.shop_id) throw new Error("No shop");
@@ -71,24 +98,52 @@ export async function updateReservation(
   const { data, error } = await supabase
     .from("reservations")
     .update({
-      ...(patch.date !== undefined ? { date: patch.date } : {}),
-      ...(patch.department_id !== undefined
-        ? { department_id: patch.department_id }
-        : {}),
-      ...(patch.menu !== undefined ? { menu: patch.menu } : {}),
-      ...(patch.amount !== undefined ? { amount: patch.amount ?? 0 } : {}),
-      ...(patch.memo !== undefined ? { memo: patch.memo ?? null } : {}),
+      date,
+
+      department_id: null,
+      department: reservation.department ?? "",
+
+      menu: reservation.menu ?? null,
+      amount: reservation.amount ?? null,
+      time: reservation.time ?? "",
+      location: reservation.location ?? "",
+
+      memo: reservation.memo ?? null,
+      status: reservation.status ?? "pending",
     })
+    .eq("id", reservation.id)
+    .eq("shop_id", profile.shop_id)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return rowToReservation(data as ReservationRow);
+}
+
+export async function setReservationStatus(
+  date: string, // 로컬 시그니처 유지용 (쿼리엔 필요 없음)
+  id: string,
+  status: ReservationStatus
+): Promise<Reservation> {
+  const profile = await getMyProfile();
+  if (!profile.shop_id) throw new Error("No shop");
+
+  const { data, error } = await supabase
+    .from("reservations")
+    .update({ status })
     .eq("id", id)
     .eq("shop_id", profile.shop_id)
     .select("*")
     .single();
 
   if (error) throw error;
-  return data as Reservation;
+  return rowToReservation(data as ReservationRow);
 }
 
-export async function deleteReservation(id: string): Promise<void> {
+export async function deleteReservation(
+  date: string,
+  id: string
+): Promise<void> {
   const profile = await getMyProfile();
   if (!profile.shop_id) throw new Error("No shop");
 

@@ -2,12 +2,8 @@
 
 import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
-import type { Reservation } from "@/lib/storage/reservations.local";
-import {
-  saveReservation,
-  setReservationStatus,
-  deleteReservation,
-} from "@/lib/storage/reservations.local";
+import type { Reservation } from "@/lib/domain/reservation";
+import { ReservationsRepo } from "@/lib/data";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 
 // 수정 폼 상태 타입
@@ -21,8 +17,8 @@ type ReservationEditForm = {
 
 type UseReservationStatusArgs = {
   date: string;
-  list: Reservation[]; // 현재 예약 리스트(렌더링용)
-  setList: Dispatch<SetStateAction<Reservation[]>>; // 리스트 상태 업데이트
+  list: Reservation[];
+  setList: Dispatch<SetStateAction<Reservation[]>>;
 };
 
 export function useReservationStatus({
@@ -30,37 +26,27 @@ export function useReservationStatus({
   list,
   setList,
 }: UseReservationStatusArgs) {
-  //  수정 모드 관련 상태
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<ReservationEditForm | null>(null);
 
-  // 완료 처리
   const handleComplete = (id: string) => {
     const ok = window.confirm(DAY_PAGE_COPY.alerts.confirmComplete);
     if (!ok) return;
 
-    setList((prev) => {
-      const next: Reservation[] = prev.map((r) =>
-        r.id === id ? { ...r, status: "completed" } : r
-      );
-      setReservationStatus(date, id, "completed");
-      return next;
-    });
+    setList((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, status: "completed" } : r))
+    );
+    void ReservationsRepo.setReservationStatus(date, id, "completed");
   };
 
-  // 삭제(취소)
   const handleCancel = (id: string) => {
     const ok = window.confirm(DAY_PAGE_COPY.alerts.confirmCancel);
     if (!ok) return;
 
-    setList((prev) => {
-      const next: Reservation[] = prev.filter((r) => r.id !== id);
-      deleteReservation(date, id);
-      return next;
-    });
+    setList((prev) => prev.filter((r) => r.id !== id));
+    void ReservationsRepo.deleteReservation(date, id);
   };
 
-  // 수정 버튼 클릭
   const handleEdit = (id: string) => {
     const target = list.find((r) => r.id === id);
     if (!target) return;
@@ -75,7 +61,6 @@ export function useReservationStatus({
     });
   };
 
-  //  수정 폼 입력 핸들러
   const handleChangeEditField = (
     field: keyof ReservationEditForm,
     value: string
@@ -83,7 +68,6 @@ export function useReservationStatus({
     setEditForm((prev) => (prev ? { ...prev, [field]: value } : prev));
   };
 
-  //  수정 완료
   const handleSubmitEdit = () => {
     if (!editingId || !editForm) return;
 
@@ -106,18 +90,15 @@ export function useReservationStatus({
       amount: editForm.amount ? Number(editForm.amount) || 0 : 0,
     };
 
-    // 상태 업데이트
     setList((prev) => prev.map((r) => (r.id === editingId ? updated : r)));
 
-    // 로컬스토리지에 반영
-    deleteReservation(date, editingId);
-    saveReservation(date, updated);
+    // ✅ supabase에서도 id 유지 (update)
+    void ReservationsRepo.updateReservation(date, updated);
 
     setEditingId(null);
     setEditForm(null);
   };
 
-  // 수정 취소
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditForm(null);
