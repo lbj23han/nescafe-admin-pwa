@@ -24,6 +24,8 @@ type ReservationRow = {
   updated_at: string;
 };
 
+export type ReservationForCalendar = Reservation & { date: string };
+
 function rowToReservation(r: ReservationRow): Reservation {
   return {
     id: r.id,
@@ -34,6 +36,15 @@ function rowToReservation(r: ReservationRow): Reservation {
     location: r.location ?? undefined,
     memo: r.memo ?? undefined,
     status: r.status ?? "pending",
+  };
+}
+
+function rowToReservationForCalendar(
+  r: ReservationRow
+): ReservationForCalendar {
+  return {
+    ...rowToReservation(r),
+    date: r.date,
   };
 }
 
@@ -54,6 +65,35 @@ export async function loadReservationsByDate(
 
   const rows = (data ?? []) as ReservationRow[];
   return rows.map(rowToReservation);
+}
+
+/**
+ * 캘린더 전용: date range를 한 번에 로드 (성능 목적)
+ * - from/to: YYYY-MM-DD (inclusive)
+ * - 반환: Reservation + { date }
+ */
+export async function loadReservationsByDateRange(
+  from: string,
+  to: string
+): Promise<ReservationForCalendar[]> {
+  console.log("[SupabaseRepo] loadReservationsByDateRange", from, to);
+
+  const profile = await getMyProfile();
+  if (!profile.shop_id) return [];
+
+  const { data, error } = await supabase
+    .from("reservations")
+    .select("*")
+    .eq("shop_id", profile.shop_id)
+    .gte("date", from)
+    .lte("date", to)
+    .order("date", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+
+  const rows = (data ?? []) as ReservationRow[];
+  return rows.map(rowToReservationForCalendar);
 }
 
 export async function saveReservation(

@@ -1,10 +1,11 @@
-// src/lib/storage/reservations.local.ts
 import { STORAGE_KEYS } from "@/constants/config";
 import type { Reservation, ReservationStatus } from "@/lib/domain/reservation";
 
 const STORAGE_KEY = STORAGE_KEYS.reservations;
 
 type ReservationStore = Record<string, Reservation[]>;
+
+export type ReservationForCalendar = Reservation & { date: string };
 
 function isStatus(v: unknown): v is ReservationStatus {
   return v === "pending" || v === "completed";
@@ -75,6 +76,36 @@ function readList(all: Record<string, unknown>, date: string): Reservation[] {
 export function loadReservationsByDate(date: string): Reservation[] {
   const all = loadAllUnknown();
   return readList(all, date);
+}
+
+/**
+ * ✅ 캘린더 전용: date range를 한 번에 로드 (localStorage에서 합쳐서 반환)
+ * - from/to: YYYY-MM-DD (inclusive)
+ * - 반환: Reservation + { date }
+ */
+export async function loadReservationsByDateRange(
+  from: string,
+  to: string
+): Promise<ReservationForCalendar[]> {
+  console.log("[LocalRepo] loadReservationsByDateRange", from, to);
+
+  const allUnknown = loadAllUnknown();
+
+  const dates = Object.keys(allUnknown)
+    .filter((k) => typeof k === "string" && k.length === 10)
+    .filter((date) => date >= from && date <= to)
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+
+  const out: ReservationForCalendar[] = [];
+
+  for (const date of dates) {
+    const list = readList(allUnknown, date);
+    for (const r of list) {
+      out.push({ ...r, date });
+    }
+  }
+
+  return out;
 }
 
 export function saveReservation(
