@@ -111,9 +111,12 @@ const DeptHistoryLocalAdapter =
   DeptHistoryLocal as unknown as DepartmentHistoryRepoContract;
 
 /** remote adapter도 그대로 캐스팅 가능 */
-const DeptHistoryRemoteAdapter =
-  DeptHistoryRemote as unknown as DepartmentHistoryRepoContract;
-
+const DeptHistoryRemoteAdapter: DepartmentHistoryRepoContract = {
+  getDepartmentHistory: DeptHistoryRemote.getDepartmentHistory,
+  addDepartmentHistory: DeptHistoryRemote.addDepartmentHistory,
+  updateDepartmentHistory: DeptHistoryRemote.updateDepartmentHistory,
+  deleteDepartmentHistory: DeptHistoryRemote.deleteDepartmentHistory,
+};
 export const DepartmentHistoryRepo: DepartmentHistoryRepoContract =
   FLAGS.useSupabase ? DeptHistoryRemoteAdapter : DeptHistoryLocalAdapter;
 

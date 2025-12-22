@@ -1,4 +1,3 @@
-// components/pages/day/DayDetailPageContainer.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -34,7 +33,7 @@ export function DayDetailPageContainer({ date }: Props) {
     handleAddButtonClick,
     handleComplete,
     handleCancel,
-    // ✅ 수정 관련 (useReservationStatus에서 온 것들)
+    // 수정 관련 (useReservationStatus에서 온 것들)
     handleEdit,
     editingId,
     editForm,

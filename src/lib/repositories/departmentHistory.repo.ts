@@ -89,6 +89,63 @@ export async function getDepartmentHistory(
   return rows.map(rowToHistory);
 }
 
+export async function addDepartmentHistory(params: {
+  departmentId: string;
+  type: HistoryType;
+  amount: number;
+  memo?: string;
+}): Promise<{
+  history: DepartmentHistory;
+  next: Pick<Department, "deposit" | "debt" | "history">;
+}> {
+  const profile = await getMyProfile();
+  if (!profile.shop_id) throw new Error("No shop");
+
+  const {
+    data: { user },
+    error: userErr,
+  } = await supabase.auth.getUser();
+
+  if (userErr) throw userErr;
+  if (!user) throw new Error("Not authenticated");
+
+  const memo = params.memo?.trim();
+
+  const { data, error } = await supabase
+    .from("department_history")
+    .insert({
+      shop_id: profile.shop_id,
+      department_id: params.departmentId,
+      type: params.type,
+      amount: toSafeAmount(params.amount),
+      memo: memo ? memo : null,
+      created_by: user.id,
+    })
+    .select("*")
+    .single();
+
+  if (error) throw error;
+
+  const inserted = rowToHistory(data as DepartmentHistoryRow);
+
+  // 보정: history 재조회 → 재계산 → departments update
+  const history = await getDepartmentHistory(params.departmentId);
+  const nextAmounts = recomputeFromHistory(history);
+
+  const { error: upErr } = await supabase
+    .from("departments")
+    .update({
+      deposit: nextAmounts.deposit,
+      debt: nextAmounts.debt,
+    })
+    .eq("shop_id", profile.shop_id)
+    .eq("id", params.departmentId);
+
+  if (upErr) throw upErr;
+
+  return { history: inserted, next: { ...nextAmounts, history } };
+}
+
 export async function updateDepartmentHistory(params: {
   departmentId: string;
   historyId: string;
@@ -142,4 +199,39 @@ export async function updateDepartmentHistory(params: {
   if (upErr) throw upErr;
 
   return { history: updatedDomain, next: { ...nextAmounts, history } };
+}
+
+export async function deleteDepartmentHistory(params: {
+  departmentId: string;
+  historyId: string;
+}): Promise<{
+  next: Pick<Department, "deposit" | "debt" | "history">;
+}> {
+  const profile = await getMyProfile();
+  if (!profile.shop_id) throw new Error("No shop");
+
+  const { error } = await supabase
+    .from("department_history")
+    .delete()
+    .eq("shop_id", profile.shop_id)
+    .eq("id", params.historyId);
+
+  if (error) throw error;
+
+  // 보정: history 재조회 → 재계산 → departments update
+  const history = await getDepartmentHistory(params.departmentId);
+  const nextAmounts = recomputeFromHistory(history);
+
+  const { error: upErr } = await supabase
+    .from("departments")
+    .update({
+      deposit: nextAmounts.deposit,
+      debt: nextAmounts.debt,
+    })
+    .eq("shop_id", profile.shop_id)
+    .eq("id", params.departmentId);
+
+  if (upErr) throw upErr;
+
+  return { next: { ...nextAmounts, history } };
 }

@@ -10,11 +10,10 @@ export default async function AuthedLayout({
   const supabase = await createSupabaseServerClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  // 로그인 안 했으면 authed 그룹 진입 자체를 차단
-  if (!user) {
+  if (!session) {
     redirect("/");
   }
 

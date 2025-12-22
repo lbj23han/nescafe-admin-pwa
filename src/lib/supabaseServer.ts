@@ -1,5 +1,5 @@
-import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
@@ -12,8 +12,14 @@ export async function createSupabaseServerClient() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll() {
-          // Server Component에서는 noop
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Server Components에서는 set이 막힐 수 있어 무시해도 됨
+          }
         },
       },
     }
