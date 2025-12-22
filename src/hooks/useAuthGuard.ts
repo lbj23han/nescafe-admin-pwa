@@ -1,23 +1,37 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AUTH_LOCALSTORAGE_KEY } from "@/constants/auth";
+import { supabase } from "@/lib/supabaseClient";
 
 export function useAuthGuard() {
   const router = useRouter();
+  const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
-    const authed = localStorage.getItem(AUTH_LOCALSTORAGE_KEY) === "true";
+    let mounted = true;
 
-    if (!authed) {
-      router.replace("/");
-    }
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      const authed = !!data.session;
+
+      if (!authed) {
+        router.replace("/");
+        return;
+      }
+      if (mounted) setAllowed(true);
+    })();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) router.replace("/");
+      else setAllowed(true);
+    });
+
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
   }, [router]);
 
-  // 항상 false 반환 → 페이지는 처음에 아무것도 렌더 안 함
-  return (
-    typeof window !== "undefined" &&
-    localStorage.getItem(AUTH_LOCALSTORAGE_KEY) === "true"
-  );
+  return allowed;
 }

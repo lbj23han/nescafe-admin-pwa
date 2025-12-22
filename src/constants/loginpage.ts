@@ -1,3 +1,40 @@
 export const LOGIN_PAGE_COPY = {
   appName: "Cafe Ledger",
-};
+
+  title: {
+    login: "로그인",
+    signup: "회원가입",
+  },
+
+  desc: {
+    login: "계정으로 로그인하세요.",
+    signup: "가게 계정을 생성합니다.",
+  },
+
+  labels: {
+    shopName: "가게 이름",
+    email: "이메일",
+    password: "비밀번호",
+    confirmPassword: "비밀번호 확인",
+  },
+
+  placeholders: {
+    shopName: "Nescafe",
+    email: "email@example.com",
+    password: "8자 이상 권장",
+    confirmPassword: "비밀번호를 다시 입력",
+  },
+
+  helper: {
+    shopName: "나중에 마이페이지에서 변경할 수 있어요.",
+    passwordMismatch: "비밀번호가 서로 일치하지 않습니다.",
+  },
+
+  buttons: {
+    login: "로그인",
+    signup: "가입하기",
+    loading: "처리 중...",
+    toLogin: "로그인으로",
+    toSignup: "회원가입",
+  },
+} as const;
