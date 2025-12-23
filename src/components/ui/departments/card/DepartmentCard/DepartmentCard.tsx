@@ -10,14 +10,16 @@ import { HistorySection } from "./parts/HistorySection";
 
 export function DepartmentCard(props: DepartmentCardProps) {
   const h = useDepartmentCard(props);
-  const { department, expanded, onDelete } = props;
+  const { department, expanded, onDelete, readOnly } = props;
+
+  const allowEdit = !readOnly;
 
   return (
     <UI.Root expanded={expanded} onClick={h.guardedToggle}>
       <UI.Header
         name={department.name}
         nameNode={
-          expanded && h.name.editing ? (
+          expanded && allowEdit && h.name.editing ? (
             <NameEditorNode
               value={h.name.draft}
               onChange={h.name.setDraft}
@@ -29,24 +31,31 @@ export function DepartmentCard(props: DepartmentCardProps) {
         debt={department.debt}
         expanded={expanded}
         onToggleClick={h.guardedToggle}
-        onDeleteClick={expanded && onDelete ? h.departmentDelete : undefined}
-        editingName={expanded ? h.name.editing : false}
-        onEditNameToggleClick={expanded ? h.name.toggle : undefined}
+        onDeleteClick={
+          expanded && allowEdit && onDelete ? h.departmentDelete : undefined
+        }
+        editingName={expanded && allowEdit ? h.name.editing : false}
+        onEditNameToggleClick={
+          expanded && allowEdit ? h.name.toggle : undefined
+        }
       />
 
       {expanded && (
         <UI.ExpandedContainer>
-          <AddHistoryForm
-            value={h.form.value}
-            setValue={h.form.setValue}
-            onSubmit={h.form.submit}
-          />
+          {/* ✅ readOnly면 히스토리 추가 폼 숨김 */}
+          {allowEdit ? (
+            <AddHistoryForm
+              value={h.form.value}
+              setValue={h.form.setValue}
+              onSubmit={h.form.submit}
+            />
+          ) : null}
 
           <UI.HistoryContainer
-            editMode={h.historyEditMode.enabled}
+            editMode={allowEdit ? h.historyEditMode.enabled : false}
             stickyHeader
             actions={
-              h.history.hasHistory ? (
+              allowEdit && h.history.hasHistory ? (
                 <UI.TinyButton
                   type="button"
                   onClick={(e) => (
@@ -60,16 +69,20 @@ export function DepartmentCard(props: DepartmentCardProps) {
               ) : undefined
             }
           >
-            <HistorySection
-              history={h.history.reversed}
-              editMode={h.historyEditMode.enabled}
-              editingId={h.row.editingId}
-              draft={h.row.draft}
-              setDraft={h.row.setDraft}
-              onStartEdit={h.row.start}
-              onCancel={h.row.cancel}
-              onSave={h.row.save}
-            />
+            {allowEdit ? (
+              <HistorySection
+                history={h.history.reversed}
+                editMode={h.historyEditMode.enabled}
+                editingId={h.row.editingId}
+                draft={h.row.draft}
+                setDraft={h.row.setDraft}
+                onStartEdit={h.row.start}
+                onCancel={h.row.cancel}
+                onSave={h.row.save}
+              />
+            ) : (
+              <HistorySection history={h.history.reversed} editMode={false} />
+            )}
           </UI.HistoryContainer>
         </UI.ExpandedContainer>
       )}

@@ -19,6 +19,7 @@ function Page({
   onToggle,
   onChange,
   onDelete,
+  canEditLedger,
 }: DepartmentPageProps) {
   const isEmpty = departments.length === 0;
 
@@ -59,27 +60,32 @@ function Page({
       <UI.Header title={title} description={description} />
 
       <UI.Main>
-        <UI.AddToggleButton
-          onClick={toggleAddForm}
-          label={
-            showAddForm
-              ? DEPARTMENT_PAGE_COPY.addCancel ?? "취소"
-              : addButtonText
-          }
-        />
+        {/* ✅ owner/admin만 추가 버튼 + 폼 노출 */}
+        {canEditLedger ? (
+          <>
+            <UI.AddToggleButton
+              onClick={toggleAddForm}
+              label={
+                showAddForm
+                  ? DEPARTMENT_PAGE_COPY.addCancel ?? "취소"
+                  : addButtonText
+              }
+            />
 
-        {showAddForm && (
-          <DepartmentAddInlineForm
-            inputRef={inputRef}
-            value={name}
-            placeholder={DEPARTMENT_PAGE_COPY.addPlaceholder}
-            submitText={DEPARTMENT_PAGE_COPY.addSubmit}
-            canSubmit={!!name.trim()}
-            onChange={setName}
-            onSubmit={submit}
-            onEscape={closeAddForm}
-          />
-        )}
+            {showAddForm && (
+              <DepartmentAddInlineForm
+                inputRef={inputRef}
+                value={name}
+                placeholder={DEPARTMENT_PAGE_COPY.addPlaceholder}
+                submitText={DEPARTMENT_PAGE_COPY.addSubmit}
+                canSubmit={!!name.trim()}
+                onChange={setName}
+                onSubmit={submit}
+                onEscape={closeAddForm}
+              />
+            )}
+          </>
+        ) : null}
 
         {isEmpty ? (
           <div className="mt-8 flex flex-col items-center space-y-2">
@@ -95,6 +101,7 @@ function Page({
                 onToggle={() => onToggle(dept.id)}
                 onChange={onChange}
                 onDelete={onDelete}
+                readOnly={!canEditLedger} // ✅ 핵심
               />
             ))}
           </div>

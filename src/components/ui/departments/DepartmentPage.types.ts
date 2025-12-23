@@ -21,4 +21,5 @@ export type DepartmentPageProps = {
   onChange: (updated: Department) => void;
 
   onDelete?: (id: string) => void;
+  canEditLedger: boolean;
 };

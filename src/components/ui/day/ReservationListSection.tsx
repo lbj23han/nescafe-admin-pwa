@@ -14,6 +14,7 @@ export function ReservationListSection({
   onChangeEditField,
   onSubmitEdit,
   onCancelEdit,
+  canManageActions,
 }: ReservationListProps) {
   if (list.length === 0) {
     return (
@@ -32,7 +33,6 @@ export function ReservationListSection({
 
           return (
             <DayUI.ReservationCard key={r.id} isCompleted={isCompleted}>
-              {/* 상단 기본 정보 */}
               <DayUI.ReservationTitle>
                 {r.department} · {r.menu}
               </DayUI.ReservationTitle>
@@ -43,7 +43,6 @@ export function ReservationListSection({
                 {r.location && ` · 위치: ${r.location}`}
               </DayUI.MetaText>
 
-              {/* 상태 + 액션 버튼 */}
               <DayUI.FooterRow>
                 <DayUI.StatusText>
                   {isCompleted
@@ -51,33 +50,35 @@ export function ReservationListSection({
                     : DAY_PAGE_COPY.status.inProgress}
                 </DayUI.StatusText>
 
-                <DayUI.ActionGroup>
-                  <DayUI.ActionButton
-                    variant="edit"
-                    onClick={() => onEdit(r.id)}
-                  >
-                    {DAY_PAGE_COPY.buttons.edit}
-                  </DayUI.ActionButton>
+                {canManageActions ? (
+                  <DayUI.ActionGroup>
+                    <DayUI.ActionButton
+                      variant="edit"
+                      onClick={() => onEdit(r.id)}
+                    >
+                      {DAY_PAGE_COPY.buttons.edit}
+                    </DayUI.ActionButton>
 
-                  <DayUI.ActionButton
-                    variant="complete"
-                    disabled={isCompleted}
-                    onClick={() => onComplete(r.id)}
-                  >
-                    {DAY_PAGE_COPY.buttons.complete}
-                  </DayUI.ActionButton>
+                    <DayUI.ActionButton
+                      variant="complete"
+                      disabled={isCompleted}
+                      onClick={() => onComplete(r.id)}
+                    >
+                      {DAY_PAGE_COPY.buttons.complete}
+                    </DayUI.ActionButton>
 
-                  <DayUI.ActionButton
-                    variant="cancel"
-                    onClick={() => onCancel(r.id)}
-                  >
-                    {DAY_PAGE_COPY.buttons.cancel}
-                  </DayUI.ActionButton>
-                </DayUI.ActionGroup>
+                    <DayUI.ActionButton
+                      variant="cancel"
+                      onClick={() => onCancel(r.id)}
+                    >
+                      {DAY_PAGE_COPY.buttons.cancel}
+                    </DayUI.ActionButton>
+                  </DayUI.ActionGroup>
+                ) : null}
               </DayUI.FooterRow>
 
-              {/* 수정 모드일 때 카드 확장 영역 */}
-              {isEditing && editForm && (
+              {/* ✅ 수정모드 UI도 owner/admin만 */}
+              {canManageActions && isEditing && editForm ? (
                 <DayUI.EditSection>
                   <div className="space-y-3">
                     <DayUI.Field label={DAY_PAGE_COPY.form.department.label}>
@@ -137,7 +138,7 @@ export function ReservationListSection({
                     </DayUI.ActionButton>
                   </div>
                 </DayUI.EditSection>
-              )}
+              ) : null}
             </DayUI.ReservationCard>
           );
         })}
