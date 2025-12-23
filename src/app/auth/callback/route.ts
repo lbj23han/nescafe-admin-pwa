@@ -1,56 +1,33 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
-export async function POST(
-  _req: Request,
-  { params }: { params: { token: string } }
-) {
-  const token = (params.token ?? "").trim();
-  if (!token) {
-    return NextResponse.json(
-      { error: "토큰이 없습니다.", code: "missing_token" },
-      { status: 400 }
-    );
+function safeNext(nextPath: string | null) {
+  if (!nextPath) return "/main";
+  if (!nextPath.startsWith("/")) return "/main";
+  return nextPath;
+}
+
+export async function GET(req: NextRequest) {
+  const url = new URL(req.url);
+  const code = url.searchParams.get("code");
+  const next = safeNext(url.searchParams.get("next"));
+
+  // code 없으면 그냥 next로
+  if (!code) {
+    return NextResponse.redirect(new URL(next, url.origin));
   }
 
   const supabase = await createSupabaseServerClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // auth code → session 교환
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
 
-  if (!user) {
-    return NextResponse.json(
-      { error: "로그인이 필요합니다.", code: "unauthorized" },
-      { status: 401 }
-    );
-  }
-
-  const { data, error } = await supabase.rpc("app_invite_accept", {
-    p_token: token,
-  });
-
+  // 실패해도 next로 보내되, 필요하면 쿼리로 표시
   if (error) {
-    // supabase 에러 메시지를 그대로 노출하지 말고, 최소한으로 래핑
-    return NextResponse.json(
-      {
-        error: "초대 수락에 실패했습니다.",
-        code: "rpc_error",
-        detail: error.message,
-      },
-      { status: 403 }
-    );
+    const redirectUrl = new URL(next, url.origin);
+    redirectUrl.searchParams.set("authError", "1");
+    return NextResponse.redirect(redirectUrl);
   }
 
-  if (!data?.ok) {
-    return NextResponse.json(
-      {
-        error: data?.error ?? "초대 수락에 실패했습니다.",
-        code: data?.code ?? "failed",
-      },
-      { status: 400 }
-    );
-  }
-
-  return NextResponse.json({ ok: true });
+  return NextResponse.redirect(new URL(next, url.origin));
 }
