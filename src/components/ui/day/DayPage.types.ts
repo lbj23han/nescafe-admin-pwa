@@ -28,6 +28,7 @@ export type ReservationListProps = {
   onChangeEditField?: (field: keyof ReservationEditForm, value: string) => void;
   onSubmitEdit?: () => void;
   onCancelEdit?: () => void;
+  canManageActions?: boolean;
 };
 
 export type ReservationFormProps = {
