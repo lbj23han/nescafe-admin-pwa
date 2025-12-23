@@ -30,7 +30,7 @@ export function useDayReservation(date: string) {
   }, [date]);
 
   const formattedDate = useMemo(() => {
-    const [y, m, d] = date.split("-");
+    const [, m, d] = date.split("-");
     return DAY_PAGE_COPY.dateFormat(m, d);
   }, [date]);
 

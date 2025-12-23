@@ -37,4 +37,18 @@ export const LOGIN_PAGE_COPY = {
     toLogin: "로그인으로",
     toSignup: "회원가입",
   },
+
+  errors: {
+    emailRequired: "이메일을 입력해주세요.",
+    passwordRequired: "비밀번호를 입력해주세요.",
+    shopNameRequired: "매장명을 입력해주세요.",
+    passwordMismatch: "비밀번호 확인이 일치하지 않습니다.",
+  },
+
+  success: {
+    signupInvite:
+      "이메일로 인증 링크를 보냈어요.\n메일 인증을 완료하면 초대 화면으로 돌아와 자동 수락을 진행합니다.",
+    signupNormal:
+      "이메일로 인증 링크를 보냈어요.\n메일을 확인하고 인증을 완료한 뒤 로그인해주세요.",
+  },
 } as const;

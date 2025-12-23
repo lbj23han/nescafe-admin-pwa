@@ -33,4 +33,8 @@ export type AuthFormProps = {
   loading?: boolean;
   error?: string;
   successMessage?: string;
+
+  emailLocked?: boolean; // true면 이메일 입력 수정 불가(readOnly/disabled)
+  hideShopName?: boolean; // true면 shopName 입력 숨김
+  disableModeToggle?: boolean; // true면 모드 토글 버튼 숨김(또는 비활성)
 };

@@ -39,10 +39,10 @@ export function useHolidayMap({ years }: Params) {
     return uniq;
   }, [years]);
 
-  // ✅ 배열 의존성 대신 안정적인 key 사용
+  // 배열 의존성 대신 안정적인 key 사용
   const yearsKey = useMemo(() => normalizedYears.join(","), [normalizedYears]);
 
-  // ✅ 동일 key로는 effect를 중복 실행하지 않게 막아줌 (dev StrictMode 포함)
+  // 동일 key로는 effect를 중복 실행하지 않게 막아줌 (dev StrictMode 포함)
   const ranKeyRef = useRef<string>("");
 
   //  1) 초기: 캐시를 즉시 합쳐서(동기) 먼저 보여줌
@@ -64,7 +64,7 @@ export function useHolidayMap({ years }: Params) {
     async function run() {
       if (normalizedYears.length === 0) return;
 
-      // ✅ 같은 yearsKey로는 다시 실행하지 않음 (폭발 방지)
+      // 같은 yearsKey로는 다시 실행하지 않음 (루프방지)
       if (ranKeyRef.current === yearsKey) return;
       ranKeyRef.current = yearsKey;
 
@@ -113,8 +113,8 @@ export function useHolidayMap({ years }: Params) {
     return () => {
       cancelled = true;
     };
-    // ✅ 핵심: normalizedYears(배열) 대신 yearsKey(문자열)만 의존성으로
-  }, [yearsKey]); // ← 여기 바뀜
+    // normalizedYears(배열) 대신 yearsKey(문자열)만 의존성으로
+  }, [yearsKey]);
 
   return { holidayMap, loading };
 }
