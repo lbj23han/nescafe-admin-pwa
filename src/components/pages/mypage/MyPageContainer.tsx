@@ -4,6 +4,7 @@ import type { Profile } from "@/lib/repositories/profile/profile.types";
 import { MyPageUI as UI } from "@/components/ui/mypage/MyPageUI";
 import { logoutAction } from "@/app/(authed)/mypage/actions";
 import { MYPAGE_COPY, getRoleLabel } from "@/constants/mypage";
+import { InvitationsSection } from "./InvitationsSection";
 
 type Props = {
   initialProfile: Profile | null;
@@ -33,6 +34,7 @@ export function MyPageContainer({ initialProfile, shopName }: Props) {
           {MYPAGE_COPY.actions.logout}
         </UI.DangerButton>
       </form>
+      <InvitationsSection />
     </UI.Layout>
   );
 }
