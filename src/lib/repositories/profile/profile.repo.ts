@@ -10,14 +10,25 @@ export async function getMyProfile(supabase: SupabaseClient) {
   if (userErr) throw userErr;
   if (!user) return null;
 
-  const { data, error } = await supabase
+  // 1차: user_id로 조회
+  const byUserId = await supabase
     .from("profiles")
     .select("*")
     .eq("user_id", user.id)
     .maybeSingle<Profile>();
 
-  if (error) throw error;
-  return data;
+  if (byUserId.error) throw byUserId.error;
+  if (byUserId.data) return byUserId.data;
+
+  // 2차: id=auth.uid() 구조인 경우도 커버
+  const byId = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle<Profile>();
+
+  if (byId.error) throw byId.error;
+  return byId.data ?? null;
 }
 
 export async function updateMyProfile(
@@ -35,13 +46,24 @@ export async function updateMyProfile(
   const patch: Record<string, unknown> = {};
   if ("display_name" in input) patch.display_name = input.display_name ?? null;
 
-  const { data, error } = await supabase
+  // update도 동일하게: 우선 user_id, 실패 시 id
+  const updatedByUserId = await supabase
     .from("profiles")
     .update(patch)
     .eq("user_id", user.id)
     .select("*")
+    .maybeSingle<Profile>();
+
+  if (updatedByUserId.error) throw updatedByUserId.error;
+  if (updatedByUserId.data) return updatedByUserId.data;
+
+  const updatedById = await supabase
+    .from("profiles")
+    .update(patch)
+    .eq("id", user.id)
+    .select("*")
     .single<Profile>();
 
-  if (error) throw error;
-  return data;
+  if (updatedById.error) throw updatedById.error;
+  return updatedById.data;
 }
