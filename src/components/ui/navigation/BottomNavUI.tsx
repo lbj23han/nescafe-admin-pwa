@@ -16,7 +16,8 @@ type Props = {
 
 function itemClass(active?: boolean) {
   return [
-    "flex h-full items-center justify-center text-xs",
+    "flex h-full items-center justify-center",
+    "text-xs sm:text-xs md:text-sm",
     active ? "font-semibold text-zinc-900" : "text-zinc-500",
   ].join(" ");
 }
@@ -55,11 +56,13 @@ function NavLink({
 
 export function BottomNavUI({ items }: Props) {
   return (
-    <nav className="fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-zinc-200 bg-white">
+    <nav className="fixed bottom-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 border-t border-zinc-300 bg-white">
       <div className="px-4">
         <div
-          className="grid h-14 items-center"
+          className="grid items-center"
           style={{
+            height: "8vh",
+            paddingBottom: "env(safe-area-inset-bottom)",
             gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))`,
           }}
         >

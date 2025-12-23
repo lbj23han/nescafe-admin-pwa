@@ -117,7 +117,7 @@ export function InvitationsSectionView({
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-zinc-700">
-                          viewer
+                          view
                         </span>
                         <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700">
                           {inv.status}
