@@ -11,6 +11,8 @@ export type DepartmentCardProps = {
   onToggle: () => void;
   onChange: (updated: Department) => void;
   onDelete?: (id: string) => void;
+
+  readOnly?: boolean;
 };
 
 /** UI primitives 타입들 */
