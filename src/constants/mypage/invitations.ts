@@ -39,6 +39,11 @@ export const INVITATIONS_COPY = {
     accepted: "수락",
   },
 
+  status: {
+    pending: "대기",
+    accepted: "승인됨",
+  },
+
   actions: {
     cancel: "취소",
   },

@@ -116,9 +116,6 @@ export function InvitationsSectionView({
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-zinc-700">
-                          view
-                        </span>
                         <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700">
                           {inv.status}
                         </span>
@@ -142,7 +139,12 @@ export function InvitationsSectionView({
 
                     {canCancel(inv) && (
                       <button
-                        className="h-9 rounded-md border border-zinc-200 bg-white px-3 text-xs text-zinc-700"
+                        className="
+        h-9 shrink-0
+        rounded-md border border-zinc-200
+        bg-white px-3
+        text-xs text-zinc-700
+      "
                         onClick={() => onCancel(inv.id)}
                       >
                         {COPY.actions.cancel}
@@ -180,9 +182,6 @@ export function InvitationsSectionView({
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-zinc-700">
-                            viewer
-                          </span>
                           <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700">
                             accepted
                           </span>
