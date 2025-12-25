@@ -7,6 +7,9 @@ export const INVITATIONS_COPY = {
     placeholderEmail: "초대할 이메일을 입력하세요",
     createButton: "초대 링크 생성",
     creatingButton: "생성 중...",
+
+    openButton: "초대하기",
+    closeButton: "닫기",
   },
 
   lastCreated: {

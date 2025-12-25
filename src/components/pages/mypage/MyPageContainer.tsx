@@ -1,3 +1,4 @@
+// src/components/pages/mypage/MyPageContainer.tsx
 "use client";
 
 import { useState } from "react";
@@ -47,7 +48,6 @@ export function MyPageContainer({ initialProfile, shopName }: Props) {
       ? `shop: ${initialProfile.shop_id}`
       : MYPAGE_COPY.fallback.shopName);
 
-  // 초대 섹션 접기/펼치기
   const [inviteOpen, setInviteOpen] = useState(false);
 
   return (
@@ -62,7 +62,6 @@ export function MyPageContainer({ initialProfile, shopName }: Props) {
 
       <UI.Spacer />
 
-      {/* 직원 초대 토글 버튼 (owner만) */}
       {isOwner ? (
         <>
           <UI.DangerButton
@@ -72,11 +71,9 @@ export function MyPageContainer({ initialProfile, shopName }: Props) {
             {inviteOpen ? "직원 초대 닫기" : "직원 초대"}
           </UI.DangerButton>
 
-          {inviteOpen ? (
-            <div className="mt-3">
-              <InvitationsSection />
-            </div>
-          ) : null}
+          <div className={inviteOpen ? "mt-3" : "mt-3 hidden"}>
+            <InvitationsSection />
+          </div>
 
           <UI.Spacer />
         </>

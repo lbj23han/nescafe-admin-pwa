@@ -24,6 +24,7 @@ export function InvitationsSection() {
     useInvitations();
 
   const [email, setEmail] = useState("");
+  const [createOpen, setCreateOpen] = useState(false);
 
   const pending = useMemo(
     () => items.filter((x) => x.status === "pending"),
@@ -34,6 +35,12 @@ export function InvitationsSection() {
     () => items.filter((x) => x.status === "accepted"),
     [items]
   );
+
+  const showCreateForm = createOpen && !lastCreated;
+
+  const handleToggleCreate = () => {
+    setCreateOpen((v) => !v);
+  };
 
   const handleCreate = async () => {
     if (!email.trim()) {
@@ -68,6 +75,9 @@ export function InvitationsSection() {
       onCopy={handleCopy}
       formatKST={formatKST}
       pickAcceptedAt={pickAcceptedAt}
+      createOpen={createOpen}
+      showCreateForm={showCreateForm}
+      onToggleCreate={handleToggleCreate}
     />
   );
 }

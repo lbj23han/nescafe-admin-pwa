@@ -22,6 +22,8 @@ export function InvitationsSectionView({
   onCopy,
   formatKST,
   pickAcceptedAt,
+  createOpen,
+  onToggleCreate,
 }: InvitationsSectionViewProps) {
   return (
     <section className="mt-6 rounded-xl border border-zinc-200 bg-white p-4">
@@ -32,52 +34,76 @@ export function InvitationsSectionView({
         </span>
       </div>
 
+      {/* create toggle */}
+      <button
+        type="button"
+        onClick={onToggleCreate}
+        className="
+    mb-2 h-10 w-full rounded-md
+    border border-zinc-200
+    bg-zinc-100
+    text-sm font-medium text-zinc-900
+    hover:bg-zinc-200
+    active:bg-zinc-300
+    transition
+  "
+      >
+        {createOpen ? COPY.form.closeButton : COPY.form.openButton}
+      </button>
+
       {/* create form */}
-      <div className="rounded-lg border border-zinc-300 p-3">
-        <div className="mb-2 text-xs font-medium text-zinc-700">
-          {COPY.form.labelEmail}
-        </div>
-
-        <input
-          className="h-10 w-full rounded-md border border-zinc-300 px-3 text-sm text-zinc-700 placeholder:text-zinc-400"
-          placeholder={COPY.form.placeholderEmail}
-          value={email}
-          onChange={(e) => onChangeEmail(e.target.value)}
-        />
-
-        <button
-          className="mt-2 h-10 w-full rounded-md bg-black text-sm font-medium text-white disabled:opacity-50"
-          onClick={onCreate}
-          disabled={creating}
-        >
-          {creating ? COPY.form.creatingButton : COPY.form.createButton}
-        </button>
-
-        {lastCreated && (
-          <div className="mt-3 rounded-md bg-zinc-50 p-3 text-sm">
-            <div className="flex items-center justify-between gap-2">
-              <div className="min-w-0">
-                <div className="text-xs text-zinc-500">
-                  {COPY.lastCreated.label}
-                </div>
-                <div className="truncate font-mono text-zinc-700">
-                  {lastCreated.inviteLink}
-                </div>
-                <div className="mt-1 text-xs text-zinc-500">
-                  {COPY.lastCreated.expires}: {formatKST(lastCreated.expiresAt)}
-                </div>
-              </div>
-
-              <button
-                className="h-9 shrink-0 rounded-md border border-zinc-200 bg-white px-3 text-xs text-zinc-700"
-                onClick={() => onCopy(location.origin + lastCreated.inviteLink)}
-              >
-                {COPY.lastCreated.copyButton}
-              </button>
-            </div>
+      {createOpen && (
+        <div className="rounded-lg border border-zinc-300 p-3">
+          <div className="mb-2 text-xs font-medium text-zinc-700">
+            {COPY.form.labelEmail}
           </div>
-        )}
-      </div>
+
+          <input
+            className="h-10 w-full rounded-md border border-zinc-300 px-3 text-sm text-zinc-700 placeholder:text-zinc-400"
+            placeholder={COPY.form.placeholderEmail}
+            value={email}
+            onChange={(e) => onChangeEmail(e.target.value)}
+          />
+
+          <button
+            type="button"
+            className="mt-2 h-10 w-full rounded-md bg-black text-sm font-medium text-white disabled:opacity-50"
+            onClick={onCreate}
+            disabled={creating}
+          >
+            {creating ? COPY.form.creatingButton : COPY.form.createButton}
+          </button>
+
+          {lastCreated && (
+            <div className="mt-3 rounded-md bg-zinc-50 p-3 text-sm">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="text-xs text-zinc-500">
+                    {COPY.lastCreated.label}
+                  </div>
+                  <div className="truncate font-mono text-zinc-700">
+                    {lastCreated.inviteLink}
+                  </div>
+                  <div className="mt-1 text-xs text-zinc-500">
+                    {COPY.lastCreated.expires}:{" "}
+                    {formatKST(lastCreated.expiresAt)}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="h-9 shrink-0 rounded-md border border-zinc-200 bg-white px-3 text-xs text-zinc-700"
+                  onClick={() =>
+                    onCopy(location.origin + lastCreated.inviteLink)
+                  }
+                >
+                  {COPY.lastCreated.copyButton}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* lists */}
       <div className="mt-4">
@@ -113,11 +139,11 @@ export function InvitationsSectionView({
                   key={inv.id}
                   className="rounded-lg border border-zinc-100 p-3"
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700">
-                          {inv.status}
+                          {COPY.status.pending}
                         </span>
                       </div>
 
@@ -139,12 +165,8 @@ export function InvitationsSectionView({
 
                     {canCancel(inv) && (
                       <button
-                        className="
-        h-9 shrink-0
-        rounded-md border border-zinc-200
-        bg-white px-3
-        text-xs text-zinc-700
-      "
+                        type="button"
+                        className="h-9 shrink-0 rounded-md border border-zinc-200 bg-white px-3 text-xs text-zinc-700"
                         onClick={() => onCancel(inv.id)}
                       >
                         {COPY.actions.cancel}
@@ -179,11 +201,11 @@ export function InvitationsSectionView({
                     key={inv.id}
                     className="rounded-lg border border-zinc-100 p-3"
                   >
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700">
-                            accepted
+                            {COPY.status.accepted}
                           </span>
                         </div>
 
