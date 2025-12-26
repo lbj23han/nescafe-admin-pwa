@@ -15,7 +15,11 @@ export type InvitationsSectionViewProps = {
   // create form toggle
   createOpen: boolean;
   onToggleCreate: () => void;
-  showCreateForm: boolean;
+
+  /**
+   * @deprecated createOpen으로 통일
+   */
+  showCreateForm?: boolean;
 
   // form
   email: string;
