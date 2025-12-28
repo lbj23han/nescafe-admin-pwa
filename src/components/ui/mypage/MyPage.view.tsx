@@ -2,8 +2,8 @@
 
 import { MyPageUI as UI } from "@/components/ui/mypage/MyPageUI";
 import { MYPAGE_COPY } from "@/constants/mypage";
-import { InvitationsSection } from "@/components/pages/mypage/InvitationsSection";
 import type { MyPageViewProps } from "./MyPage.types";
+import { InvitationsSectionContainer } from "./invitations/InvitationsSection.container";
 
 export function MyPageView({
   title,
@@ -37,7 +37,7 @@ export function MyPageView({
           </UI.DangerButton>
 
           <div className={inviteOpen ? "mt-3" : "mt-3 hidden"}>
-            <InvitationsSection />
+            <InvitationsSectionContainer />
           </div>
 
           <UI.Spacer />

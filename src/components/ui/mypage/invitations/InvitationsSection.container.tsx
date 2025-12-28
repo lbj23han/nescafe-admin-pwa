@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useInvitations } from "./hooks/useInvitations";
+import { useInvitations } from "./useInvitations";
 import type { InvitationRow } from "@/lib/contracts/invitations";
-import { InvitationsSectionView } from "@/components/ui/mypage/invitations/InvitationsSection.view";
+import { InvitationsSectionView } from "./InvitationsSection.view";
 import { INVITATIONS_COPY as COPY } from "@/constants/mypage/invitations";
 
 function formatKST(iso: string) {
@@ -19,7 +19,7 @@ function pickAcceptedAt(inv: InvitationRow) {
   return anyInv.accepted_at ?? null;
 }
 
-export function InvitationsSection() {
+export function InvitationsSectionContainer() {
   const { items, loading, creating, error, lastCreated, create, cancel } =
     useInvitations();
 
