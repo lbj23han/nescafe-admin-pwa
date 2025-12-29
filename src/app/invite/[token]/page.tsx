@@ -1,6 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import { getInvitationMeta } from "@/lib/repositories/invitations/invitations.repo";
-import InvitePageContainer from "@/components/pages/invite/InvitePageContainer";
+import AcceptInvitePageContainer from "@/components/pages/accept-invite/AcceptInvitePageContainer";
 import { INVITE_PAGE_COPY } from "@/constants/invite";
 
 export default async function InvitePage({
@@ -13,7 +13,7 @@ export default async function InvitePage({
 
   if (!token) {
     return (
-      <InvitePageContainer
+      <AcceptInvitePageContainer
         token=""
         meta={null}
         userAuthed={false}
@@ -38,7 +38,7 @@ export default async function InvitePage({
   }
 
   return (
-    <InvitePageContainer
+    <AcceptInvitePageContainer
       token={token}
       meta={meta}
       userAuthed={!!user}

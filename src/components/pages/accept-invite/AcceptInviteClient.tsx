@@ -21,7 +21,7 @@ function parseMaybeJson(text: string): AcceptErrorPayload | null {
   }
 }
 
-export default function InviteAcceptClient({ token }: { token: string }) {
+export default function AcceptInviteClient({ token }: { token: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const auto = (searchParams.get("auto") ?? "") === "1";

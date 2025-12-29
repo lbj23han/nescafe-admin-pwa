@@ -1,11 +1,11 @@
 import type { InvitationMeta } from "@/lib/contracts/invitations";
 
-export type InviteLinkInfo = {
+export type AcceptInviteLinkInfo = {
   signupHref: string;
   loginHref: string;
 };
 
-export type InvitePageViewProps = {
+export type AcceptInvitePageViewProps = {
   title: string;
   desc: string;
 
@@ -13,7 +13,7 @@ export type InvitePageViewProps = {
   meta: InvitationMeta;
 
   userAuthed: boolean;
-  links: InviteLinkInfo;
+  links: AcceptInviteLinkInfo;
 
   processed: boolean;
   expiresLabel: string;
