@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
-import { getMyProfile } from "@/lib/repositories/profile/profile.repo";
+import { getProfileByAuthUser } from "@/lib/repositories/profile/profile.repo";
 import type { Profile } from "@/lib/repositories/profile/profile.types";
 import { MyPageContainer } from "@/components/pages/mypage/MyPageContainer";
 
@@ -9,7 +9,7 @@ export const revalidate = 0;
 export default async function MyPage() {
   const supabase = await createSupabaseServerClient();
 
-  const profile = (await getMyProfile(supabase)) as Profile | null;
+  const profile = (await getProfileByAuthUser(supabase)) as Profile | null;
 
   let shopName: string | null = null;
 

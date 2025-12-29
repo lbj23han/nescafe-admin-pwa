@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabaseClient";
-import { getMyProfile } from "@/lib/repositories/profile.repo";
+import { getMyProfileFromClient } from "@/lib/repositories/profile.client";
 import type { Reservation, ReservationStatus } from "@/lib/domain/reservation";
 
 type ReservationRow = {
@@ -51,7 +51,7 @@ function rowToReservationForCalendar(
 export async function loadReservationsByDate(
   date: string
 ): Promise<Reservation[]> {
-  const profile = await getMyProfile();
+  const profile = await getMyProfileFromClient();
   if (!profile.shop_id) return [];
 
   const { data, error } = await supabase
@@ -78,7 +78,7 @@ export async function loadReservationsByDateRange(
 ): Promise<ReservationForCalendar[]> {
   console.log("[SupabaseRepo] loadReservationsByDateRange", from, to);
 
-  const profile = await getMyProfile();
+  const profile = await getMyProfileFromClient();
   if (!profile.shop_id) return [];
 
   const { data, error } = await supabase
@@ -100,7 +100,7 @@ export async function saveReservation(
   date: string,
   reservation: Reservation
 ): Promise<Reservation> {
-  const profile = await getMyProfile();
+  const profile = await getMyProfileFromClient();
   if (!profile.shop_id) throw new Error("No shop");
 
   const { data, error } = await supabase
@@ -132,7 +132,7 @@ export async function updateReservation(
   date: string,
   reservation: Reservation
 ): Promise<Reservation> {
-  const profile = await getMyProfile();
+  const profile = await getMyProfileFromClient();
   if (!profile.shop_id) throw new Error("No shop");
 
   const { data, error } = await supabase
@@ -165,7 +165,7 @@ export async function setReservationStatus(
   id: string,
   status: ReservationStatus
 ): Promise<Reservation> {
-  const profile = await getMyProfile();
+  const profile = await getMyProfileFromClient();
   if (!profile.shop_id) throw new Error("No shop");
 
   const { data, error } = await supabase
@@ -184,7 +184,7 @@ export async function deleteReservation(
   date: string,
   id: string
 ): Promise<void> {
-  const profile = await getMyProfile();
+  const profile = await getMyProfileFromClient();
   if (!profile.shop_id) throw new Error("No shop");
 
   const { error } = await supabase
