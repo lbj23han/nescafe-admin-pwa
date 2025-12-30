@@ -46,11 +46,7 @@ export type HistoryContainerProps = {
   title?: string;
   actions?: ReactNode;
   children: ReactNode;
-
-  /** ✅ 마감 퀄리티: 편집 모드 스타일링 */
   editMode?: boolean;
-
-  /** ✅ 마감 퀄리티: 헤더 sticky */
   stickyHeader?: boolean;
 };
 

@@ -48,4 +48,40 @@ export const DAY_PAGE_COPY = {
       placeholder: "예: 55000",
     },
   },
+
+  meta: {
+    amountLabel: "금액",
+    timeLabel: "시간",
+    locationLabel: "위치",
+    amountUnit: "원",
+    separator: " · ",
+  },
+
+  format: {
+    reservationMeta: (args: {
+      amount?: number | null;
+      time?: string | null;
+      location?: string | null;
+    }) => {
+      const parts: string[] = [];
+
+      if (typeof args.amount === "number") {
+        parts.push(
+          `${DAY_PAGE_COPY.meta.amountLabel}: ${args.amount.toLocaleString()}${
+            DAY_PAGE_COPY.meta.amountUnit
+          }`
+        );
+      }
+
+      if (args.time) {
+        parts.push(`${DAY_PAGE_COPY.meta.timeLabel}: ${args.time}`);
+      }
+
+      if (args.location) {
+        parts.push(`${DAY_PAGE_COPY.meta.locationLabel}: ${args.location}`);
+      }
+
+      return parts.join(DAY_PAGE_COPY.meta.separator);
+    },
+  },
 };

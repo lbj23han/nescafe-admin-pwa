@@ -42,7 +42,7 @@ export function DepartmentCard(props: DepartmentCardProps) {
 
       {expanded && (
         <UI.ExpandedContainer>
-          {/* ✅ readOnly면 히스토리 추가 폼 숨김 */}
+          {/* readOnly면 히스토리 추가 폼 숨김 */}
           {allowEdit ? (
             <AddHistoryForm
               value={h.form.value}

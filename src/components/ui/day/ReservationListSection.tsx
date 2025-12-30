@@ -38,9 +38,11 @@ export function ReservationListSection({
               </DayUI.ReservationTitle>
 
               <DayUI.MetaText>
-                금액: {r.amount?.toLocaleString()}원
-                {r.time && ` · 시간: ${r.time}`}
-                {r.location && ` · 위치: ${r.location}`}
+                {DAY_PAGE_COPY.format.reservationMeta({
+                  amount: r.amount,
+                  time: r.time,
+                  location: r.location,
+                })}
               </DayUI.MetaText>
 
               <DayUI.FooterRow>
@@ -77,7 +79,6 @@ export function ReservationListSection({
                 ) : null}
               </DayUI.FooterRow>
 
-              {/* ✅ 수정모드 UI도 owner/admin만 */}
               {canManageActions && isEditing && editForm ? (
                 <DayUI.EditSection>
                   <div className="space-y-3">

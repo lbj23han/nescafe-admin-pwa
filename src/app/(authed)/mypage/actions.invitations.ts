@@ -12,7 +12,7 @@ import {
   listInvitations,
   cancelInvitation,
 } from "@/lib/repositories/invitations/invitations.repo";
-import { getMyProfile } from "@/lib/repositories/profile/profile.repo";
+import { getProfileByAuthUser } from "@/lib/repositories/profile/profile.repo";
 
 function normalizeEmail(email: string) {
   const e = (email ?? "").trim();
@@ -29,7 +29,7 @@ function assertOwner(role: string | null | undefined) {
 
 export async function listInvitationsAction(): Promise<InvitationRow[]> {
   const supabase = await createSupabaseServerClient();
-  const profile = await getMyProfile(supabase);
+  const profile = await getProfileByAuthUser(supabase);
   assertOwner(profile?.role);
   return listInvitations(supabase);
 }
@@ -38,7 +38,7 @@ export async function createInvitationAction(
   input: CreateInvitationInput
 ): Promise<CreateInvitationResult> {
   const supabase = await createSupabaseServerClient();
-  const profile = await getMyProfile(supabase);
+  const profile = await getProfileByAuthUser(supabase);
   assertOwner(profile?.role);
 
   const email = normalizeEmail(input.email);
@@ -59,7 +59,7 @@ export async function createInvitationAction(
 
 export async function cancelInvitationAction(invitationId: string) {
   const supabase = await createSupabaseServerClient();
-  const profile = await getMyProfile(supabase);
+  const profile = await getProfileByAuthUser(supabase);
   assertOwner(profile?.role);
 
   if (!invitationId) throw new Error("Missing invitationId");

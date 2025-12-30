@@ -27,6 +27,7 @@ export const INVITE_PAGE_COPY = {
 } as const;
 
 export const INVITE_ACCEPT_COPY = {
+  title: "초대",
   messagesByCode: {
     invalid_token: "유효하지 않은 초대 링크입니다.",
     expired: "만료된 초대 링크입니다. 관리자에게 새 초대를 요청해주세요.",

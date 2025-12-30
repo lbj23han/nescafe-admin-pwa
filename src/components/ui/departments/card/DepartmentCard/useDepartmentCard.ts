@@ -10,8 +10,8 @@ import { useDirtyGuards } from "./hooks/useDirtyGuards";
 
 export function useDepartmentCard(p: DepartmentCardProps) {
   const form = useAddHistoryForm(p);
-  const name = useNameEditor(p); // toggle은 이제 () => void 버전이어야 함
-  const row = useHistoryRowEditor(p); // start/cancel도 내부 confirm 처리 버전이어야 함
+  const name = useNameEditor(p);
+  const row = useHistoryRowEditor(p);
   const historyEditMode = useHistoryEditMode({ row });
 
   const guards = useDirtyGuards({

@@ -7,6 +7,9 @@ export const INVITATIONS_COPY = {
     placeholderEmail: "초대할 이메일을 입력하세요",
     createButton: "초대 링크 생성",
     creatingButton: "생성 중...",
+
+    openButton: "초대하기",
+    closeButton: "닫기",
   },
 
   lastCreated: {
@@ -39,8 +42,23 @@ export const INVITATIONS_COPY = {
     accepted: "수락",
   },
 
+  status: {
+    pending: "대기",
+    accepted: "승인됨",
+  },
+
   actions: {
     cancel: "취소",
+    revoke: "권한 해제",
+    revoking: "해제 중...",
+  },
+
+  confirm: {
+    revoke: "해당 직원의 권한을 해제할까요?",
+  },
+
+  warnings: {
+    missingAcceptedBy: "accepted_by가 없어 권한 해제를 할 수 없습니다.",
   },
 
   alerts: {

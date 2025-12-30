@@ -13,13 +13,15 @@ export const MyPageUI = {
     return <div className="min-h-screen bg-zinc-50 px-4 py-5">{children}</div>;
   },
 
-  Header({ title }: HeaderProps) {
+  Header({ title, subtitle }: HeaderProps) {
     return (
       <header className="mb-4">
         <h1 className="text-lg font-semibold tracking-tight text-black">
           {title}
         </h1>
-        <p className="text-xs text-zinc-500 mt-1">내 정보 조회 및 계정 관리</p>
+        {subtitle ? (
+          <p className="mt-1 text-xs text-zinc-500">{subtitle}</p>
+        ) : null}
       </header>
     );
   },
@@ -36,7 +38,7 @@ export const MyPageUI = {
     return (
       <div className="flex items-center justify-between py-2">
         <span className="text-sm text-zinc-600">{label}</span>
-        <span className="text-sm font-medium text-black truncate max-w-[60%] text-right">
+        <span className="max-w-[60%] truncate text-right text-sm font-medium text-black">
           {value}
         </span>
       </div>

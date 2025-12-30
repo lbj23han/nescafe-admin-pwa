@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabaseClient";
-import { getMyProfile } from "@/lib/repositories/profile.repo";
+import { getMyProfileFromClient } from "@/lib/repositories/profile.client";
 import type {
   Department,
   DepartmentHistory,
@@ -70,7 +70,7 @@ function toSafeAmount(amount: number) {
  * - 기본은 "최근 50개"까지 (필요하면 조정)
  */
 export async function getDepartments(): Promise<Department[]> {
-  const profile = await getMyProfile();
+  const profile = await getMyProfileFromClient();
   if (!profile.shop_id) return [];
 
   const { data: deptData, error: deptError } = await supabase
@@ -121,7 +121,7 @@ export function saveDepartments(_departments: Department[]): void {
  * - deposit/debt는 0으로 시작
  */
 export async function createDepartment(name: string): Promise<Department> {
-  const profile = await getMyProfile();
+  const profile = await getMyProfileFromClient();
   if (!profile.shop_id) throw new Error("No shop");
 
   const trimmed = name.trim();
@@ -152,7 +152,7 @@ export async function renameDepartment(
   department: Department,
   name: string
 ): Promise<Department> {
-  const profile = await getMyProfile();
+  const profile = await getMyProfileFromClient();
   if (!profile.shop_id) throw new Error("No shop");
 
   const trimmed = name.trim();
@@ -178,7 +178,7 @@ export async function renameDepartment(
  * - 정책 불명이라 기본은: history 먼저 삭제 -> department 삭제
  */
 export async function deleteDepartment(id: string): Promise<void> {
-  const profile = await getMyProfile();
+  const profile = await getMyProfileFromClient();
   if (!profile.shop_id) throw new Error("No shop");
 
   // history 선삭제 (FK cascade면 이 쿼리는 없어도 됨)
@@ -207,7 +207,7 @@ export async function updateDepartmentAmounts(
   id: string,
   patch: Partial<Pick<Department, "deposit" | "debt">>
 ): Promise<void> {
-  const profile = await getMyProfile();
+  const profile = await getMyProfileFromClient();
   if (!profile.shop_id) throw new Error("No shop");
 
   const payload: Record<string, unknown> = {};

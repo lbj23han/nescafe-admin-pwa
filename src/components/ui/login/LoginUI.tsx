@@ -9,7 +9,7 @@ import type {
 } from "./LoginPage.types";
 
 type AuthFormProps = BaseAuthFormProps & {
-  inviteShopName?: string; // ✅ 초대 모드 표시용
+  inviteShopName?: string; // 초대 모드 표시용
 };
 
 export const LoginUI = {
@@ -58,7 +58,7 @@ export const LoginUI = {
     const passwordMismatch =
       isSignup && confirmPassword.length > 0 && password !== confirmPassword;
 
-    // ✅ 초대 signup(hideShopName=true)이면 shopName 검증/필수조건을 완전히 제거
+    // 초대 signup(hideShopName=true)이면 shopName 검증/필수조건을 완전히 제거
     const disabled =
       loading ||
       !email ||
@@ -89,7 +89,7 @@ export const LoginUI = {
           {isSignup ? LOGIN_PAGE_COPY.desc.signup : LOGIN_PAGE_COPY.desc.login}
         </p>
 
-        {/* ✅ 일반 signup에서만 shopName 입력 */}
+        {/* 일반 signup에서만 shopName 입력 */}
         {isSignup && !hideShopName ? (
           <>
             <label className="block mt-5 text-xs text-zinc-600">
@@ -108,7 +108,7 @@ export const LoginUI = {
           </>
         ) : null}
 
-        {/* ✅ 초대 signup일 때는 매장명 표시만 */}
+        {/* 초대 signup일 때는 매장명 표시만 */}
         {isSignup && hideShopName && inviteShopName ? (
           <div className="mt-5 rounded-lg border border-zinc-200 bg-zinc-50 p-3">
             <div className="text-[11px] text-zinc-500">초대된 매장</div>

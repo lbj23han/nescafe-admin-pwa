@@ -93,7 +93,7 @@ export function DepartmentPageContainer() {
       onToggle={toggleDepartment}
       onChange={updateDepartment}
       onDelete={deleteDepartment}
-      canEditLedger={canEditLedger} // ✅ 추가
+      canEditLedger={canEditLedger}
     />
   );
 }

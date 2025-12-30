@@ -1,10 +1,10 @@
 import type { InvitationMeta } from "@/lib/contracts/invitations";
 import { INVITE_PAGE_COPY } from "@/constants/invite";
 import {
-  InviteErrorView,
-  InvitePageView,
-} from "@/components/ui/invite/InvitePage.view";
-import InviteAcceptClient from "@/components/pages/invite/InviteAcceptClient";
+  AcceptInviteErrorView,
+  AcceptInvitePageView,
+} from "@/components/ui/accept-invite";
+import AcceptInviteClient from "./AcceptInviteClient";
 
 function enc(v: string) {
   return encodeURIComponent(v);
@@ -18,7 +18,7 @@ function formatKst(iso: string) {
   }
 }
 
-export default function InvitePageContainer({
+export default function AcceptInvitePageContainer({
   token,
   meta,
   userAuthed,
@@ -30,11 +30,13 @@ export default function InvitePageContainer({
   errorUi: string | null;
 }) {
   if (errorUi) {
-    return <InviteErrorView message={errorUi} />;
+    return <AcceptInviteErrorView message={errorUi} />;
   }
 
   if (!meta) {
-    return <InviteErrorView message={INVITE_PAGE_COPY.errors.invalidLink} />;
+    return (
+      <AcceptInviteErrorView message={INVITE_PAGE_COPY.errors.invalidLink} />
+    );
   }
 
   const next = `/invite/${token}?auto=1`;
@@ -50,7 +52,7 @@ export default function InvitePageContainer({
   const expiresLabel = formatKst(meta.expires_at);
 
   return (
-    <InvitePageView
+    <AcceptInvitePageView
       title={INVITE_PAGE_COPY.title}
       desc={INVITE_PAGE_COPY.desc}
       token={token}
@@ -60,7 +62,7 @@ export default function InvitePageContainer({
       processed={processed}
       expiresLabel={expiresLabel}
     >
-      <InviteAcceptClient token={token} />
-    </InvitePageView>
+      <AcceptInviteClient token={token} />
+    </AcceptInvitePageView>
   );
 }

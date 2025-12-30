@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabaseClient";
-import { getMyProfile } from "@/lib/repositories/profile.repo";
+import { getMyProfileFromClient } from "@/lib/repositories/profile.client";
 import type {
   DepartmentHistory,
   HistoryType,
@@ -73,7 +73,7 @@ function recomputeFromHistory(history: DepartmentHistory[]) {
 export async function getDepartmentHistory(
   departmentId: string
 ): Promise<DepartmentHistory[]> {
-  const profile = await getMyProfile();
+  const profile = await getMyProfileFromClient();
   if (!profile.shop_id) return [];
 
   const { data, error } = await supabase
@@ -98,7 +98,7 @@ export async function addDepartmentHistory(params: {
   history: DepartmentHistory;
   next: Pick<Department, "deposit" | "debt" | "history">;
 }> {
-  const profile = await getMyProfile();
+  const profile = await getMyProfileFromClient();
   if (!profile.shop_id) throw new Error("No shop");
 
   const {
@@ -154,7 +154,7 @@ export async function updateDepartmentHistory(params: {
   history: DepartmentHistory;
   next: Pick<Department, "deposit" | "debt" | "history">;
 }> {
-  const profile = await getMyProfile();
+  const profile = await getMyProfileFromClient();
   if (!profile.shop_id) throw new Error("No shop");
 
   const payload: Record<string, unknown> = {};
@@ -207,7 +207,7 @@ export async function deleteDepartmentHistory(params: {
 }): Promise<{
   next: Pick<Department, "deposit" | "debt" | "history">;
 }> {
-  const profile = await getMyProfile();
+  const profile = await getMyProfileFromClient();
   if (!profile.shop_id) throw new Error("No shop");
 
   const { error } = await supabase

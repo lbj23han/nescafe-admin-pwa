@@ -29,8 +29,6 @@ export function MainPageContainer() {
         title={MAIN_PAGE_COPY.title}
         description={MAIN_PAGE_COPY.description}
       />
-
-      {/* 캘린더 영역 */}
       <CalendarList />
     </UI.Layout>
   );

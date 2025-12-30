@@ -1,16 +1,24 @@
 import { supabase } from "@/lib/supabaseClient";
 
-export type Profile = {
+export type ClientProfile = {
   user_id: string;
   shop_id: string | null;
   role: "admin" | "viewer";
   display_name: string | null;
 };
 
-export async function getMyProfile(): Promise<Profile> {
+/**
+ * Client-side에서 내 프로필을 가져오기
+ * - Browser session 기반
+ * - supabaseClient singleton 사용
+ * - server action / DI 환경에서 사용 금지
+ */
+export async function getMyProfileFromClient(): Promise<ClientProfile> {
   const { data: sessionRes, error: sessionErr } =
     await supabase.auth.getSession();
+
   if (sessionErr) throw sessionErr;
+
   const userId = sessionRes.session?.user.id;
   if (!userId) throw new Error("Not authenticated");
 
@@ -21,5 +29,5 @@ export async function getMyProfile(): Promise<Profile> {
     .single();
 
   if (error) throw error;
-  return data as Profile;
+  return data as ClientProfile;
 }
