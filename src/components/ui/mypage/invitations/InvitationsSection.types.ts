@@ -30,6 +30,9 @@ export type InvitationsSectionViewProps = {
   onCancel: (invitationId: string) => void;
   onCopy: (text: string) => void;
 
+  onRevoke: (targetUserId: string) => void;
+  revokingUserId: string | null;
+
   // utils
   formatKST: (iso: string) => string;
   pickAcceptedAt: (inv: InvitationRow) => string | null;

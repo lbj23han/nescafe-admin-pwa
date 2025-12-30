@@ -49,6 +49,16 @@ export const INVITATIONS_COPY = {
 
   actions: {
     cancel: "취소",
+    revoke: "권한 해제",
+    revoking: "해제 중...",
+  },
+
+  confirm: {
+    revoke: "해당 직원의 권한을 해제할까요?",
+  },
+
+  warnings: {
+    missingAcceptedBy: "accepted_by가 없어 권한 해제를 할 수 없습니다.",
   },
 
   alerts: {

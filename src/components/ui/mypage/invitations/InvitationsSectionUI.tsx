@@ -159,10 +159,6 @@ export const InvitationsSectionUI = {
     );
   },
 
-  Section({ children }: { children: ReactNode }) {
-    return <div className="mt-3">{children}</div>;
-  },
-
   SectionHeader({ title, right }: { title: ReactNode; right?: ReactNode }) {
     return (
       <div className="mb-2 flex items-center justify-between">
@@ -222,18 +218,36 @@ export const InvitationsSectionUI = {
     );
   },
 
+  SubInfoLine({ children }: { children: ReactNode }) {
+    return <div className="mt-1 text-xs text-zinc-500">{children}</div>;
+  },
+
+  SubInfoStrong({ children }: { children: ReactNode }) {
+    return <span className="text-zinc-700">{children}</span>;
+  },
+
+  WarningText({ children }: { children: ReactNode }) {
+    return <div className="mt-2 text-xs text-amber-600">{children}</div>;
+  },
+
   SecondaryButton({
     onClick,
     children,
+    disabled,
   }: {
     onClick: () => void;
     children: ReactNode;
+    disabled?: boolean;
   }) {
     return (
       <button
         type="button"
-        className="h-9 shrink-0 rounded-md border border-zinc-200 bg-white px-3 text-xs text-zinc-700"
+        className="
+          h-9 shrink-0 rounded-md border border-zinc-200 bg-white px-3 text-xs text-zinc-700
+          disabled:opacity-40 disabled:cursor-not-allowed
+        "
         onClick={onClick}
+        disabled={disabled}
       >
         {children}
       </button>

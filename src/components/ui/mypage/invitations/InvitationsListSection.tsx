@@ -13,6 +13,8 @@ type Props = {
 
   // accepted 전용
   pickAcceptedAt?: (inv: InvitationRow) => string | null;
+  onRevoke?: (targetUserId: string) => void;
+  revokingUserId?: string | null;
 
   // pending 전용
   onCancel?: (id: string) => void;
@@ -22,12 +24,18 @@ function canCancel(inv: InvitationRow) {
   return inv.status === "pending";
 }
 
+function getAcceptedUserId(inv: InvitationRow): string | null {
+  return inv.accepted_by ?? null;
+}
+
 export function InvitationsListSection({
   mode,
   items,
   formatKST,
   pickAcceptedAt,
   onCancel,
+  onRevoke,
+  revokingUserId,
 }: Props) {
   const isPending = mode === "pending";
   const title = isPending ? COPY.sections.pending : COPY.sections.accepted;
@@ -49,6 +57,26 @@ export function InvitationsListSection({
               ? pickAcceptedAt?.(inv) ?? inv.updated_at ?? inv.created_at
               : null;
 
+            const targetUserId = !isPending ? getAcceptedUserId(inv) : null;
+
+            const canRevoke =
+              !isPending && inv.status === "accepted" && !!targetUserId;
+
+            const isRevoking =
+              !isPending && !!targetUserId && revokingUserId === targetUserId;
+
+            const revokeDisabled = !canRevoke || isRevoking;
+
+            const handleRevoke = () => {
+              if (revokeDisabled) return;
+              if (!onRevoke || !targetUserId) return;
+
+              const ok = window.confirm(COPY.confirm.revoke);
+              if (!ok) return;
+
+              onRevoke(targetUserId);
+            };
+
             return (
               <UI.Item key={inv.id}>
                 <UI.ItemRow
@@ -64,28 +92,45 @@ export function InvitationsListSection({
                       />
 
                       {isPending ? (
-                        <div className="mt-1 text-xs text-zinc-500">
+                        <UI.SubInfoLine>
                           {COPY.fields.created}:{" "}
-                          <span className="text-zinc-700">
+                          <UI.SubInfoStrong>
                             {formatKST(inv.created_at)}
-                          </span>{" "}
+                          </UI.SubInfoStrong>{" "}
                           / {COPY.fields.expires}:{" "}
-                          <span className="text-zinc-700">
+                          <UI.SubInfoStrong>
                             {formatKST(inv.expires_at)}
-                          </span>
-                        </div>
+                          </UI.SubInfoStrong>
+                        </UI.SubInfoLine>
                       ) : (
                         <UI.FieldLine
                           label={COPY.fields.accepted}
                           value={formatKST(String(acceptedAt))}
                         />
                       )}
+
+                      {!isPending &&
+                      inv.status === "accepted" &&
+                      !targetUserId ? (
+                        <UI.WarningText>
+                          {COPY.warnings.missingAcceptedBy}
+                        </UI.WarningText>
+                      ) : null}
                     </>
                   }
                   right={
                     isPending && canCancel(inv) && onCancel ? (
                       <UI.SecondaryButton onClick={() => onCancel(inv.id)}>
                         {COPY.actions.cancel}
+                      </UI.SecondaryButton>
+                    ) : !isPending && onRevoke ? (
+                      <UI.SecondaryButton
+                        onClick={handleRevoke}
+                        disabled={revokeDisabled}
+                      >
+                        {isRevoking
+                          ? COPY.actions.revoking
+                          : COPY.actions.revoke}
                       </UI.SecondaryButton>
                     ) : null
                   }

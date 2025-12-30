@@ -23,6 +23,8 @@ export function InvitationsSectionView(props: InvitationsSectionViewProps) {
     createOpen,
     onToggleCreate,
     showCreateForm,
+    onRevoke,
+    revokingUserId,
   } = props;
 
   const isCreateOpen = createOpen ?? showCreateForm ?? false;
@@ -98,6 +100,8 @@ export function InvitationsSectionView(props: InvitationsSectionViewProps) {
           items={accepted}
           formatKST={formatKST}
           pickAcceptedAt={pickAcceptedAt}
+          onRevoke={onRevoke}
+          revokingUserId={revokingUserId}
         />
       </UI.Body>
     </UI.Root>
