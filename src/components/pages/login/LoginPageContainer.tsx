@@ -99,7 +99,7 @@ export function LoginPageContainer() {
         password,
       });
     } else if (inviteMode) {
-      // 초대 signup: owner/shop 데이터 절대 넣지 않기
+      // 초대 signup: owner/shop 데이터 넣지 않기
       result = await supabase.auth.signUp({
         email: effectiveEmail,
         password,

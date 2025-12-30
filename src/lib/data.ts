@@ -56,7 +56,7 @@ const DeptLocalAdapter: DepartmentsRepoContract = {
   async renameDepartment(department: Department, name: string) {
     const nextDept = DeptLocal.renameDepartment(department, name);
 
-    // ✅ storage 반영까지 여기서 해줘야 "새로고침 유지"
+    // storage 반영까지 여기서 해줘야 "새로고침 유지"
     const all = DeptLocal.getDepartments();
     const next = all.map((d) => (d.id === nextDept.id ? nextDept : d));
     DeptLocal.saveDepartments(next);

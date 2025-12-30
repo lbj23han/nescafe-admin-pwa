@@ -60,7 +60,6 @@ function Page({
       <UI.Header title={title} description={description} />
 
       <UI.Main>
-        {/* ✅ owner/admin만 추가 버튼 + 폼 노출 */}
         {canEditLedger ? (
           <>
             <UI.AddToggleButton
@@ -101,7 +100,7 @@ function Page({
                 onToggle={() => onToggle(dept.id)}
                 onChange={onChange}
                 onDelete={onDelete}
-                readOnly={!canEditLedger} // ✅ 핵심
+                readOnly={!canEditLedger}
               />
             ))}
           </div>

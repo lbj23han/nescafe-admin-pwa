@@ -55,7 +55,7 @@ export const DEPARTMENT_CARD_COPY = {
     toggleOn: "편집",
     toggleOff: "완료",
     badge: "편집중",
-    editActionIcon: "...", // ✅ 내역 수정 버튼 텍스트(아이콘/점3개)
+    editActionIcon: "...",
     editActionTitle: "수정",
     editActionAria: "내역 수정",
   },

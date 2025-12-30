@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { AcceptInvitePageViewProps } from "./AcceptInvitePage.types";
-import { INVITE_PAGE_COPY } from "@/constants/invite";
+import { INVITE_PAGE_COPY, INVITE_ACCEPT_COPY } from "@/constants/invite";
 import { AcceptInviteUI } from "./AcceptInvitePageUI";
 
 export function AcceptInvitePageView({
@@ -75,7 +75,7 @@ export function AcceptInviteErrorView({ message }: { message: string }) {
   return (
     <AcceptInviteUI.Layout>
       <AcceptInviteUI.Card>
-        <AcceptInviteUI.Title>초대</AcceptInviteUI.Title>
+        <AcceptInviteUI.Title>{INVITE_ACCEPT_COPY.title}</AcceptInviteUI.Title>
         <AcceptInviteUI.Desc>{message}</AcceptInviteUI.Desc>
       </AcceptInviteUI.Card>
     </AcceptInviteUI.Layout>

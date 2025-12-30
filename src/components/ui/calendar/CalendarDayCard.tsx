@@ -99,7 +99,7 @@ export function CalendarDayCard({
               {weekdayLabel}
             </CalendarUI.WeekdayText>
 
-            {/* ✅ 공휴일 텍스트 (배지 X) */}
+            {/* 공휴일 텍스트 (배지 X) */}
             {holidayName ? (
               <CalendarUI.HolidayNameText>
                 {holidayName}

@@ -83,7 +83,7 @@ export const CalendarUI = {
     return <span className={`text-xs font-normal ${color}`}>{children}</span>;
   },
 
-  // ✅ 공휴일명 텍스트(배지 X) - 날짜 옆에 자연스럽게 붙이는 용도
+  // 공휴일명 텍스트(배지 X) - 날짜 옆에 자연스럽게 붙이는 용도
   HolidayNameText({ children }: { children: ReactNode }) {
     return (
       <span className="ml-1 text-xs font-normal text-red-600">{children}</span>
