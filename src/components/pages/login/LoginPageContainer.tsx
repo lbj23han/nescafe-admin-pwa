@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Logo } from "@/components/Logo";
-import { LoginPageUI as UI } from "@/components/ui/login/LoginPage.view";
 import { LOGIN_PAGE_COPY } from "@/constants/loginpage";
 import { supabase } from "@/lib/supabaseClient";
+import { LoginPageView } from "@/components/ui/login/LoginPage.view";
+import type { AuthFormMode } from "@/components/ui/login/LoginPage.types";
 
 function safeTrim(v: string | null | undefined) {
   return (v ?? "").trim();
@@ -30,7 +30,7 @@ export function LoginPageContainer() {
   const inviteToken = safeTrim(sp.get("inviteToken"));
   const inviteMode = !!inviteToken || safeTrim(sp.get("invite")) === "1";
 
-  const modeFromQuery =
+  const modeFromQuery: AuthFormMode =
     safeTrim(sp.get("mode")) === "signup" ? "signup" : "login";
 
   const inviteEmail = safeTrim(sp.get("email"));
@@ -40,7 +40,7 @@ export function LoginPageContainer() {
   const redirectAfterAuth = useMemo(() => safeNext(nextPath), [nextPath]);
 
   // ---- local state ----
-  const [modeState, setModeState] = useState<"login" | "signup">("login");
+  const [modeState, setModeState] = useState<AuthFormMode>("login");
   const [shopName, setShopName] = useState("");
   const [emailState, setEmailState] = useState("");
   const [password, setPassword] = useState("");
@@ -50,7 +50,7 @@ export function LoginPageContainer() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const effectiveMode = inviteMode ? modeFromQuery : modeState;
+  const effectiveMode: AuthFormMode = inviteMode ? modeFromQuery : modeState;
   const effectiveEmail = inviteMode ? inviteEmail : emailState;
 
   // 탈퇴 계정 안내: alert 1회 + URL 정리
@@ -178,36 +178,30 @@ export function LoginPageContainer() {
   };
 
   return (
-    <UI.Layout>
-      <UI.Main>
-        <Logo />
-
-        <UI.AuthForm
-          mode={effectiveMode}
-          email={effectiveEmail}
-          password={password}
-          confirmPassword={confirmPassword}
-          shopName={shopName}
-          onChangeEmail={(v) => {
-            if (inviteMode) return;
-            setEmailState(v);
-          }}
-          onChangePassword={setPassword}
-          onChangeConfirmPassword={setConfirmPassword}
-          onChangeShopName={setShopName}
-          onSubmit={handleSubmit}
-          onToggleMode={toggleMode}
-          loading={loading}
-          error={error}
-          successMessage={successMessage}
-          emailLocked={inviteMode && !!inviteEmail}
-          hideShopName={inviteMode && effectiveMode === "signup"}
-          disableModeToggle={inviteMode}
-          inviteShopName={inviteMode ? inviteShopName : ""}
-        />
-      </UI.Main>
-
-      <UI.Footer year={year} appName={LOGIN_PAGE_COPY.appName} />
-    </UI.Layout>
+    <LoginPageView
+      year={year}
+      appName={LOGIN_PAGE_COPY.appName}
+      mode={effectiveMode}
+      email={effectiveEmail}
+      password={password}
+      confirmPassword={confirmPassword}
+      shopName={shopName}
+      onChangeEmail={(v) => {
+        if (inviteMode) return;
+        setEmailState(v);
+      }}
+      onChangePassword={setPassword}
+      onChangeConfirmPassword={setConfirmPassword}
+      onChangeShopName={setShopName}
+      onSubmit={handleSubmit}
+      onToggleMode={toggleMode}
+      loading={loading}
+      error={error}
+      successMessage={successMessage}
+      emailLocked={inviteMode && !!inviteEmail}
+      hideShopName={inviteMode && effectiveMode === "signup"}
+      disableModeToggle={inviteMode}
+      inviteShopName={inviteMode ? inviteShopName : ""}
+    />
   );
 }
