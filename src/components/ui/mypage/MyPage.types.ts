@@ -25,5 +25,16 @@ export type MyPageViewProps = {
   inviteOpen: boolean;
   onToggleInviteOpen: () => void;
 
-  logoutAction: (formData: FormData) => Promise<void>;
+  logoutAction: () => Promise<void>;
+
+  accountOpen: boolean;
+  onToggleAccountOpen: () => void;
+
+  deleteConfirmText: string;
+  onChangeDeleteConfirmText: (v: string) => void;
+  canSubmitDelete: boolean;
+
+  deletingAccount: boolean;
+  deleteAccountError?: string;
+  onDeleteAccount: () => Promise<void>;
 };

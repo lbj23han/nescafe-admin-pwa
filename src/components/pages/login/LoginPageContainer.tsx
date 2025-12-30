@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { LoginPageUI as UI } from "@/components/ui/login/LoginPage.view";
@@ -22,6 +22,10 @@ export function LoginPageContainer() {
   const sp = useSearchParams();
   const year = new Date().getFullYear();
 
+  // disabled 안내
+  const reason = safeTrim(sp.get("reason"));
+  const alertedDisabledRef = useRef(false);
+
   // ---- invite context ----
   const inviteToken = safeTrim(sp.get("inviteToken"));
   const inviteMode = !!inviteToken || safeTrim(sp.get("invite")) === "1";
@@ -35,7 +39,7 @@ export function LoginPageContainer() {
 
   const redirectAfterAuth = useMemo(() => safeNext(nextPath), [nextPath]);
 
-  // ---- local state (non-invite) ----
+  // ---- local state ----
   const [modeState, setModeState] = useState<"login" | "signup">("login");
   const [shopName, setShopName] = useState("");
   const [emailState, setEmailState] = useState("");
@@ -49,11 +53,26 @@ export function LoginPageContainer() {
   const effectiveMode = inviteMode ? modeFromQuery : modeState;
   const effectiveEmail = inviteMode ? inviteEmail : emailState;
 
+  // 탈퇴 계정 안내: alert 1회 + URL 정리
+  useEffect(() => {
+    if (reason !== "disabled") return;
+    if (alertedDisabledRef.current) return;
+
+    alertedDisabledRef.current = true;
+
+    window.alert("탈퇴한 계정입니다.\n서비스 이용이 제한됩니다.");
+
+    // reason 제거 (재알림 방지)
+    const params = new URLSearchParams(sp.toString());
+    params.delete("reason");
+
+    const qs = params.toString();
+    router.replace(qs ? `/?${qs}` : "/");
+  }, [reason, router, sp]);
+
   const buildEmailRedirectTo = () => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     const next = redirectAfterAuth;
-
-    // 이메일 인증 링크는 무조건 callback을 거쳐서 세션 교환을 해야 함
     return `${origin}/auth/callback?next=${encodeURIComponent(next)}`;
   };
 
@@ -62,7 +81,6 @@ export function LoginPageContainer() {
     setError("");
     setSuccessMessage("");
 
-    // 기본 검증
     if (!effectiveEmail) {
       setLoading(false);
       setError(LOGIN_PAGE_COPY.errors.emailRequired);
@@ -79,7 +97,6 @@ export function LoginPageContainer() {
         setError(LOGIN_PAGE_COPY.errors.passwordMismatch);
         return;
       }
-      // 일반 signup에서는 shopName 필수
       if (!inviteMode && !shopName.trim()) {
         setLoading(false);
         setError(LOGIN_PAGE_COPY.errors.shopNameRequired);
@@ -99,7 +116,6 @@ export function LoginPageContainer() {
         password,
       });
     } else if (inviteMode) {
-      // 초대 signup: owner/shop 데이터 넣지 않기
       result = await supabase.auth.signUp({
         email: effectiveEmail,
         password,
@@ -112,7 +128,6 @@ export function LoginPageContainer() {
         },
       });
     } else {
-      // 일반 signup(오너)
       result = await supabase.auth.signUp({
         email: effectiveEmail,
         password,
@@ -138,7 +153,6 @@ export function LoginPageContainer() {
       "data" in result &&
       !!(result.data as { session?: unknown } | null)?.session;
 
-    // 이메일 인증이 켜져 있으면 signup 후 세션이 없을 수 있음
     if (effectiveMode === "signup" && !hasSession) {
       setSuccessMessage(
         inviteMode
