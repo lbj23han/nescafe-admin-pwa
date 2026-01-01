@@ -1,45 +1,33 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LOGIN_PAGE_COPY } from "@/constants/loginpage";
-import { supabase } from "@/lib/supabaseClient";
 import { LoginPageView } from "@/components/ui/login/LoginPage.view";
 import type { AuthFormMode } from "@/components/ui/login/LoginPage.types";
-
-function safeTrim(v: string | null | undefined) {
-  return (v ?? "").trim();
-}
-
-function safeNext(nextPath: string) {
-  if (!nextPath) return "/main";
-  if (!nextPath.startsWith("/")) return "/main";
-  return nextPath;
-}
+import {
+  useDisabledAccountAlertOnce,
+  useLoginPageQueryContext,
+} from "@/components/ui/login/hooks/useLoginPageQuery";
+import { submitLogin } from "@/components/ui/login/lib/submitLogin";
 
 export function LoginPageContainer() {
   const router = useRouter();
   const sp = useSearchParams();
   const year = new Date().getFullYear();
 
-  // disabled 안내
-  const reason = safeTrim(sp.get("reason"));
-  const alertedDisabledRef = useRef(false);
+  const {
+    reason,
+    inviteToken,
+    inviteMode,
+    modeFromQuery,
+    inviteEmail,
+    inviteShopName,
+    redirectAfterAuth,
+  } = useLoginPageQueryContext(sp);
 
-  // ---- invite context ----
-  const inviteToken = safeTrim(sp.get("inviteToken"));
-  const inviteMode = !!inviteToken || safeTrim(sp.get("invite")) === "1";
+  useDisabledAccountAlertOnce({ reason, sp, router });
 
-  const modeFromQuery: AuthFormMode =
-    safeTrim(sp.get("mode")) === "signup" ? "signup" : "login";
-
-  const inviteEmail = safeTrim(sp.get("email"));
-  const inviteShopName = safeTrim(sp.get("shopName"));
-  const nextPath = safeTrim(sp.get("next"));
-
-  const redirectAfterAuth = useMemo(() => safeNext(nextPath), [nextPath]);
-
-  // ---- local state ----
   const [modeState, setModeState] = useState<AuthFormMode>("login");
   const [shopName, setShopName] = useState("");
   const [emailState, setEmailState] = useState("");
@@ -53,116 +41,34 @@ export function LoginPageContainer() {
   const effectiveMode: AuthFormMode = inviteMode ? modeFromQuery : modeState;
   const effectiveEmail = inviteMode ? inviteEmail : emailState;
 
-  // 탈퇴 계정 안내: alert 1회 + URL 정리
-  useEffect(() => {
-    if (reason !== "disabled") return;
-    if (alertedDisabledRef.current) return;
-
-    alertedDisabledRef.current = true;
-
-    window.alert("탈퇴한 계정입니다.\n서비스 이용이 제한됩니다.");
-
-    // reason 제거 (재알림 방지)
-    const params = new URLSearchParams(sp.toString());
-    params.delete("reason");
-
-    const qs = params.toString();
-    router.replace(qs ? `/?${qs}` : "/");
-  }, [reason, router, sp]);
-
-  const buildEmailRedirectTo = () => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const next = redirectAfterAuth;
-    return `${origin}/auth/callback?next=${encodeURIComponent(next)}`;
-  };
-
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
     setSuccessMessage("");
 
-    if (!effectiveEmail) {
-      setLoading(false);
-      setError(LOGIN_PAGE_COPY.errors.emailRequired);
-      return;
-    }
-    if (!password) {
-      setLoading(false);
-      setError(LOGIN_PAGE_COPY.errors.passwordRequired);
-      return;
-    }
-    if (effectiveMode === "signup") {
-      if (password !== confirmPassword) {
-        setLoading(false);
-        setError(LOGIN_PAGE_COPY.errors.passwordMismatch);
-        return;
-      }
-      if (!inviteMode && !shopName.trim()) {
-        setLoading(false);
-        setError(LOGIN_PAGE_COPY.errors.shopNameRequired);
-        return;
-      }
-    }
-
-    const emailRedirectTo = buildEmailRedirectTo();
-
-    let result:
-      | Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>
-      | Awaited<ReturnType<typeof supabase.auth.signUp>>;
-
-    if (effectiveMode === "login") {
-      result = await supabase.auth.signInWithPassword({
-        email: effectiveEmail,
-        password,
-      });
-    } else if (inviteMode) {
-      result = await supabase.auth.signUp({
-        email: effectiveEmail,
-        password,
-        options: {
-          data: {
-            invite_token: inviteToken || null,
-            signup_kind: "invite",
-          },
-          emailRedirectTo,
-        },
-      });
-    } else {
-      result = await supabase.auth.signUp({
-        email: effectiveEmail,
-        password,
-        options: {
-          data: {
-            shop_name: shopName,
-            role: "admin",
-            display_name: "Owner",
-          },
-          emailRedirectTo,
-        },
-      });
-    }
+    const res = await submitLogin({
+      effectiveMode,
+      inviteMode,
+      effectiveEmail,
+      password,
+      confirmPassword,
+      shopName,
+      inviteToken,
+      redirectAfterAuth,
+    });
 
     setLoading(false);
 
-    if (result.error) {
-      setError(result.error.message);
+    if (res.kind === "error") {
+      setError(res.message);
+      return;
+    }
+    if (res.kind === "successMessage") {
+      setSuccessMessage(res.message);
       return;
     }
 
-    const hasSession =
-      "data" in result &&
-      !!(result.data as { session?: unknown } | null)?.session;
-
-    if (effectiveMode === "signup" && !hasSession) {
-      setSuccessMessage(
-        inviteMode
-          ? LOGIN_PAGE_COPY.success.signupInvite
-          : LOGIN_PAGE_COPY.success.signupNormal
-      );
-      return;
-    }
-
-    router.replace(redirectAfterAuth);
+    router.replace(res.to);
   };
 
   const toggleMode = () => {
