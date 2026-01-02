@@ -15,6 +15,25 @@ export const MYPAGE_COPY = {
     logout: "로그아웃",
     openInvite: "직원 초대",
     closeInvite: "직원 초대 닫기",
+    openAccount: "계정 설정",
+    closeAccount: "계정 설정 닫기",
+    deleteAccount: "회원탈퇴",
+    deletingAccount: "탈퇴 처리 중…",
+  },
+  account: {
+    title: "회원탈퇴 안내",
+    bullets: [
+      "계정의 가게/권한 정보가 제거됩니다.",
+      "탈퇴 후 서비스 이용 및 접근이 제한됩니다.",
+      "복구가 필요하면 관리자/운영을 통해 처리해야 합니다.",
+    ],
+    warningTitle: "주의: 탈퇴는 되돌릴 수 없습니다.",
+    confirmHintPrefix: '아래 입력란에 "',
+    confirmKeyword: "탈퇴",
+    confirmHintSuffix: '" 를 입력해야 버튼이 활성화됩니다.',
+    inputPlaceholder: "탈퇴",
+    confirmDialog:
+      "정말 탈퇴하시겠습니까?\n탈퇴 후에는 서비스 이용이 제한됩니다.",
   },
 } as const;
 

@@ -5,14 +5,10 @@ import type {
   LayoutProps,
   MainProps,
   FooterProps,
-  AuthFormProps as BaseAuthFormProps,
+  AuthFormProps,
 } from "./LoginPage.types";
 
-type AuthFormProps = BaseAuthFormProps & {
-  inviteShopName?: string; // 초대 모드 표시용
-};
-
-export const LoginUI = {
+export const LoginPageUI = {
   Layout({ children }: LayoutProps) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-50 px-6">
@@ -58,7 +54,7 @@ export const LoginUI = {
     const passwordMismatch =
       isSignup && confirmPassword.length > 0 && password !== confirmPassword;
 
-    // 초대 signup(hideShopName=true)이면 shopName 검증/필수조건을 완전히 제거
+    // 초대 signup(hideShopName=true)이면 shopName 검증/필수조건을 완전히 제거 (기존 유지)
     const disabled =
       loading ||
       !email ||

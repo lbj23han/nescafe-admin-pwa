@@ -1,7 +1,10 @@
-"use client";
-
 import { MainUI } from "./MainUI";
-import type { LayoutProps, HeaderProps, FooterProps } from "./MainPage.types";
+import type {
+  LayoutProps,
+  HeaderProps,
+  FooterProps,
+  MainPageViewProps,
+} from "./MainPage.types";
 
 export const MainPageUI = {
   Layout({ children }: LayoutProps) {
@@ -21,3 +24,16 @@ export const MainPageUI = {
     return <MainUI.Footer>{children}</MainUI.Footer>;
   },
 };
+
+export function MainPageView({
+  title,
+  description,
+  children,
+}: MainPageViewProps) {
+  return (
+    <MainPageUI.Layout>
+      <MainPageUI.Header title={title} description={description} />
+      {children}
+    </MainPageUI.Layout>
+  );
+}

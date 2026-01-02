@@ -1,24 +1,21 @@
 "use client";
 
-import { LoginUI } from "./LoginUI";
-import type { LayoutProps, MainProps, FooterProps } from "./LoginPage.types";
+import { Logo } from "@/components/Logo";
+import { LoginPageUI as UI } from "@/components/ui/login/LoginPageUI";
+import type { AuthFormProps, FooterProps } from "./LoginPage.types";
 
-type AuthFormProps = Parameters<typeof LoginUI.AuthForm>[0];
+type Props = FooterProps & AuthFormProps;
 
-export const LoginPageUI = {
-  Layout({ children }: LayoutProps) {
-    return <LoginUI.Layout>{children}</LoginUI.Layout>;
-  },
+export function LoginPageView({ year, appName, ...formProps }: Props) {
+  return (
+    <UI.Layout>
+      <UI.Main>
+        <Logo />
 
-  Main({ children }: MainProps) {
-    return <LoginUI.Main>{children}</LoginUI.Main>;
-  },
+        <UI.AuthForm {...formProps} />
+      </UI.Main>
 
-  Footer({ year, appName }: FooterProps) {
-    return <LoginUI.Footer year={year} appName={appName} />;
-  },
-
-  AuthForm(props: AuthFormProps) {
-    return <LoginUI.AuthForm {...props} />;
-  },
-};
+      <UI.Footer year={year} appName={appName} />
+    </UI.Layout>
+  );
+}

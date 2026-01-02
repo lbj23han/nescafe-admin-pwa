@@ -15,6 +15,17 @@ export function MyPageView({
   inviteOpen,
   onToggleInviteOpen,
   logoutAction,
+
+  accountOpen,
+  onToggleAccountOpen,
+
+  deleteConfirmText,
+  onChangeDeleteConfirmText,
+  canSubmitDelete,
+
+  deletingAccount,
+  deleteAccountError,
+  onDeleteAccount,
 }: MyPageViewProps) {
   return (
     <UI.Layout>
@@ -49,6 +60,33 @@ export function MyPageView({
           {MYPAGE_COPY.actions.logout}
         </UI.DangerButton>
       </form>
+
+      <div className="mt-3">
+        <UI.DangerButton type="button" onClick={onToggleAccountOpen}>
+          {accountOpen
+            ? MYPAGE_COPY.actions.closeAccount
+            : MYPAGE_COPY.actions.openAccount}
+        </UI.DangerButton>
+
+        <div className={accountOpen ? "mt-3" : "mt-3 hidden"}>
+          <UI.AccountPanel
+            title={MYPAGE_COPY.account.title}
+            bullets={MYPAGE_COPY.account.bullets}
+            warningTitle={MYPAGE_COPY.account.warningTitle}
+            confirmHintPrefix={MYPAGE_COPY.account.confirmHintPrefix}
+            confirmKeyword={MYPAGE_COPY.account.confirmKeyword}
+            confirmHintSuffix={MYPAGE_COPY.account.confirmHintSuffix}
+            deleteConfirmText={deleteConfirmText}
+            onChangeDeleteConfirmText={onChangeDeleteConfirmText}
+            deletingAccount={deletingAccount}
+            canSubmitDelete={canSubmitDelete}
+            deleteAccountLabel={MYPAGE_COPY.actions.deleteAccount}
+            deletingAccountLabel={MYPAGE_COPY.actions.deletingAccount}
+            deleteAccountError={deleteAccountError}
+            onDeleteAccount={onDeleteAccount}
+          />
+        </div>
+      </div>
     </UI.Layout>
   );
 }

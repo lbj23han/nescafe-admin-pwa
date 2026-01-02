@@ -12,3 +12,9 @@ export type HeaderProps = {
 export type FooterProps = {
   children: ReactNode;
 };
+
+export type MainPageViewProps = {
+  title: string;
+  description: string;
+  children: ReactNode;
+};
