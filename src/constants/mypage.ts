@@ -13,6 +13,7 @@ export const MYPAGE_COPY = {
   },
   actions: {
     logout: "로그아웃",
+    logoutConfirmDialog: "로그아웃할까요?",
     openInvite: "직원 초대",
     closeInvite: "직원 초대 닫기",
     openAccount: "계정 설정",

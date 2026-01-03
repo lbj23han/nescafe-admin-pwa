@@ -25,7 +25,7 @@ export type MyPageViewProps = {
   inviteOpen: boolean;
   onToggleInviteOpen: () => void;
 
-  logoutAction: () => Promise<void>;
+  onLogout: () => Promise<void>;
 
   accountOpen: boolean;
   onToggleAccountOpen: () => void;
