@@ -64,7 +64,7 @@ export function getRoleLabel(role: unknown) {
 
 export const POSITION_LABEL: Record<string, string> = {
   owner: "대표",
-  admin: "관리자",
+  admin: "대표",
   staff: "직원",
   viewer: "직원",
   readonly: "직원",
