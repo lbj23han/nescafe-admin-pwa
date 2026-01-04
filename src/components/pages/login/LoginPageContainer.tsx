@@ -10,15 +10,6 @@ import {
   useLoginPageQueryContext,
 } from "@/components/ui/login/hooks/useLoginPageQuery";
 import { submitLogin } from "@/components/ui/login/lib/submitLogin";
-import { supabase } from "@/lib/supabaseClient";
-import { getErrorMessage } from "@/lib/errors/getErrorMessage";
-
-function getSiteOrigin() {
-  const env = process.env.NEXT_PUBLIC_SITE_URL;
-  if (env && env.trim()) return env.trim();
-  if (typeof window !== "undefined") return window.location.origin;
-  return "";
-}
 
 export function LoginPageContainer() {
   const router = useRouter();
@@ -47,9 +38,6 @@ export function LoginPageContainer() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const [resetLoading, setResetLoading] = useState(false);
-  const [resetMessage, setResetMessage] = useState("");
-
   const effectiveMode: AuthFormMode = inviteMode ? modeFromQuery : modeState;
   const effectiveEmail = inviteMode ? inviteEmail : emailState;
 
@@ -57,7 +45,6 @@ export function LoginPageContainer() {
     setLoading(true);
     setError("");
     setSuccessMessage("");
-    setResetMessage("");
 
     const res = await submitLogin({
       effectiveMode,
@@ -84,41 +71,10 @@ export function LoginPageContainer() {
     router.replace(res.to);
   };
 
-  const handleRequestPasswordReset = async () => {
-    if (inviteMode) return; // 초대 흐름 혼동 방지
-    if (effectiveMode !== "login") return; // 로그인 모드에서만
-
-    const email = (effectiveEmail ?? "").trim();
-    if (!email) {
-      setResetMessage(LOGIN_PAGE_COPY.reset.emailRequired);
-      return;
-    }
-
-    setResetLoading(true);
-    setResetMessage("");
-    setError("");
-    setSuccessMessage("");
-
-    try {
-      const origin = getSiteOrigin();
-      const redirectTo = origin
-        ? `${origin}/auth/callback?next=/reset-password`
-        : undefined;
-
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo,
-      });
-
-      if (error) {
-        setResetMessage(error.message);
-      } else {
-        setResetMessage(LOGIN_PAGE_COPY.reset.requestDone);
-      }
-    } catch (e) {
-      setResetMessage(getErrorMessage(e, LOGIN_PAGE_COPY.reset.requestFailed));
-    } finally {
-      setResetLoading(false);
-    }
+  const handleGoPasswordResetRequest = () => {
+    if (inviteMode) return;
+    if (effectiveMode !== "login") return;
+    router.push("/reset-password-request");
   };
 
   const toggleMode = () => {
@@ -126,7 +82,6 @@ export function LoginPageContainer() {
 
     setError("");
     setSuccessMessage("");
-    setResetMessage("");
     setPassword("");
     setConfirmPassword("");
 
@@ -159,9 +114,11 @@ export function LoginPageContainer() {
       hideShopName={inviteMode && effectiveMode === "signup"}
       disableModeToggle={inviteMode}
       inviteShopName={inviteMode ? inviteShopName : ""}
-      onRequestPasswordReset={handleRequestPasswordReset}
-      resetLoading={resetLoading}
-      resetMessage={resetMessage}
+      onRequestPasswordReset={
+        inviteMode ? undefined : handleGoPasswordResetRequest
+      }
+      resetLoading={false}
+      resetMessage={""}
     />
   );
 }
