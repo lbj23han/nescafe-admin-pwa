@@ -39,4 +39,8 @@ export type AuthFormProps = {
   disableModeToggle?: boolean; // true면 모드 토글 버튼 숨김(또는 비활성)
 
   inviteShopName?: string; // 초대 모드 표시용 (기능 그대로 유지)
+
+  onRequestPasswordReset?: () => void;
+  resetLoading?: boolean;
+  resetMessage?: string;
 };

@@ -48,6 +48,10 @@ export const LoginPageUI = {
     hideShopName = false,
     disableModeToggle = false,
     inviteShopName = "",
+
+    onRequestPasswordReset,
+    resetLoading = false,
+    resetMessage = "",
   }: AuthFormProps) {
     const isSignup = mode === "signup";
 
@@ -73,6 +77,11 @@ export const LoginPageUI = {
     const lockedClass = emailLocked
       ? "bg-zinc-100 text-zinc-500 cursor-not-allowed"
       : "bg-white";
+
+    const showResetLink =
+      !isSignup &&
+      !disableModeToggle &&
+      typeof onRequestPasswordReset === "function";
 
     return (
       <section className="mt-6">
@@ -156,6 +165,12 @@ export const LoginPageUI = {
           </>
         ) : null}
 
+        {resetMessage ? (
+          <p className="mt-3 text-xs text-zinc-600 whitespace-pre-wrap">
+            {resetMessage}
+          </p>
+        ) : null}
+
         {successMessage ? (
           <p className="mt-3 text-xs text-emerald-600 whitespace-pre-wrap">
             {successMessage}
@@ -192,6 +207,19 @@ export const LoginPageUI = {
               ? LOGIN_PAGE_COPY.buttons.toLogin
               : LOGIN_PAGE_COPY.buttons.toSignup}
           </button>
+        ) : null}
+
+        {showResetLink ? (
+          <div className="mt-[1.5vh] flex justify-center">
+            <button
+              type="button"
+              className="text-[11px] text-zinc-500 underline underline-offset-2 hover:text-zinc-700 disabled:opacity-50"
+              onClick={onRequestPasswordReset}
+              disabled={loading || resetLoading}
+            >
+              {resetLoading ? "재설정 메일 요청 중…" : "비밀번호 재설정"}
+            </button>
+          </div>
         ) : null}
       </section>
     );
