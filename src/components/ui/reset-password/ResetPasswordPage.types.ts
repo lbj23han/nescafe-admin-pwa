@@ -16,6 +16,9 @@ export type ResetPasswordPageViewProps = {
   error?: string;
   doneMessage?: string;
 
+  passwordPolicyErrors?: string[];
+  passwordPolicyValid?: boolean;
+
   canSubmit: boolean;
   onSubmit: () => void;
   onBackToLogin: () => void;

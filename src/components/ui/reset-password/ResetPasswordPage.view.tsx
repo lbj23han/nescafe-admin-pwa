@@ -10,6 +10,10 @@ export function ResetPasswordPageView(props: ResetPasswordPageViewProps) {
     props.confirmPassword.length > 0 &&
     props.password !== props.confirmPassword;
 
+  const showPolicy = props.password.length > 0;
+  const policyValid = props.passwordPolicyValid ?? true;
+  const policyErrors = props.passwordPolicyErrors ?? [];
+
   return (
     <UI.Layout>
       <UI.Header title={props.title} subtitle={props.subtitle} />
@@ -22,6 +26,22 @@ export function ResetPasswordPageView(props: ResetPasswordPageViewProps) {
           placeholder={RESET_PASSWORD_COPY.placeholders.password}
           disabled={props.loading}
         />
+
+        {/* 정책 안내 */}
+        <div className="text-[11px] text-zinc-500">
+          <div className="font-medium text-zinc-600">
+            {RESET_PASSWORD_COPY.helper.passwordPolicyTitle}
+          </div>
+          <ul className="list-disc pl-4 mt-1 space-y-0.5">
+            {RESET_PASSWORD_COPY.helper.passwordPolicyLines.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+
+          {showPolicy && !policyValid ? (
+            <div className="mt-2 text-red-600">{policyErrors[0]}</div>
+          ) : null}
+        </div>
 
         <div>
           <UI.Field

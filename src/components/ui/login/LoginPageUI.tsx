@@ -7,6 +7,7 @@ import type {
   FooterProps,
   AuthFormProps,
 } from "./LoginPage.types";
+import { validatePassword } from "@/lib/auth/passwordPolicy";
 
 export const LoginPageUI = {
   Layout({ children }: LayoutProps) {
@@ -58,17 +59,29 @@ export const LoginPageUI = {
     const passwordMismatch =
       isSignup && confirmPassword.length > 0 && password !== confirmPassword;
 
-    // 초대 signup(hideShopName=true)이면 shopName 검증/필수조건을 완전히 제거 (기존 유지)
+    // signup 비번 정책
+    const pwPolicy = isSignup
+      ? validatePassword(password)
+      : { valid: true, errors: [] };
+    const showPwPolicy = isSignup && password.length > 0;
+
+    // disabled 조건에 정책 반영
     const disabled =
       loading ||
       !email ||
       !password ||
       (isSignup
-        ? !confirmPassword || passwordMismatch || (!hideShopName && !shopName)
+        ? !confirmPassword ||
+          passwordMismatch ||
+          !pwPolicy.valid ||
+          (!hideShopName && !shopName)
         : false);
 
+    // helperError 우선순위: mismatch > policy > error
     const helperError = passwordMismatch
       ? LOGIN_PAGE_COPY.helper.passwordMismatch
+      : isSignup && !pwPolicy.valid && password.length > 0
+      ? pwPolicy.errors[0] ?? ""
       : error;
 
     const inputClass =
@@ -94,7 +107,6 @@ export const LoginPageUI = {
           {isSignup ? LOGIN_PAGE_COPY.desc.signup : LOGIN_PAGE_COPY.desc.login}
         </p>
 
-        {/* 일반 signup에서만 shopName 입력 */}
         {isSignup && !hideShopName ? (
           <>
             <label className="block mt-5 text-xs text-zinc-600">
@@ -113,7 +125,6 @@ export const LoginPageUI = {
           </>
         ) : null}
 
-        {/* 초대 signup일 때는 매장명 표시만 */}
         {isSignup && hideShopName && inviteShopName ? (
           <div className="mt-5 rounded-lg border border-zinc-200 bg-zinc-50 p-3">
             <div className="text-[11px] text-zinc-500">초대된 매장</div>
@@ -148,6 +159,24 @@ export const LoginPageUI = {
           type="password"
           autoComplete={isSignup ? "new-password" : "current-password"}
         />
+
+        {/* 비번 정책 안내 (signup일 때만) */}
+        {isSignup ? (
+          <div className="mt-2 text-[11px] text-zinc-500">
+            <div className="font-medium text-zinc-600">
+              {LOGIN_PAGE_COPY.helper.passwordPolicyTitle}
+            </div>
+            <ul className="list-disc pl-4 mt-1 space-y-0.5">
+              {LOGIN_PAGE_COPY.helper.passwordPolicyLines.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+
+            {showPwPolicy && !pwPolicy.valid ? (
+              <div className="mt-2 text-red-600">{pwPolicy.errors[0]}</div>
+            ) : null}
+          </div>
+        ) : null}
 
         {isSignup ? (
           <>

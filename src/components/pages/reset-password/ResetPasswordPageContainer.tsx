@@ -6,6 +6,7 @@ import { ResetPasswordPageView } from "@/components/ui/reset-password/ResetPassw
 import { RESET_PASSWORD_COPY } from "@/constants/resetPassword";
 import { supabase } from "@/lib/supabaseClient";
 import { getErrorMessage } from "@/lib/errors/getErrorMessage";
+import { validatePassword } from "@/lib/auth/passwordPolicy";
 
 export function ResetPasswordPageContainer() {
   const router = useRouter();
@@ -17,14 +18,23 @@ export function ResetPasswordPageContainer() {
   const [error, setError] = useState<string>("");
   const [doneMessage, setDoneMessage] = useState<string>("");
 
+  const policy = validatePassword(password);
+
   const canSubmit =
     !loading &&
     password.length > 0 &&
     confirmPassword.length > 0 &&
-    password === confirmPassword;
+    password === confirmPassword &&
+    policy.valid;
 
   const handleReset = async () => {
     if (!canSubmit) return;
+
+    const recheck = validatePassword(password);
+    if (!recheck.valid) {
+      setError(recheck.errors[0] ?? RESET_PASSWORD_COPY.errors.resetFailed);
+      return;
+    }
 
     const ok = window.confirm(RESET_PASSWORD_COPY.dialogs.confirmReset);
     if (!ok) return;
@@ -34,7 +44,6 @@ export function ResetPasswordPageContainer() {
     setDoneMessage("");
 
     try {
-      // auth/callback에서 이미 세션을 쿠키에 저장했어야 함
       const { data: sessionData } = await supabase.auth.getSession();
 
       if (!sessionData.session) {
@@ -53,7 +62,6 @@ export function ResetPasswordPageContainer() {
         return;
       }
 
-      // 보안상 비번 변경 후 로그아웃 처리 권장
       await supabase.auth.signOut();
 
       setDoneMessage(RESET_PASSWORD_COPY.messages.done);
@@ -77,6 +85,8 @@ export function ResetPasswordPageContainer() {
       loading={loading}
       error={error}
       doneMessage={doneMessage}
+      passwordPolicyValid={policy.valid}
+      passwordPolicyErrors={policy.errors}
       canSubmit={canSubmit}
       onSubmit={handleReset}
       onBackToLogin={() => router.replace("/")}

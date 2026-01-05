@@ -23,6 +23,8 @@ export const RESET_PASSWORD_COPY = {
 
   helper: {
     passwordMismatch: "비밀번호가 일치하지 않습니다.",
+    passwordPolicyTitle: "비밀번호 조건",
+    passwordPolicyLines: ["8자 이상", "영문 1자 이상", "숫자 1자 이상"],
   },
 
   messages: {
