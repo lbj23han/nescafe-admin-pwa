@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { LOGIN_PAGE_COPY } from "@/constants/loginpage";
 import type {
   LayoutProps,
@@ -56,6 +57,9 @@ export const LoginPageUI = {
   }: AuthFormProps) {
     const isSignup = mode === "signup";
 
+    // 비번 input focus 상태
+    const [pwFocused, setPwFocused] = useState(false);
+
     const passwordMismatch =
       isSignup && confirmPassword.length > 0 && password !== confirmPassword;
 
@@ -63,7 +67,6 @@ export const LoginPageUI = {
     const pwPolicy = isSignup
       ? validatePassword(password)
       : { valid: true, errors: [] };
-    const showPwPolicy = isSignup && password.length > 0;
 
     // disabled 조건에 정책 반영
     const disabled =
@@ -95,6 +98,9 @@ export const LoginPageUI = {
       !isSignup &&
       !disableModeToggle &&
       typeof onRequestPasswordReset === "function";
+
+    // 정책 노출 조건: signup + password input focus
+    const showPasswordPolicy = isSignup && pwFocused;
 
     return (
       <section className="mt-6">
@@ -158,10 +164,11 @@ export const LoginPageUI = {
           placeholder={LOGIN_PAGE_COPY.placeholders.password}
           type="password"
           autoComplete={isSignup ? "new-password" : "current-password"}
+          onFocus={() => setPwFocused(true)}
+          onBlur={() => setPwFocused(false)}
         />
 
-        {/* 비번 정책 안내 (signup일 때만) */}
-        {isSignup ? (
+        {showPasswordPolicy ? (
           <div className="mt-2 text-[11px] text-zinc-500">
             <div className="font-medium text-zinc-600">
               {LOGIN_PAGE_COPY.helper.passwordPolicyTitle}
@@ -172,7 +179,7 @@ export const LoginPageUI = {
               ))}
             </ul>
 
-            {showPwPolicy && !pwPolicy.valid ? (
+            {password.length > 0 && !pwPolicy.valid ? (
               <div className="mt-2 text-red-600">{pwPolicy.errors[0]}</div>
             ) : null}
           </div>

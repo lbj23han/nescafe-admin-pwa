@@ -16,7 +16,7 @@ export function validatePassword(password: string): PasswordPolicyResult {
   }
 
   if (!/[0-9]/.test(v)) {
-    errors.push("숫자를 1자 이상 포함해야 합니다.");
+    errors.push("숫자를 1개 이상 포함해야 합니다.");
   }
 
   return { valid: errors.length === 0, errors };

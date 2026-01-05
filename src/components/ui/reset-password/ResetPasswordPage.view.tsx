@@ -1,18 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import { RESET_PASSWORD_COPY } from "@/constants/resetPassword";
 import type { ResetPasswordPageViewProps } from "./ResetPasswordPage.types";
 import { ResetPasswordPageUI as UI } from "./ResetPasswordPageUI";
 
 export function ResetPasswordPageView(props: ResetPasswordPageViewProps) {
+  const [pwFocused, setPwFocused] = useState(false);
+
   const pwMismatch =
     props.password.length > 0 &&
     props.confirmPassword.length > 0 &&
     props.password !== props.confirmPassword;
 
-  const showPolicy = props.password.length > 0;
   const policyValid = props.passwordPolicyValid ?? true;
   const policyErrors = props.passwordPolicyErrors ?? [];
+
+  const showPolicy = pwFocused;
 
   return (
     <UI.Layout>
@@ -25,23 +29,27 @@ export function ResetPasswordPageView(props: ResetPasswordPageViewProps) {
           onChange={props.onChangePassword}
           placeholder={RESET_PASSWORD_COPY.placeholders.password}
           disabled={props.loading}
+          onFocus={() => setPwFocused(true)}
+          onBlur={() => setPwFocused(false)}
         />
 
-        {/* 정책 안내 */}
-        <div className="text-[11px] text-zinc-500">
-          <div className="font-medium text-zinc-600">
-            {RESET_PASSWORD_COPY.helper.passwordPolicyTitle}
-          </div>
-          <ul className="list-disc pl-4 mt-1 space-y-0.5">
-            {RESET_PASSWORD_COPY.helper.passwordPolicyLines.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
+        {/* 정책 안내: 포커스일 때만 */}
+        {showPolicy ? (
+          <div className="text-[11px] text-zinc-500">
+            <div className="font-medium text-zinc-600">
+              {RESET_PASSWORD_COPY.helper.passwordPolicyTitle}
+            </div>
+            <ul className="list-disc pl-4 mt-1 space-y-0.5">
+              {RESET_PASSWORD_COPY.helper.passwordPolicyLines.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
 
-          {showPolicy && !policyValid ? (
-            <div className="mt-2 text-red-600">{policyErrors[0]}</div>
-          ) : null}
-        </div>
+            {props.password.length > 0 && !policyValid ? (
+              <div className="mt-2 text-red-600">{policyErrors[0]}</div>
+            ) : null}
+          </div>
+        ) : null}
 
         <div>
           <UI.Field

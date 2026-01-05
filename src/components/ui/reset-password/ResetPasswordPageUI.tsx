@@ -32,7 +32,15 @@ export const ResetPasswordPageUI = {
     return <section className="space-y-3">{children}</section>;
   },
 
-  Field({ label, value, onChange, placeholder, disabled }: FieldProps) {
+  Field({
+    label,
+    value,
+    onChange,
+    placeholder,
+    disabled,
+    onFocus,
+    onBlur,
+  }: FieldProps) {
     const inputClass = [
       "mt-1 w-full rounded-xl border border-zinc-200",
       "px-3 py-3 text-sm",
@@ -53,6 +61,8 @@ export const ResetPasswordPageUI = {
           placeholder={placeholder}
           autoComplete="new-password"
           disabled={disabled}
+          onFocus={onFocus}
+          onBlur={onBlur}
         />
       </div>
     );

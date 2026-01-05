@@ -29,7 +29,11 @@ export const LOGIN_PAGE_COPY = {
     shopName: "나중에 마이페이지에서 변경할 수 있어요.",
     passwordMismatch: "비밀번호가 서로 일치하지 않습니다.",
     passwordPolicyTitle: "비밀번호 조건",
-    passwordPolicyLines: ["8자 이상", "영문 1자 이상", "숫자 1자 이상"],
+    passwordPolicyLines: [
+      "8자 이상",
+      "영문 1자 이상 포함",
+      "숫자 1개 이상 포함",
+    ],
   },
 
   buttons: {

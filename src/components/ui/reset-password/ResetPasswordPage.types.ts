@@ -40,6 +40,8 @@ export type FieldProps = {
   onChange: (v: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  onFocus?: () => void;
+  onBlur?: () => void;
 };
 
 export type MessageProps = {
