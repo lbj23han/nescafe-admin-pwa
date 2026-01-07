@@ -35,7 +35,6 @@ export const INVITE_ACCEPT_COPY = {
     email_mismatch:
       "초대받은 이메일과 로그인한 이메일이 달라요. 올바른 계정으로 로그인했는지 확인해주세요.",
     unauthorized: "로그인이 필요합니다.",
-    rpc_error: "초대 수락 처리 중 오류가 발생했습니다.",
     failed: "초대 수락에 실패했습니다.",
   } as Record<string, string>,
 

@@ -4,18 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { INVITE_ACCEPT_COPY } from "@/constants/invite";
 
-type AcceptErrorPayload = {
-  error?: string;
-  code?: string;
-  detail?: string;
-};
+type AcceptOk = { ok: true; redirectTo?: string };
+type AcceptFail = { ok: false; code?: string; error?: string; detail?: string };
 
-function parseMaybeJson(text: string): AcceptErrorPayload | null {
+function parseJsonSafe(text: string): any | null {
   const t = (text ?? "").trim();
   if (!t) return null;
-  if (!(t.startsWith("{") && t.endsWith("}"))) return null;
   try {
-    return JSON.parse(t) as AcceptErrorPayload;
+    return JSON.parse(t);
   } catch {
     return null;
   }
@@ -44,21 +40,27 @@ export default function AcceptInviteClient({ token }: { token: string }) {
     try {
       const res = await fetch(`/invite/${encodeURIComponent(token)}/accept`, {
         method: "POST",
-        headers: { Accept: "application/json" },
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        // body 필요 없지만, 일부 환경에서 POST가 캐시/프리플라이트처럼 보이는걸 피하려면 넣어도 됨
+        body: JSON.stringify({}),
       });
 
       const rawText = await res.text().catch(() => "");
-      const json = parseMaybeJson(rawText);
+      const parsed = parseJsonSafe(rawText);
 
       if (!res.ok) {
-        const code = json?.code ?? "";
+        const payload = (parsed ?? {}) as AcceptFail;
+        const code = (payload.code ?? "").trim();
+
         const msgFromCode = code
           ? INVITE_ACCEPT_COPY.messagesByCode[code]
           : null;
-
         const message =
           msgFromCode ??
-          json?.error ??
+          payload.error ??
           (rawText.trim() ? rawText : INVITE_ACCEPT_COPY.fallbackError);
 
         setError(message);
@@ -67,8 +69,8 @@ export default function AcceptInviteClient({ token }: { token: string }) {
           [
             `status: ${res.status}`,
             code ? `code: ${code}` : null,
-            json?.detail ? `detail: ${json.detail}` : null,
-            !json && rawText ? `raw: ${rawText}` : null,
+            payload.detail ? `detail: ${payload.detail}` : null,
+            !parsed && rawText ? `raw: ${rawText}` : null,
           ]
             .filter(Boolean)
             .join("\n")
@@ -77,8 +79,16 @@ export default function AcceptInviteClient({ token }: { token: string }) {
         return;
       }
 
+      // success
+      const okPayload = (parsed ?? {}) as AcceptOk;
       setDone(true);
-      router.replace("/main");
+
+      const to =
+        okPayload.redirectTo && okPayload.redirectTo.startsWith("/")
+          ? okPayload.redirectTo
+          : "/main";
+
+      router.replace(to);
     } catch (e) {
       setError(INVITE_ACCEPT_COPY.unknownError);
       setDebug(String(e));
