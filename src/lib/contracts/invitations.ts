@@ -6,6 +6,10 @@ export type InvitationRow = {
   shop_id: string;
   role: InviteRole; //
   email: string | null;
+
+  /** owner 편의용 */
+  invitee_name?: string | null;
+
   status: InvitationStatus;
 
   invited_by: string;

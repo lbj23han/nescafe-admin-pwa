@@ -36,6 +36,7 @@ export const INVITATIONS_COPY = {
   },
 
   fields: {
+    name: "이름",
     email: "이메일",
     created: "생성",
     expires: "만료",
@@ -58,7 +59,7 @@ export const INVITATIONS_COPY = {
   },
 
   warnings: {
-    missingAcceptedBy: "accepted_by가 없어 권한 해제를 할 수 없습니다.",
+    missingAcceptedBy: "아직 권한 해제를 할 수 없습니다.",
   },
 
   alerts: {

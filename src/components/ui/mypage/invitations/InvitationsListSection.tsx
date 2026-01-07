@@ -11,12 +11,12 @@ type Props = {
   items: InvitationRow[];
   formatKST: (iso: string) => string;
 
-  // accepted 전용
+  // accepted
   pickAcceptedAt?: (inv: InvitationRow) => string | null;
   onRevoke?: (targetUserId: string) => void;
   revokingUserId?: string | null;
 
-  // pending 전용
+  // pending
   onCancel?: (id: string) => void;
 };
 
@@ -26,6 +26,12 @@ function canCancel(inv: InvitationRow) {
 
 function getAcceptedUserId(inv: InvitationRow): string | null {
   return inv.accepted_by ?? null;
+}
+
+function normalizeName(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const t = v.trim();
+  return t.length > 0 ? t : null;
 }
 
 export function InvitationsListSection({
@@ -67,6 +73,8 @@ export function InvitationsListSection({
 
             const revokeDisabled = !canRevoke || isRevoking;
 
+            const inviteeName = normalizeName(inv.invitee_name);
+
             const handleRevoke = () => {
               if (revokeDisabled) return;
               if (!onRevoke || !targetUserId) return;
@@ -85,6 +93,13 @@ export function InvitationsListSection({
                       <div className="flex items-center gap-2">
                         <UI.StatusBadge>{status}</UI.StatusBadge>
                       </div>
+
+                      {inviteeName ? (
+                        <UI.FieldLine
+                          label={COPY.fields.name}
+                          value={inviteeName}
+                        />
+                      ) : null}
 
                       <UI.FieldLine
                         label={COPY.fields.email}
