@@ -17,6 +17,9 @@ export type RepoCreateInvitationResult = {
 export type CreateInvitationParams = {
   role: InviteRole; // viewer only
   email?: string;
+
+  /** owner 편의용: 초대 대상자 이름 */
+  inviteeName?: string;
 };
 
 export type AcceptInvitationParams = {

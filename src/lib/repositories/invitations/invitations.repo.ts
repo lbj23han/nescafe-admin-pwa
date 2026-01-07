@@ -21,7 +21,11 @@ import {
   assertStatus as _assertStatus,
 } from "./invitations.types";
 
-// import { ensureString, pickFirstRow, assertRole, assertStatus } from "./invitations.types";
+function normalizeOptionalText(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const t = v.trim();
+  return t.length > 0 ? t : null;
+}
 
 export async function getInvitationMeta(
   supabase: SupabaseClient,
@@ -67,12 +71,13 @@ export async function createInvitation(
   supabase: SupabaseClient,
   params: CreateInvitationParams
 ): Promise<RepoCreateInvitationResult> {
-  const { role, email } = params;
+  const { role, email, inviteeName } = params;
   if (role !== "viewer") throw new Error("Invalid role");
 
   const { data, error } = await supabase.rpc("app_invite_create", {
     _role: role,
     _email: (email ?? "").trim(),
+    _invitee_name: normalizeOptionalText(inviteeName),
   });
   if (error) throw error;
 
