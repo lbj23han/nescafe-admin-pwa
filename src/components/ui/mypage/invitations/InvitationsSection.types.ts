@@ -24,6 +24,11 @@ export type InvitationsSectionViewProps = {
   // form
   email: string;
   onChangeEmail: (v: string) => void;
+
+  /** owner 입력: 이름(옵션) */
+  inviteeName: string;
+  onChangeInviteeName: (v: string) => void;
+
   onCreate: () => void;
 
   // actions

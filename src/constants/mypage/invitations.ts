@@ -5,6 +5,10 @@ export const INVITATIONS_COPY = {
   form: {
     labelEmail: "초대할 이메일",
     placeholderEmail: "초대할 이메일을 입력하세요",
+
+    labelName: "이름(선택)",
+    placeholderName: "예) 홍길동",
+
     createButton: "초대 링크 생성",
     creatingButton: "생성 중...",
 

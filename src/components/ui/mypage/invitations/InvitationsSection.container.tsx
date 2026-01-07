@@ -18,6 +18,10 @@ function pickAcceptedAt(inv: InvitationRow) {
   return inv.accepted_at ?? null;
 }
 
+function clampName(v: string) {
+  return (v ?? "").slice(0, 40);
+}
+
 export function InvitationsSectionContainer() {
   const {
     items,
@@ -36,6 +40,7 @@ export function InvitationsSectionContainer() {
   } = useInvitations();
 
   const [email, setEmail] = useState("");
+  const [inviteeName, setInviteeName] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
 
   const pending = useMemo(
@@ -87,8 +92,14 @@ export function InvitationsSectionContainer() {
       alert(COPY.alerts.emailRequired);
       return;
     }
-    await create({ email: email.trim() });
+
+    await create({
+      email: email.trim(),
+      invitee_name: inviteeName.trim() ? inviteeName.trim() : undefined,
+    });
+
     setEmail("");
+    setInviteeName("");
   };
 
   const handleCopy = async (text: string) => {
@@ -110,6 +121,8 @@ export function InvitationsSectionContainer() {
       lastCreated={lastCreated}
       email={email}
       onChangeEmail={setEmail}
+      inviteeName={inviteeName}
+      onChangeInviteeName={(v) => setInviteeName(clampName(v))}
       onCreate={handleCreate}
       onCancel={cancel}
       onCopy={handleCopy}

@@ -15,6 +15,10 @@ export function InvitationsSectionView(props: InvitationsSectionViewProps) {
     lastCreated,
     email,
     onChangeEmail,
+
+    inviteeName,
+    onChangeInviteeName,
+
     onCreate,
     onCancel,
     onCopy,
@@ -46,6 +50,14 @@ export function InvitationsSectionView(props: InvitationsSectionViewProps) {
             value={email}
             onChange={onChangeEmail}
             placeholder={COPY.form.placeholderEmail}
+          />
+
+          <UI.Label>{COPY.form.labelName}</UI.Label>
+
+          <UI.Input
+            value={inviteeName}
+            onChange={onChangeInviteeName}
+            placeholder={COPY.form.placeholderName}
           />
 
           <UI.PrimaryButton onClick={onCreate} disabled={creating}>
