@@ -11,12 +11,15 @@ type Props = {
   items: InvitationRow[];
   formatKST: (iso: string) => string;
 
-  // accepted 전용
+  // accepted
   pickAcceptedAt?: (inv: InvitationRow) => string | null;
   onRevoke?: (targetUserId: string) => void;
   revokingUserId?: string | null;
 
-  // pending 전용
+  // accepted 이름 소스
+  memberNameById?: Map<string, string>;
+
+  // pending
   onCancel?: (id: string) => void;
 };
 
@@ -28,6 +31,12 @@ function getAcceptedUserId(inv: InvitationRow): string | null {
   return inv.accepted_by ?? null;
 }
 
+function normalizeName(v: string | null | undefined): string | null {
+  if (typeof v !== "string") return null;
+  const t = v.trim();
+  return t.length > 0 ? t : null;
+}
+
 export function InvitationsListSection({
   mode,
   items,
@@ -36,6 +45,7 @@ export function InvitationsListSection({
   onCancel,
   onRevoke,
   revokingUserId,
+  memberNameById,
 }: Props) {
   const isPending = mode === "pending";
   const title = isPending ? COPY.sections.pending : COPY.sections.accepted;
@@ -67,6 +77,18 @@ export function InvitationsListSection({
 
             const revokeDisabled = !canRevoke || isRevoking;
 
+            const inviteeName = normalizeName(inv.invitee_name ?? null);
+
+            const profileName =
+              !isPending && targetUserId && memberNameById
+                ? normalizeName(memberNameById.get(targetUserId) ?? null)
+                : null;
+
+            // accepted는 profiles.display_name 우선
+            const displayName = isPending
+              ? inviteeName
+              : profileName ?? inviteeName;
+
             const handleRevoke = () => {
               if (revokeDisabled) return;
               if (!onRevoke || !targetUserId) return;
@@ -85,6 +107,13 @@ export function InvitationsListSection({
                       <div className="flex items-center gap-2">
                         <UI.StatusBadge>{status}</UI.StatusBadge>
                       </div>
+
+                      {displayName ? (
+                        <UI.FieldLine
+                          label={COPY.fields.name}
+                          value={displayName}
+                        />
+                      ) : null}
 
                       <UI.FieldLine
                         label={COPY.fields.email}

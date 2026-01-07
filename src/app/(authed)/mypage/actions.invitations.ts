@@ -20,6 +20,12 @@ function normalizeEmail(email: string) {
   return e;
 }
 
+function normalizeOptionalText(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const t = v.trim();
+  return t.length > 0 ? t : null;
+}
+
 function assertOwner(role: string | null | undefined) {
   // 프로젝트 정책에 맞게: owner만 허용 (admin을 owner급으로 보려면 포함)
   if (role !== "owner" && role !== "admin") {
@@ -43,9 +49,12 @@ export async function createInvitationAction(
 
   const email = normalizeEmail(input.email);
 
+  const inviteeName = normalizeOptionalText(input.invitee_name);
+
   const { invitationId, token, expiresAt } = await createInvitation(supabase, {
     role: "viewer",
     email,
+    inviteeName: inviteeName ?? undefined,
   });
 
   revalidatePath("/mypage");

@@ -24,6 +24,11 @@ export type InvitationsSectionViewProps = {
   // form
   email: string;
   onChangeEmail: (v: string) => void;
+
+  /** owner 입력: 이름(옵션) */
+  inviteeName: string;
+  onChangeInviteeName: (v: string) => void;
+
   onCreate: () => void;
 
   // actions
@@ -36,4 +41,6 @@ export type InvitationsSectionViewProps = {
   // utils
   formatKST: (iso: string) => string;
   pickAcceptedAt: (inv: InvitationRow) => string | null;
+
+  memberNameById: Map<string, string>;
 };

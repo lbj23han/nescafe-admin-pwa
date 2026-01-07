@@ -4,8 +4,12 @@ export type InvitationStatus = "pending" | "accepted" | "cancelled" | "expired";
 export type InvitationRow = {
   id: string;
   shop_id: string;
-  role: InviteRole; //
+  role: InviteRole;
   email: string | null;
+
+  /** owner 편의용 */
+  invitee_name?: string | null;
+
   status: InvitationStatus;
 
   invited_by: string;
@@ -21,6 +25,7 @@ export type InvitationRow = {
 
 export type CreateInvitationInput = {
   email: string;
+  invitee_name?: string;
 };
 
 export type CreateInvitationResult = {

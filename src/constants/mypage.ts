@@ -1,26 +1,50 @@
 export const MYPAGE_COPY = {
   title: "마이페이지",
   subtitle: "내 정보 조회 및 계정 관리",
+
   fallback: {
     shopName: "미설정",
     position: "미설정",
     role: "알 수 없음",
+    displayName: "미설정",
   },
+
   labels: {
     shopName: "가게명",
     position: "직책",
     role: "권한",
+    displayName: "이름",
+    displayNameEmpty: "미설정",
   },
+
+  placeholders: {
+    displayName: "이름을 입력하세요",
+  },
+
+  hints: {
+    displayName:
+      "이름은 직원 초대/멤버 목록 표시 등에 사용됩니다. 비워두면 미설정으로 표시됩니다.",
+  },
+
   actions: {
     logout: "로그아웃",
     logoutConfirmDialog: "로그아웃할까요?",
+
     openInvite: "직원 초대",
     closeInvite: "직원 초대 닫기",
+
     openAccount: "계정 설정",
     closeAccount: "계정 설정 닫기",
+
+    openEditName: "이름 수정",
+    closeEditName: "이름 수정 닫기",
+    saveDisplayName: "저장",
+    saving: "저장 중…",
+
     deleteAccount: "회원탈퇴",
     deletingAccount: "탈퇴 처리 중…",
   },
+
   account: {
     title: "회원탈퇴 안내",
     bullets: [
