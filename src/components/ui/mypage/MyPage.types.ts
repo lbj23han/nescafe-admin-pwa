@@ -27,6 +27,15 @@ export type MyPageViewProps = {
 
   onLogout: () => Promise<void>;
 
+  // profile (display name)
+  displayName: string;
+  onChangeDisplayName: (v: string) => void;
+  onSaveDisplayName: () => Promise<void>;
+  savingName: boolean;
+  saveNameError?: string;
+  canSaveName: boolean;
+
+  // delete account
   accountOpen: boolean;
   onToggleAccountOpen: () => void;
 

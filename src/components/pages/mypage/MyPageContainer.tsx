@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Profile } from "@/lib/repositories/profile/profile.types";
 import { logoutAction } from "@/app/(authed)/mypage/actions";
-import { deleteAccountAction } from "@/app/(authed)/mypage/actions.account";
+import {
+  deleteAccountAction,
+  updateMyDisplayNameAction,
+} from "@/app/(authed)/mypage/actions.account";
 import { MyPageView } from "@/components/ui/mypage/MyPage.view";
 import {
   MYPAGE_COPY,
@@ -43,6 +46,35 @@ export function MyPageContainer({ initialProfile, shopName }: Props) {
 
   const [inviteOpen, setInviteOpen] = useState(false);
 
+  // ---- display name edit ----
+  const [displayName, setDisplayName] = useState(
+    initialProfile?.display_name ?? ""
+  );
+  const [savingName, setSavingName] = useState(false);
+  const [saveNameError, setSaveNameError] = useState<string>();
+
+  const canSaveName = !savingName;
+
+  const handleSaveDisplayName = async () => {
+    if (!canSaveName) return;
+
+    setSavingName(true);
+    setSaveNameError(undefined);
+
+    const res = await updateMyDisplayNameAction(displayName);
+
+    if (!res.ok) {
+      setSaveNameError(res.message);
+      setSavingName(false);
+      return;
+    }
+
+    // 서버 컴포넌트에서 profile을 다시 읽는 경우까지 동기화
+    router.refresh();
+    setSavingName(false);
+  };
+
+  // ---- account delete ----
   const [accountOpen, setAccountOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
@@ -72,7 +104,6 @@ export function MyPageContainer({ initialProfile, shopName }: Props) {
     try {
       await logoutAction();
     } finally {
-      // server redirect가 클라에서 예외처럼 끊길 수 있어 안전장치
       router.replace("/");
     }
   };
@@ -120,6 +151,12 @@ export function MyPageContainer({ initialProfile, shopName }: Props) {
       deletingAccount={deletingAccount}
       deleteAccountError={deleteAccountError}
       onDeleteAccount={handleDeleteAccount}
+      displayName={displayName}
+      onChangeDisplayName={setDisplayName}
+      onSaveDisplayName={handleSaveDisplayName}
+      savingName={savingName}
+      saveNameError={saveNameError}
+      canSaveName={canSaveName}
     />
   );
 }
