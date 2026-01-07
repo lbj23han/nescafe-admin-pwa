@@ -1,6 +1,7 @@
 import { LOGIN_PAGE_COPY } from "@/constants/loginpage";
 import { supabase } from "@/lib/supabaseClient";
 import type { AuthFormMode } from "@/components/ui/login/LoginPage.types";
+import { validatePassword } from "@/lib/auth/passwordPolicy";
 
 type SubmitParams = {
   effectiveMode: AuthFormMode;
@@ -30,7 +31,6 @@ function buildEmailRedirectTo(next: string) {
 }
 
 function hasSession(result: AuthResult): boolean {
-  // supabase 응답 타입이 signIn / signUp 이 달라서 "session 존재 여부"만 안전하게 체크
   const data = result.data as unknown;
   if (!data || typeof data !== "object") return false;
 
@@ -60,6 +60,14 @@ export async function submitLogin(params: SubmitParams): Promise<SubmitResult> {
   }
 
   if (effectiveMode === "signup") {
+    const policy = validatePassword(password);
+    if (!policy.valid) {
+      return {
+        kind: "error",
+        message: policy.errors[0] ?? LOGIN_PAGE_COPY.errors.passwordRequired,
+      };
+    }
+
     if (password !== confirmPassword) {
       return {
         kind: "error",

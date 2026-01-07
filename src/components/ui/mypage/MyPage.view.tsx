@@ -14,7 +14,7 @@ export function MyPageView({
   canInvite,
   inviteOpen,
   onToggleInviteOpen,
-  logoutAction,
+  onLogout,
 
   accountOpen,
   onToggleAccountOpen,
@@ -55,11 +55,9 @@ export function MyPageView({
         </>
       ) : null}
 
-      <form action={logoutAction}>
-        <UI.DangerButton type="submit">
-          {MYPAGE_COPY.actions.logout}
-        </UI.DangerButton>
-      </form>
+      <UI.DangerButton type="button" onClick={onLogout}>
+        {MYPAGE_COPY.actions.logout}
+      </UI.DangerButton>
 
       <div className="mt-3">
         <UI.DangerButton type="button" onClick={onToggleAccountOpen}>

@@ -71,6 +71,12 @@ export function LoginPageContainer() {
     router.replace(res.to);
   };
 
+  const handleGoPasswordResetRequest = () => {
+    if (inviteMode) return;
+    if (effectiveMode !== "login") return;
+    router.push("/reset-password-request");
+  };
+
   const toggleMode = () => {
     if (inviteMode) return;
 
@@ -108,6 +114,11 @@ export function LoginPageContainer() {
       hideShopName={inviteMode && effectiveMode === "signup"}
       disableModeToggle={inviteMode}
       inviteShopName={inviteMode ? inviteShopName : ""}
+      onRequestPasswordReset={
+        inviteMode ? undefined : handleGoPasswordResetRequest
+      }
+      resetLoading={false}
+      resetMessage={""}
     />
   );
 }

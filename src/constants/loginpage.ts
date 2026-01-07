@@ -21,13 +21,19 @@ export const LOGIN_PAGE_COPY = {
   placeholders: {
     shopName: "Nescafe",
     email: "email@example.com",
-    password: "8자 이상 권장",
+    password: "8자 이상을 권장합니다",
     confirmPassword: "비밀번호를 다시 입력",
   },
 
   helper: {
     shopName: "나중에 마이페이지에서 변경할 수 있어요.",
     passwordMismatch: "비밀번호가 서로 일치하지 않습니다.",
+    passwordPolicyTitle: "비밀번호 조건",
+    passwordPolicyLines: [
+      "8자 이상",
+      "영문 1자 이상 포함",
+      "숫자 1개 이상 포함",
+    ],
   },
 
   buttons: {
@@ -43,6 +49,12 @@ export const LOGIN_PAGE_COPY = {
     passwordRequired: "비밀번호를 입력해주세요.",
     shopNameRequired: "매장명을 입력해주세요.",
     passwordMismatch: "비밀번호 확인이 일치하지 않습니다.",
+  },
+
+  reset: {
+    emailRequired: "이메일을 입력해 주세요.",
+    requestDone: "재설정 메일을 보냈습니다. 메일함에서 링크를 확인해 주세요.",
+    requestFailed: "요청 중 오류가 발생했습니다.",
   },
 
   success: {

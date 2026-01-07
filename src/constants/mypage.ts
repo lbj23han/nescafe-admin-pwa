@@ -13,6 +13,7 @@ export const MYPAGE_COPY = {
   },
   actions: {
     logout: "로그아웃",
+    logoutConfirmDialog: "로그아웃할까요?",
     openInvite: "직원 초대",
     closeInvite: "직원 초대 닫기",
     openAccount: "계정 설정",
@@ -63,7 +64,7 @@ export function getRoleLabel(role: unknown) {
 
 export const POSITION_LABEL: Record<string, string> = {
   owner: "대표",
-  admin: "관리자",
+  admin: "대표",
   staff: "직원",
   viewer: "직원",
   readonly: "직원",

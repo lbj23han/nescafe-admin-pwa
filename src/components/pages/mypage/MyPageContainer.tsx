@@ -65,6 +65,18 @@ export function MyPageContainer({ initialProfile, shopName }: Props) {
     });
   };
 
+  const handleLogout = async () => {
+    const ok = window.confirm(MYPAGE_COPY.actions.logoutConfirmDialog);
+    if (!ok) return;
+
+    try {
+      await logoutAction();
+    } finally {
+      // server redirect가 클라에서 예외처럼 끊길 수 있어 안전장치
+      router.replace("/");
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (!canSubmitDelete) return;
 
@@ -99,7 +111,7 @@ export function MyPageContainer({ initialProfile, shopName }: Props) {
       canInvite={canInvite}
       inviteOpen={inviteOpen}
       onToggleInviteOpen={() => setInviteOpen((v) => !v)}
-      logoutAction={logoutAction}
+      onLogout={handleLogout}
       accountOpen={accountOpen}
       onToggleAccountOpen={handleToggleAccountOpen}
       deleteConfirmText={deleteConfirmText}
