@@ -12,9 +12,11 @@ import {
   listInvitationsAction,
   cancelInvitationAction,
 } from "@/app/(authed)/mypage/actions.invitations";
+import type { MemberRow } from "@/app/(authed)/mypage/actions.members";
 import {
   revokeMemberAction,
   getActiveMemberIdsAction,
+  listMembersAction,
 } from "@/app/(authed)/mypage/actions.members";
 
 function uniqStrings(xs: (string | null | undefined)[]): string[] {
@@ -23,6 +25,10 @@ function uniqStrings(xs: (string | null | undefined)[]): string[] {
     if (typeof x === "string" && x.length > 0) set.add(x);
   }
   return Array.from(set);
+}
+
+function safeTrim(v: unknown): string {
+  return typeof v === "string" ? v.trim() : "";
 }
 
 export function useInvitations() {
@@ -37,6 +43,11 @@ export function useInvitations() {
   // accepted 표시용: "현재shop 멤버인 user_id" 집합
   const [activeMemberUserIds, setActiveMemberUserIds] = useState<Set<string>>(
     () => new Set()
+  );
+
+  // accepted 표시용: user_id -> display_name 맵
+  const [memberNameById, setMemberNameById] = useState<Map<string, string>>(
+    () => new Map()
   );
 
   // revoke 상태 표시용
@@ -62,9 +73,23 @@ export function useInvitations() {
 
       if (acceptedUserIds.length === 0) {
         setActiveMemberUserIds(new Set());
+        setMemberNameById(new Map());
       } else {
         const ids = await getActiveMemberIdsAction(acceptedUserIds);
         setActiveMemberUserIds(new Set(ids));
+
+        // 같은 shop의 멤버 프로필 이름도 함께 가져와 둔다
+        // (accepted UI에서 profiles.display_name 우선 표시하기 위함)
+        const members = (await listMembersAction()) as MemberRow[];
+        const map = new Map<string, string>();
+
+        for (const m of members ?? []) {
+          const uid = safeTrim(m.user_id);
+          const name = safeTrim(m.display_name);
+          if (uid && name) map.set(uid, name);
+        }
+
+        setMemberNameById(map);
       }
     } catch (e: unknown) {
       setError(getErrorMessage(e, "Failed to load invitations"));
@@ -132,8 +157,7 @@ export function useInvitations() {
 
       try {
         await revokeMemberAction(targetUserId);
-
-        // refresh로 invitations + activeMemberUserIds 동기화
+        // refresh로 invitations + activeMemberUserIds + memberNameById 동기화
         await refresh();
       } catch (e: unknown) {
         if (snapshotRef.current) setItems(snapshotRef.current);
@@ -164,5 +188,8 @@ export function useInvitations() {
 
     // accepted 필터링에 사용
     activeMemberUserIds,
+
+    // accepted 표시 이름 소스
+    memberNameById,
   };
 }

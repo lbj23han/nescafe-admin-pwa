@@ -31,6 +31,8 @@ export function InvitationsSectionContainer() {
     revoke,
     revokingUserId,
     activeMemberUserIds,
+
+    memberNameById,
   } = useInvitations();
 
   const [email, setEmail] = useState("");
@@ -118,6 +120,7 @@ export function InvitationsSectionContainer() {
       onToggleCreate={handleToggleCreate}
       onRevoke={revoke}
       revokingUserId={revokingUserId}
+      memberNameById={memberNameById}
     />
   );
 }

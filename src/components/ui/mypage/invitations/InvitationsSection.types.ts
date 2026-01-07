@@ -36,4 +36,6 @@ export type InvitationsSectionViewProps = {
   // utils
   formatKST: (iso: string) => string;
   pickAcceptedAt: (inv: InvitationRow) => string | null;
+
+  memberNameById: Map<string, string>;
 };

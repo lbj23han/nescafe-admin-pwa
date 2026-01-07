@@ -16,6 +16,9 @@ type Props = {
   onRevoke?: (targetUserId: string) => void;
   revokingUserId?: string | null;
 
+  // accepted 이름 소스
+  memberNameById?: Map<string, string>;
+
   // pending
   onCancel?: (id: string) => void;
 };
@@ -28,7 +31,7 @@ function getAcceptedUserId(inv: InvitationRow): string | null {
   return inv.accepted_by ?? null;
 }
 
-function normalizeName(v: unknown): string | null {
+function normalizeName(v: string | null | undefined): string | null {
   if (typeof v !== "string") return null;
   const t = v.trim();
   return t.length > 0 ? t : null;
@@ -42,6 +45,7 @@ export function InvitationsListSection({
   onCancel,
   onRevoke,
   revokingUserId,
+  memberNameById,
 }: Props) {
   const isPending = mode === "pending";
   const title = isPending ? COPY.sections.pending : COPY.sections.accepted;
@@ -73,7 +77,17 @@ export function InvitationsListSection({
 
             const revokeDisabled = !canRevoke || isRevoking;
 
-            const inviteeName = normalizeName(inv.invitee_name);
+            const inviteeName = normalizeName(inv.invitee_name ?? null);
+
+            const profileName =
+              !isPending && targetUserId && memberNameById
+                ? normalizeName(memberNameById.get(targetUserId) ?? null)
+                : null;
+
+            // accepted는 profiles.display_name 우선
+            const displayName = isPending
+              ? inviteeName
+              : profileName ?? inviteeName;
 
             const handleRevoke = () => {
               if (revokeDisabled) return;
@@ -94,10 +108,10 @@ export function InvitationsListSection({
                         <UI.StatusBadge>{status}</UI.StatusBadge>
                       </div>
 
-                      {inviteeName ? (
+                      {displayName ? (
                         <UI.FieldLine
                           label={COPY.fields.name}
-                          value={inviteeName}
+                          value={displayName}
                         />
                       ) : null}
 
