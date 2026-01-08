@@ -7,6 +7,7 @@ import type {
   RowProps,
   ButtonProps,
 } from "./MyPage.types";
+import type { ReactNode } from "react";
 
 type AccountPanelProps = {
   title: string;
@@ -71,6 +72,61 @@ export const MyPageUI = {
 
   Spacer() {
     return <div className="h-4" />;
+  },
+
+  SectionTitle({ children }: { children: ReactNode }) {
+    return (
+      <div className="py-1 text-sm font-semibold text-zinc-800">{children}</div>
+    );
+  },
+
+  InlineRow({ label, right }: { label: ReactNode; right: ReactNode }) {
+    return (
+      <div className="flex items-center justify-between gap-3 py-2">
+        <span className="text-sm text-zinc-600">{label}</span>
+        <div className="min-w-0">{right}</div>
+      </div>
+    );
+  },
+
+  ValueText({ children }: { children: ReactNode }) {
+    return (
+      <span className="max-w-[60%] truncate text-right text-sm font-medium text-black">
+        {children}
+      </span>
+    );
+  },
+
+  InputWrap({ children }: { children: ReactNode }) {
+    return <div className="w-[220px] max-w-[60vw]">{children}</div>;
+  },
+
+  Collapse({
+    open,
+    children,
+    className,
+  }: {
+    open: boolean;
+    children: ReactNode;
+    className?: string;
+  }) {
+    return (
+      <div
+        className={[open ? "mt-3" : "mt-3 hidden", className ?? ""].join(" ")}
+      >
+        {children}
+      </div>
+    );
+  },
+
+  CollapseToggleArea({
+    children,
+    className,
+  }: {
+    children: ReactNode;
+    className?: string;
+  }) {
+    return <div className={className ?? ""}>{children}</div>;
   },
 
   DangerButton(props: ButtonProps) {

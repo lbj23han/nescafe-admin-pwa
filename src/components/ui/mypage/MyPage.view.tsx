@@ -7,8 +7,7 @@ import type { MyPageViewProps } from "./MyPage.types";
 import { InvitationsSectionContainer } from "./invitations/InvitationsSection.container";
 
 function clampName(v: string) {
-  const t = (v ?? "").slice(0, 40);
-  return t;
+  return (v ?? "").slice(0, 40);
 }
 
 export function MyPageView(props: MyPageViewProps) {
@@ -42,18 +41,45 @@ export function MyPageView(props: MyPageViewProps) {
     onDeleteAccount,
   } = props;
 
-  const [editNameOpen, setEditNameOpen] = useState(false);
+  // --- display name inline edit state ---
+  const [editingName, setEditingName] = useState(false);
+  const [initialName, setInitialName] = useState(displayName ?? ""); // 편집 시작 시점 스냅샷
 
   const nameValueText = useMemo(() => {
     const t = (displayName ?? "").trim();
     return t.length > 0 ? t : MYPAGE_COPY.labels.displayNameEmpty;
   }, [displayName]);
 
-  const handleSave = async () => {
+  const dirty = editingName && (displayName ?? "") !== initialName;
+
+  const startEdit = () => {
+    setInitialName(displayName ?? "");
+    setEditingName(true);
+  };
+
+  const closeEdit = () => {
+    setEditingName(false);
+  };
+
+  const saveEdit = async () => {
     if (!canSaveName) return;
     await onSaveDisplayName();
-    // 저장 성공 후 닫기
-    setEditNameOpen(false);
+    setEditingName(false);
+  };
+
+  const handlePrimaryClick = async () => {
+    if (!editingName) {
+      startEdit();
+      return;
+    }
+
+    // 편집 중: 변경 없으면 '닫기', 변경 있으면 '저장'
+    if (!dirty) {
+      closeEdit();
+      return;
+    }
+
+    await saveEdit();
   };
 
   return (
@@ -67,44 +93,42 @@ export function MyPageView(props: MyPageViewProps) {
 
         <UI.Divider />
 
-        <UI.Row label={MYPAGE_COPY.labels.displayName} value={nameValueText} />
+        <UI.SectionTitle>{MYPAGE_COPY.sections.profile}</UI.SectionTitle>
+
+        <UI.InlineRow
+          label={MYPAGE_COPY.labels.displayName}
+          right={
+            editingName ? (
+              <UI.InputWrap>
+                <UI.Input
+                  value={displayName}
+                  onChange={(v) => onChangeDisplayName(clampName(v))}
+                  placeholder={MYPAGE_COPY.placeholders.displayName}
+                  disabled={savingName}
+                />
+              </UI.InputWrap>
+            ) : (
+              <UI.ValueText>{nameValueText}</UI.ValueText>
+            )
+          }
+        />
 
         <UI.GhostButton
           type="button"
-          onClick={() => setEditNameOpen((v) => !v)}
+          onClick={handlePrimaryClick}
+          disabled={editingName ? (dirty ? !canSaveName : savingName) : false}
         >
-          {editNameOpen
-            ? MYPAGE_COPY.actions.closeEditName
-            : MYPAGE_COPY.actions.openEditName}
+          {!editingName
+            ? MYPAGE_COPY.actions.editDisplayName
+            : dirty
+            ? savingName
+              ? MYPAGE_COPY.actions.saving
+              : MYPAGE_COPY.actions.saveDisplayName
+            : MYPAGE_COPY.actions.closeEditDisplayName}
         </UI.GhostButton>
 
-        {editNameOpen ? (
-          <div className="mt-2">
-            <UI.Input
-              value={displayName}
-              onChange={(v) => onChangeDisplayName(clampName(v))}
-              placeholder={MYPAGE_COPY.placeholders.displayName}
-              disabled={savingName}
-            />
-
-            <UI.PrimaryButton
-              type="button"
-              onClick={handleSave}
-              disabled={!canSaveName}
-              className="mt-2"
-            >
-              {savingName
-                ? MYPAGE_COPY.actions.saving
-                : MYPAGE_COPY.actions.saveDisplayName}
-            </UI.PrimaryButton>
-
-            {saveNameError ? (
-              <UI.ErrorText>{saveNameError}</UI.ErrorText>
-            ) : null}
-
-            <UI.HintText>{MYPAGE_COPY.hints.displayName}</UI.HintText>
-          </div>
-        ) : null}
+        {saveNameError ? <UI.ErrorText>{saveNameError}</UI.ErrorText> : null}
+        <UI.HintText>{MYPAGE_COPY.hints.displayName}</UI.HintText>
       </UI.Card>
 
       <UI.Spacer />
@@ -117,9 +141,9 @@ export function MyPageView(props: MyPageViewProps) {
               : MYPAGE_COPY.actions.openInvite}
           </UI.DangerButton>
 
-          <div className={inviteOpen ? "mt-3" : "mt-3 hidden"}>
+          <UI.Collapse open={inviteOpen}>
             <InvitationsSectionContainer />
-          </div>
+          </UI.Collapse>
 
           <UI.Spacer />
         </>
@@ -129,14 +153,14 @@ export function MyPageView(props: MyPageViewProps) {
         {MYPAGE_COPY.actions.logout}
       </UI.DangerButton>
 
-      <div className="mt-3">
+      <UI.CollapseToggleArea className="mt-3">
         <UI.DangerButton type="button" onClick={onToggleAccountOpen}>
           {accountOpen
             ? MYPAGE_COPY.actions.closeAccount
             : MYPAGE_COPY.actions.openAccount}
         </UI.DangerButton>
 
-        <div className={accountOpen ? "mt-3" : "mt-3 hidden"}>
+        <UI.Collapse open={accountOpen}>
           <UI.AccountPanel
             title={MYPAGE_COPY.account.title}
             bullets={MYPAGE_COPY.account.bullets}
@@ -153,8 +177,8 @@ export function MyPageView(props: MyPageViewProps) {
             deleteAccountError={deleteAccountError}
             onDeleteAccount={onDeleteAccount}
           />
-        </div>
-      </div>
+        </UI.Collapse>
+      </UI.CollapseToggleArea>
     </UI.Layout>
   );
 }

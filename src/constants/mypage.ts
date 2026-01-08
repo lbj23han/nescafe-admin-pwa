@@ -9,6 +9,11 @@ export const MYPAGE_COPY = {
     displayName: "미설정",
   },
 
+  // ✅ 섹션 타이틀 (요구사항: '이름 수정' → '내정보 관리')
+  sections: {
+    profile: "내정보 관리",
+  },
+
   labels: {
     shopName: "가게명",
     position: "직책",
@@ -22,8 +27,7 @@ export const MYPAGE_COPY = {
   },
 
   hints: {
-    displayName:
-      "이름은 직원 초대/멤버 목록 표시 등에 사용됩니다. 비워두면 미설정으로 표시됩니다.",
+    displayName: "이름은 비워두면 미설정으로 표시됩니다.",
   },
 
   actions: {
@@ -36,13 +40,18 @@ export const MYPAGE_COPY = {
     openAccount: "계정 설정",
     closeAccount: "계정 설정 닫기",
 
-    openEditName: "이름 수정",
-    closeEditName: "이름 수정 닫기",
+    editDisplayName: "편집",
     saveDisplayName: "저장",
     saving: "저장 중…",
 
+    openEditName: "내 정보 관리",
+    closeEditName: "닫기",
+
     deleteAccount: "회원탈퇴",
     deletingAccount: "탈퇴 처리 중…",
+
+    cancelEditDisplayName: "취소",
+    closeEditDisplayName: "닫기",
   },
 
   account: {
