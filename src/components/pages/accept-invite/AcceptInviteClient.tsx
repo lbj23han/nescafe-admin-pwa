@@ -6,12 +6,13 @@ import { INVITE_ACCEPT_COPY } from "@/constants/invite";
 
 type AcceptOk = { ok: true; redirectTo?: string };
 type AcceptFail = { ok: false; code?: string; error?: string; detail?: string };
+type AcceptResponse = AcceptOk | AcceptFail;
 
-function parseJsonSafe(text: string): any | null {
+function parseJsonSafe(text: string): AcceptResponse | null {
   const t = (text ?? "").trim();
   if (!t) return null;
   try {
-    return JSON.parse(t);
+    return JSON.parse(t) as AcceptResponse;
   } catch {
     return null;
   }
