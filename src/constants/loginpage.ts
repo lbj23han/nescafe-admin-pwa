@@ -1,3 +1,4 @@
+// src/constants/loginpage.ts
 export const LOGIN_PAGE_COPY = {
   appName: "Cafe Ledger",
 
@@ -49,6 +50,14 @@ export const LOGIN_PAGE_COPY = {
     passwordRequired: "비밀번호를 입력해주세요.",
     shopNameRequired: "매장명을 입력해주세요.",
     passwordMismatch: "비밀번호 확인이 일치하지 않습니다.",
+
+    invalidLoginCredentials: "비밀번호가 일치하지 않습니다.",
+    userAlreadyRegistered:
+      "이미 가입된 이메일입니다. 로그인하거나 비밀번호 재설정을 이용해주세요.",
+    invalidEmail: "이메일 형식이 올바르지 않습니다.",
+    invalidInviteToken:
+      "초대 링크가 만료되었거나 유효하지 않습니다. 관리자에게 다시 요청해주세요.",
+    networkError: "네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
   },
 
   reset: {
