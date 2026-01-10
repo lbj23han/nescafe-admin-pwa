@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { MyPageUI as UI } from "@/components/ui/mypage/MyPageUI";
 import { MYPAGE_COPY } from "@/constants/mypage";
+import { Spinner } from "@/components/Spinner";
 
 type Props = {
   // shop (optional: owner/admin일 때만)
@@ -174,13 +175,16 @@ export function MyPageProfileSection(props: Props) {
         onClick={handlePrimaryClick}
         disabled={editing ? (anyDirty ? !canSave : anySaving) : false}
       >
-        {!editing
-          ? MYPAGE_COPY.actions.editDisplayName
-          : anyDirty
-          ? anySaving
-            ? MYPAGE_COPY.actions.saving
-            : MYPAGE_COPY.actions.saveDisplayName
-          : MYPAGE_COPY.actions.closeEditDisplayName}
+        {!editing ? (
+          MYPAGE_COPY.actions.editDisplayName
+        ) : anyDirty ? (
+          <span className="inline-flex items-center gap-2">
+            {anySaving ? <Spinner size="xs" /> : null}
+            <span>{MYPAGE_COPY.actions.saveDisplayName}</span>
+          </span>
+        ) : (
+          MYPAGE_COPY.actions.closeEditDisplayName
+        )}
       </UI.GhostButton>
     </UI.Card>
   );
