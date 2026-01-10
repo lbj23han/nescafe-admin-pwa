@@ -12,27 +12,17 @@ export function MyPageView(props: MyPageViewProps) {
     <UI.Layout>
       <UI.Header title={props.title} subtitle={props.subtitle} />
 
-      <UI.Card>
-        <UI.Row
-          label={MYPAGE_COPY.labels.shopName}
-          value={props.shopNameText}
-        />
-        <UI.Row
-          label={MYPAGE_COPY.labels.position}
-          value={props.positionLabel}
-        />
-        <UI.Row label={MYPAGE_COPY.labels.role} value={props.roleLabel} />
-      </UI.Card>
-
-      <UI.Spacer />
-
       <MyPageProfileSection
+        shopNameText={props.shopNameText}
+        shopEdit={props.shopEdit}
         displayName={props.displayName}
         onChangeDisplayName={props.onChangeDisplayName}
         onSaveDisplayName={props.onSaveDisplayName}
         savingName={props.savingName}
         saveNameError={props.saveNameError}
         canSaveName={props.canSaveName}
+        positionLabel={props.positionLabel}
+        roleLabel={props.roleLabel}
       />
 
       <UI.Spacer />

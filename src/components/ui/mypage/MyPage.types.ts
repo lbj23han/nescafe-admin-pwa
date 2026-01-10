@@ -13,6 +13,15 @@ export type RowProps = { label: string; value: string };
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement>;
 
+export type MyPageShopEditProps = {
+  shopName: string;
+  onChangeShopName: (v: string) => void;
+  onSaveShopName: () => Promise<void>;
+  savingShopName: boolean;
+  saveShopNameError?: string;
+  canSaveShopName: boolean;
+};
+
 export type MyPageViewProps = {
   title: string;
   subtitle?: string;
@@ -46,4 +55,6 @@ export type MyPageViewProps = {
   deletingAccount: boolean;
   deleteAccountError?: string;
   onDeleteAccount: () => Promise<void>;
+
+  shopEdit?: MyPageShopEditProps;
 };
