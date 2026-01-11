@@ -1,8 +1,7 @@
 # nescafe-ledger ☕️
 
 **nescafe-ledger**는 실제 가족 운영 카페에서 사용하는  
-**예치금 · 미수금 · 주문 · 예약 내역**을 관리하기 위한  
-**내부 전용 장부 관리 PWA 웹앱**입니다.
+**예치금 · 미수금 · 주문 · 예약 내역**을 관리하기 위한 **내부 전용 장부 관리 PWA 웹앱**입니다.
 
 실사용자인 어머니가 **스마트폰에서 앱처럼 간편하게 기록·조회**할 수 있도록  
 **모바일 우선 UX + 단순한 흐름**을 최우선 목표로 설계되었습니다.
@@ -42,8 +41,7 @@
 ### 📨 직원 초대 (Invite)
 
 - 이메일 기반 직원 초대
-- 초대 상태 관리
-  - `pending` / `accepted` / `expired`
+- 초대 상태 관리: `pending` / `accepted` / `expired`
 - 초대 수락 시 자동 처리
   - `profiles.shop_id` 연결
   - `profiles.role` 부여
@@ -60,9 +58,11 @@
   - 가게명 (`shop_id → shops.name`)
   - 직책 (`role` 기반 표시)
   - 권한 레벨 표시
+- **Owner/Admin 전용**
+  - 가게명 수정 (RLS 기반 업데이트)
+  - 직원 초대 관리 UI
 - 로그아웃
-- 직원 초대 관리 (Owner/Admin 전용)
-- Viewer 계정은 초대 UI 비노출
+- 회원탈퇴 (가드/확인 입력 포함)
 
 > 직책 / 권한 / 가게명은 모두  
 > **백엔드 단일 소스(Supabase) 기준으로 표시**  
@@ -100,7 +100,7 @@
 
 - 모바일 PWA 환경에 최적화된 하단 고정 네비게이션
 - 동적 item 개수 대응 grid 레이아웃
-- 터치 영역 확장 (vh 기준 높이)
+- 터치 영역 확장(vh 기준 높이)
 - 가독성 개선
   - 반응형 텍스트 크기
   - 명확한 border / shadow 분리
@@ -145,6 +145,7 @@
 - 권한 모델 정리 (Owner/Admin/Staff/Viewer)
 - 초대 수락 시 profile ↔ shop 자동 연결
 - MyPage 정보 표시 로직 개선
+- **Owner/Admin 가게명 수정 기능 추가**
 - 초대 관리 UI 접힘 구조 도입
 - Bottom Navigation UX 개선
 - PWA(sw.js / workbox) 업데이트
@@ -182,6 +183,13 @@
 ---
 
 ## 🎯 Roadmap
+
+### v2.2 — Department ↔ Reservation 연동
+
+- 예약 입력 시 부서 선택(기존 departments 목록) 지원
+- 직접 입력 모드 지원(연동 없이 department_name만 기록)
+- 예약 리스트/일자 화면에서 부서명 표시
+- 부서별 필터/조회(옵션)
 
 ### v3 — AI Helper
 
