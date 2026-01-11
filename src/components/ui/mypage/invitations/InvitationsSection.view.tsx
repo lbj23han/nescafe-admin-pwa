@@ -52,7 +52,9 @@ export function InvitationsSectionView(props: InvitationsSectionViewProps) {
             placeholder={COPY.form.placeholderEmail}
           />
 
-          <UI.Label>{COPY.form.labelName}</UI.Label>
+          <div className="mt-[1vh]">
+            <UI.Label>{COPY.form.labelName}</UI.Label>
+          </div>
 
           <UI.Input
             value={inviteeName}

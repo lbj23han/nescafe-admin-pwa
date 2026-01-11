@@ -2,16 +2,15 @@ import { LOGIN_PAGE_COPY } from "@/constants/loginpage";
 import { supabase } from "@/lib/supabaseClient";
 import type { AuthFormMode } from "@/components/ui/login/LoginPage.types";
 import { validatePassword } from "@/lib/auth/passwordPolicy";
+import { mapAuthErrorMessage } from "./authErrorMap";
 
 type SubmitParams = {
   effectiveMode: AuthFormMode;
   inviteMode: boolean;
-
   effectiveEmail: string;
   password: string;
   confirmPassword: string;
   shopName: string;
-
   inviteToken: string;
   redirectAfterAuth: string;
 };
@@ -25,113 +24,97 @@ type AuthResult =
   | Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>
   | Awaited<ReturnType<typeof supabase.auth.signUp>>;
 
-function buildEmailRedirectTo(next: string) {
+// --- [유틸] 이메일 인증 완료 후 돌아올 redirect URL 생성 ---
+const buildEmailRedirectTo = (next: string) => {
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   return `${origin}/auth/callback?next=${encodeURIComponent(next)}`;
-}
+};
 
+// --- [유틸] session 존재 여부 확인 (signup 후 이메일 인증 필요하면 session 없음) ---
 function hasSession(result: AuthResult): boolean {
-  const data = result.data as unknown;
-  if (!data || typeof data !== "object") return false;
-
-  const record = data as Record<string, unknown>;
-  if (!("session" in record)) return false;
-
-  return Boolean((record as { session?: unknown }).session);
+  const data = result.data;
+  return !!(
+    data &&
+    typeof data === "object" &&
+    "session" in data &&
+    (data as { session: unknown }).session
+  );
 }
 
-export async function submitLogin(params: SubmitParams): Promise<SubmitResult> {
-  const {
-    effectiveMode,
-    inviteMode,
-    effectiveEmail,
-    password,
-    confirmPassword,
-    shopName,
-    inviteToken,
-    redirectAfterAuth,
-  } = params;
-
-  if (!effectiveEmail) {
+// --- [검증] submit 전에 프론트에서 즉시 실패 처리(불필요한 서버 호출 방지) ---
+function validateInput(p: SubmitParams): SubmitResult | null {
+  if (!p.effectiveEmail)
     return { kind: "error", message: LOGIN_PAGE_COPY.errors.emailRequired };
-  }
-  if (!password) {
+  if (!p.password)
     return { kind: "error", message: LOGIN_PAGE_COPY.errors.passwordRequired };
+
+  if (p.effectiveMode !== "signup") return null;
+
+  // signup 모드: 비밀번호 정책 체크
+  const policy = validatePassword(p.password);
+  if (!policy.valid) {
+    return {
+      kind: "error",
+      message: policy.errors[0] ?? LOGIN_PAGE_COPY.errors.passwordRequired,
+    };
   }
 
-  if (effectiveMode === "signup") {
-    const policy = validatePassword(password);
-    if (!policy.valid) {
-      return {
-        kind: "error",
-        message: policy.errors[0] ?? LOGIN_PAGE_COPY.errors.passwordRequired,
-      };
-    }
-
-    if (password !== confirmPassword) {
-      return {
-        kind: "error",
-        message: LOGIN_PAGE_COPY.errors.passwordMismatch,
-      };
-    }
-    if (!inviteMode && !shopName.trim()) {
-      return {
-        kind: "error",
-        message: LOGIN_PAGE_COPY.errors.shopNameRequired,
-      };
-    }
+  if (p.password !== p.confirmPassword) {
+    return { kind: "error", message: LOGIN_PAGE_COPY.errors.passwordMismatch };
   }
 
-  const emailRedirectTo = buildEmailRedirectTo(redirectAfterAuth);
+  // 일반 signup(초대 아님): shopName 필수
+  if (!p.inviteMode && !p.shopName.trim()) {
+    return { kind: "error", message: LOGIN_PAGE_COPY.errors.shopNameRequired };
+  }
 
-  let result: AuthResult;
+  return null;
+}
 
-  if (effectiveMode === "login") {
-    result = await supabase.auth.signInWithPassword({
-      email: effectiveEmail,
-      password,
-    });
-  } else if (inviteMode) {
-    result = await supabase.auth.signUp({
-      email: effectiveEmail,
-      password,
-      options: {
-        data: {
-          invite_token: inviteToken || null,
-          signup_kind: "invite",
-        },
-        emailRedirectTo,
-      },
-    });
-  } else {
-    result = await supabase.auth.signUp({
-      email: effectiveEmail,
-      password,
-      options: {
-        data: {
-          shop_name: shopName,
-          role: "admin",
-          display_name: "Owner",
-        },
-        emailRedirectTo,
-      },
+// --- [인증 실행] login / invite signup / normal signup 분기해서 Supabase 호출 ---
+async function runAuth(p: SubmitParams): Promise<AuthResult> {
+  if (p.effectiveMode === "login") {
+    return supabase.auth.signInWithPassword({
+      email: p.effectiveEmail,
+      password: p.password,
     });
   }
+
+  const emailRedirectTo = buildEmailRedirectTo(p.redirectAfterAuth);
+
+  const data = p.inviteMode
+    ? { invite_token: p.inviteToken || null, signup_kind: "invite" }
+    : { shop_name: p.shopName, role: "admin", display_name: "Owner" };
+
+  return supabase.auth.signUp({
+    email: p.effectiveEmail,
+    password: p.password,
+    options: { data, emailRedirectTo },
+  });
+}
+
+// --- 로그인/회원가입 submit 엔트리 포인트 ---
+export async function submitLogin(params: SubmitParams): Promise<SubmitResult> {
+  const invalid = validateInput(params);
+  if (invalid) return invalid;
+
+  const result = await runAuth(params);
 
   if (result.error) {
-    return { kind: "error", message: result.error.message };
+    return {
+      kind: "error",
+      message: mapAuthErrorMessage(params.effectiveMode, result.error.message),
+    };
   }
 
-  const sessionExists = hasSession(result);
-
-  if (effectiveMode === "signup" && !sessionExists) {
+  if (params.effectiveMode === "signup" && !hasSession(result)) {
     return {
       kind: "successMessage",
-      message: inviteMode
+      message: params.inviteMode
         ? LOGIN_PAGE_COPY.success.signupInvite
         : LOGIN_PAGE_COPY.success.signupNormal,
     };
   }
 
-  return { kind: "redirect", to: redirectAfterAuth };
+  return { kind: "redirect", to: params.redirectAfterAuth };
 }

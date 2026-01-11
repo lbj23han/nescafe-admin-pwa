@@ -8,6 +8,7 @@ import {
   deleteAccountAction,
   updateMyDisplayNameAction,
 } from "@/app/(authed)/mypage/actions.account";
+import { updateShopNameAction } from "@/app/(authed)/mypage/actions.shop";
 import { MyPageView } from "@/components/ui/mypage/MyPage.view";
 import {
   MYPAGE_COPY,
@@ -23,6 +24,10 @@ type Props = {
   shopName: string | null;
 };
 
+function clampShopName(v: string) {
+  return (v ?? "").slice(0, 50);
+}
+
 export function MyPageContainer({ initialProfile, shopName }: Props) {
   const router = useRouter();
 
@@ -31,7 +36,9 @@ export function MyPageContainer({ initialProfile, shopName }: Props) {
     [initialProfile?.role]
   );
 
+  // owner/admin
   const canInvite = useMemo(() => canInviteByRole(roleKey), [roleKey]);
+
   const positionLabel = useMemo(() => getPositionLabel(roleKey), [roleKey]);
   const roleLabel = useMemo(() => getRoleLabel(roleKey), [roleKey]);
 
@@ -45,6 +52,52 @@ export function MyPageContainer({ initialProfile, shopName }: Props) {
   );
 
   const [inviteOpen, setInviteOpen] = useState(false);
+
+  // ---- shop name edit (owner/admin only) ----
+  const [shopNameDraft, setShopNameDraft] = useState(shopName ?? "");
+  const [savingShopName, setSavingShopName] = useState(false);
+  const [saveShopNameError, setSaveShopNameError] = useState<string>();
+
+  const resetShopNameDraft = () => {
+    setShopNameDraft(shopName ?? "");
+    setSaveShopNameError(undefined);
+  };
+
+  const canSaveShopName =
+    canInvite &&
+    !savingShopName &&
+    clampShopName(shopNameDraft).trim().length > 0;
+
+  const handleSaveShopName = async () => {
+    if (!canInvite) return;
+    if (!canSaveShopName) return;
+
+    setSavingShopName(true);
+    setSaveShopNameError(undefined);
+
+    const res = await updateShopNameAction(shopNameDraft);
+
+    if (!res.ok) {
+      setSaveShopNameError(res.message ?? "가게명 저장에 실패했습니다.");
+      setSavingShopName(false);
+      return;
+    }
+
+    router.refresh();
+    setSavingShopName(false);
+  };
+
+  const shopEdit = canInvite
+    ? {
+        shopName: shopNameDraft,
+        onChangeShopName: (v: string) => setShopNameDraft(clampShopName(v)),
+        onSaveShopName: handleSaveShopName,
+        savingShopName,
+        saveShopNameError,
+        canSaveShopName,
+        resetShopNameDraft,
+      }
+    : undefined;
 
   // ---- display name edit ----
   const [displayName, setDisplayName] = useState(
@@ -69,7 +122,6 @@ export function MyPageContainer({ initialProfile, shopName }: Props) {
       return;
     }
 
-    // 서버 컴포넌트에서 profile을 다시 읽는 경우까지 동기화
     router.refresh();
     setSavingName(false);
   };
@@ -157,6 +209,7 @@ export function MyPageContainer({ initialProfile, shopName }: Props) {
       savingName={savingName}
       saveNameError={saveNameError}
       canSaveName={canSaveName}
+      shopEdit={shopEdit}
     />
   );
 }

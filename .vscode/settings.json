@@ -1,1 +1,6 @@
-{}
+{
+  "cSpell.ignorePaths": ["public/**", "**/workbox-*.js", "**/*.min.js"],
+  "files.exclude": {
+    "public/workbox-*.js": true
+  }
+}
