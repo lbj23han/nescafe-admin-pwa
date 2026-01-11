@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { MyPageUI as UI } from "@/components/ui/mypage/MyPageUI";
 import { MYPAGE_COPY } from "@/constants/mypage";
-import { Spinner } from "@/components/Spinner";
 
 type Props = {
   // shop (optional: owner/admin일 때만)
@@ -39,61 +38,43 @@ function clampShopName(v: string) {
 }
 
 export function MyPageProfileSection(props: Props) {
-  const {
-    shopNameText,
-    shopEdit,
-
-    displayName,
-    onChangeDisplayName,
-    onSaveDisplayName,
-    savingName,
-    saveNameError,
-    canSaveName,
-
-    positionLabel,
-    roleLabel,
-  } = props;
-
+  const shopEdit = props.shopEdit;
   const canEditShop = !!shopEdit;
 
   const [editing, setEditing] = useState(false);
-
   const [initialShop, setInitialShop] = useState(shopEdit?.shopName ?? "");
-  const [initialName, setInitialName] = useState(displayName ?? "");
+  const [initialName, setInitialName] = useState(props.displayName ?? "");
 
-  const shopValueText = useMemo(() => {
-    if (editing && canEditShop) return "";
-    if (canEditShop) {
-      const t = (shopEdit?.shopName ?? "").trim();
-      return t.length > 0 ? t : MYPAGE_COPY.fallback.shopName;
-    }
-    return shopNameText;
-  }, [editing, canEditShop, shopEdit?.shopName, shopNameText]);
+  const shopNameText = useMemo(() => {
+    if (!canEditShop) return props.shopNameText;
+    const t = (shopEdit?.shopName ?? "").trim();
+    return t.length > 0 ? t : MYPAGE_COPY.fallback.shopName;
+  }, [canEditShop, shopEdit?.shopName, props.shopNameText]);
 
-  const nameValueText = useMemo(() => {
-    const t = (displayName ?? "").trim();
+  const displayNameText = useMemo(() => {
+    const t = (props.displayName ?? "").trim();
     return t.length > 0 ? t : MYPAGE_COPY.labels.displayNameEmpty;
-  }, [displayName]);
+  }, [props.displayName]);
 
   const shopDirty =
     editing && canEditShop && (shopEdit?.shopName ?? "") !== initialShop;
 
-  const nameDirty = editing && (displayName ?? "") !== initialName;
+  const nameDirty = editing && (props.displayName ?? "") !== initialName;
 
   const anyDirty = shopDirty || nameDirty;
 
   const anySaving =
-    (canEditShop && (shopEdit?.savingShopName ?? false)) || savingName;
+    (canEditShop && (shopEdit?.savingShopName ?? false)) || props.savingName;
 
   const canSave =
     anyDirty &&
-    (!nameDirty || canSaveName) &&
+    (!nameDirty || props.canSaveName) &&
     (!shopDirty || (shopEdit?.canSaveShopName ?? false)) &&
     !anySaving;
 
   const startEdit = () => {
-    setInitialName(displayName ?? "");
-    if (canEditShop) setInitialShop(shopEdit?.shopName ?? "");
+    setInitialName(props.displayName ?? "");
+    if (shopEdit) setInitialShop(shopEdit.shopName ?? "");
     setEditing(true);
   };
 
@@ -102,11 +83,11 @@ export function MyPageProfileSection(props: Props) {
   const saveEdit = async () => {
     if (!anyDirty) return;
 
-    if (nameDirty && canSaveName) {
-      await onSaveDisplayName();
+    if (nameDirty && props.canSaveName) {
+      await props.onSaveDisplayName();
     }
 
-    if (shopDirty && (shopEdit?.canSaveShopName ?? false)) {
+    if (shopDirty && shopEdit && shopEdit.canSaveShopName) {
       await shopEdit.onSaveShopName();
     }
 
@@ -119,73 +100,39 @@ export function MyPageProfileSection(props: Props) {
     await saveEdit();
   };
 
+  const primaryLabel = !editing
+    ? MYPAGE_COPY.actions.editDisplayName
+    : anyDirty
+    ? MYPAGE_COPY.actions.saveDisplayName
+    : MYPAGE_COPY.actions.closeEditDisplayName;
+
+  const showSaveSpinner = editing && anyDirty && anySaving;
+
+  const primaryDisabled = editing ? (anyDirty ? !canSave : anySaving) : false;
+
   return (
-    <UI.Card>
-      <UI.SectionTitle>{MYPAGE_COPY.sections.profile}</UI.SectionTitle>
-
-      {/* 가게명 */}
-      <UI.InlineRow
-        label={MYPAGE_COPY.labels.shopName}
-        right={
-          editing && canEditShop ? (
-            <UI.InputWrap>
-              <UI.Input
-                value={shopEdit?.shopName ?? ""}
-                onChange={(v) => shopEdit?.onChangeShopName(clampShopName(v))}
-                placeholder={MYPAGE_COPY.placeholders.shopName}
-                disabled={shopEdit?.savingShopName ?? false}
-              />
-            </UI.InputWrap>
-          ) : (
-            <UI.ValueText>{shopValueText}</UI.ValueText>
-          )
-        }
-      />
-      {shopEdit?.saveShopNameError ? (
-        <UI.ErrorText>{shopEdit.saveShopNameError}</UI.ErrorText>
-      ) : null}
-
-      {/* 이름 */}
-      <UI.InlineRow
-        label={MYPAGE_COPY.labels.displayName}
-        right={
-          editing ? (
-            <UI.InputWrap>
-              <UI.Input
-                value={displayName}
-                onChange={(v) => onChangeDisplayName(clampName(v))}
-                placeholder={MYPAGE_COPY.placeholders.displayName}
-                disabled={savingName}
-              />
-            </UI.InputWrap>
-          ) : (
-            <UI.ValueText>{nameValueText}</UI.ValueText>
-          )
-        }
-      />
-      {saveNameError ? <UI.ErrorText>{saveNameError}</UI.ErrorText> : null}
-
-      <div className="border-t border-zinc-200 my-3" />
-
-      <UI.Row label={MYPAGE_COPY.labels.position} value={positionLabel} />
-      <UI.Row label={MYPAGE_COPY.labels.role} value={roleLabel} />
-
-      <UI.GhostButton
-        type="button"
-        onClick={handlePrimaryClick}
-        disabled={editing ? (anyDirty ? !canSave : anySaving) : false}
-      >
-        {!editing ? (
-          MYPAGE_COPY.actions.editDisplayName
-        ) : anyDirty ? (
-          <span className="inline-flex items-center gap-2">
-            {anySaving ? <Spinner size="xs" /> : null}
-            <span>{MYPAGE_COPY.actions.saveDisplayName}</span>
-          </span>
-        ) : (
-          MYPAGE_COPY.actions.closeEditDisplayName
-        )}
-      </UI.GhostButton>
-    </UI.Card>
+    <UI.ProfilePanel
+      canEditShop={canEditShop}
+      editing={editing}
+      shopNameText={shopNameText}
+      shopNameValue={shopEdit?.shopName ?? ""}
+      onChangeShopName={(v) => {
+        if (!shopEdit) return;
+        shopEdit.onChangeShopName(clampShopName(v));
+      }}
+      savingShopName={shopEdit?.savingShopName ?? false}
+      saveShopNameError={shopEdit?.saveShopNameError}
+      displayNameText={displayNameText}
+      displayNameValue={props.displayName}
+      onChangeDisplayName={(v) => props.onChangeDisplayName(clampName(v))}
+      savingName={props.savingName}
+      saveNameError={props.saveNameError}
+      positionLabel={props.positionLabel}
+      roleLabel={props.roleLabel}
+      primaryLabel={primaryLabel}
+      primaryDisabled={primaryDisabled}
+      onPrimaryClick={handlePrimaryClick}
+      showSaveSpinner={showSaveSpinner}
+    />
   );
 }

@@ -7,6 +7,7 @@ import type {
   RowProps,
   ButtonProps,
 } from "./MyPage.types";
+
 import { Layout, Header, Card, Row, Divider, Spacer } from "./ui/MyPageUI.base";
 import {
   DangerButton,
@@ -16,6 +17,7 @@ import {
   ErrorText,
   HintText,
 } from "./ui/MyPageUI.controls";
+
 import {
   SectionTitle,
   InlineRow,
@@ -25,8 +27,12 @@ import {
   CollapseToggleArea,
   SectionCard,
   BulletList,
+  ThinDivider,
+  InlineStack,
 } from "./ui/MyPageUI.helpers";
+
 import { AccountPanel } from "./ui/MyPageAccountPanel";
+import { ProfilePanel } from "./ui/MyPageProfilePanel";
 
 export const MyPageUI = {
   Layout,
@@ -55,7 +61,11 @@ export const MyPageUI = {
   SectionCard,
   BulletList,
 
+  ThinDivider,
+  InlineStack,
+
   AccountPanel,
+  ProfilePanel,
 };
 
 export type { LayoutProps, HeaderProps, CardProps, RowProps, ButtonProps };

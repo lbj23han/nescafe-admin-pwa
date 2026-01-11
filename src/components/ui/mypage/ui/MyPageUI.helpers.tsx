@@ -78,3 +78,32 @@ export function BulletList({ items }: { items: readonly string[] }) {
     </ul>
   );
 }
+
+/**
+ * --- Added helpers (for cleaner sections) ---
+ * Section files should avoid raw Tailwind snippets when possible.
+ */
+
+export function ThinDivider({ className }: { className?: string }) {
+  return (
+    <div
+      className={["border-t border-zinc-200 my-3", className ?? ""].join(" ")}
+    />
+  );
+}
+
+export function InlineStack({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <span
+      className={["inline-flex items-center gap-2", className ?? ""].join(" ")}
+    >
+      {children}
+    </span>
+  );
+}
