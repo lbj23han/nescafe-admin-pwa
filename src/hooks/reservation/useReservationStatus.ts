@@ -30,9 +30,16 @@ export function useReservationStatus({
   const [editForm, setEditForm] = useState<ReservationEditForm | null>(null);
 
   const handleComplete = (id: string) => {
+    const target = list.find((r) => r.id === id);
+    if (!target) return;
+
+    if (target.status === "completed") return;
+
     const ok = window.confirm(DAY_PAGE_COPY.alerts.confirmComplete);
     if (!ok) return;
 
+    // NOTE(task5): department_id 연동 예약일 경우 완료 시 settleType(deposit|debt)을 반드시 받아야 함.
+    // 지금은 UI가 없으므로 status만 completed 처리(= settle_type은 null일 수 있음).
     setList((prev) =>
       prev.map((r) => (r.id === id ? { ...r, status: "completed" } : r))
     );
@@ -40,6 +47,15 @@ export function useReservationStatus({
   };
 
   const handleCancel = (id: string) => {
+    const target = list.find((r) => r.id === id);
+    if (!target) return;
+
+    // 완료 후 수정/취소 금지 정책
+    if (target.status === "completed") {
+      alert("완료된 예약은 취소할 수 없어요.");
+      return;
+    }
+
     const ok = window.confirm(DAY_PAGE_COPY.alerts.confirmCancel);
     if (!ok) return;
 
@@ -50,6 +66,12 @@ export function useReservationStatus({
   const handleEdit = (id: string) => {
     const target = list.find((r) => r.id === id);
     if (!target) return;
+
+    // 완료 후 수정 금지 정책
+    if (target.status === "completed") {
+      alert("완료된 예약은 수정할 수 없어요.");
+      return;
+    }
 
     setEditingId(id);
     setEditForm({
@@ -71,15 +93,23 @@ export function useReservationStatus({
   const handleSubmitEdit = () => {
     if (!editingId || !editForm) return;
 
-    const ok = window.confirm(DAY_PAGE_COPY.alerts.editConfirm);
-    if (!ok) return;
-
     const target = list.find((r) => r.id === editingId);
     if (!target) {
       setEditingId(null);
       setEditForm(null);
       return;
     }
+
+    // 완료 후 수정 금지 정책
+    if (target.status === "completed") {
+      alert("완료된 예약은 수정할 수 없어요.");
+      setEditingId(null);
+      setEditForm(null);
+      return;
+    }
+
+    const ok = window.confirm(DAY_PAGE_COPY.alerts.editConfirm);
+    if (!ok) return;
 
     const updated: Reservation = {
       ...target,
@@ -92,7 +122,7 @@ export function useReservationStatus({
 
     setList((prev) => prev.map((r) => (r.id === editingId ? updated : r)));
 
-    // ✅ supabase에서도 id 유지 (update)
+    // supabase에서도 id 유지 (update)
     void ReservationsRepo.updateReservation(date, updated);
 
     setEditingId(null);

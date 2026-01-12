@@ -1,6 +1,10 @@
 import { supabase } from "@/lib/supabaseClient";
 import { getMyProfileFromClient } from "@/lib/repositories/profile.client";
-import type { Reservation, ReservationStatus } from "@/lib/domain/reservation";
+import type {
+  Reservation,
+  ReservationStatus,
+  SettlementType,
+} from "@/lib/domain/reservation";
 
 type ReservationRow = {
   id: string;
@@ -20,6 +24,8 @@ type ReservationRow = {
   memo: string | null;
   status: ReservationStatus | null;
 
+  settle_type: SettlementType | null;
+
   created_at: string;
   updated_at: string;
 };
@@ -36,6 +42,7 @@ function rowToReservation(r: ReservationRow): Reservation {
     location: r.location ?? undefined,
     memo: r.memo ?? undefined,
     status: r.status ?? "pending",
+    settleType: r.settle_type ?? null,
   };
 }
 
@@ -109,7 +116,7 @@ export async function saveReservation(
       shop_id: profile.shop_id,
       date,
 
-      // TODO: department(string) -> department_id 매핑은 departments supabase 이전 후 처리
+      // TODO(task5): department(string) -> department_id 매핑 후 연동
       department_id: null,
       department: reservation.department ?? "",
 
@@ -120,6 +127,9 @@ export async function saveReservation(
 
       memo: reservation.memo ?? null,
       status: reservation.status ?? "pending",
+
+      // pending 생성에서는 보통 null
+      settle_type: reservation.settleType ?? null,
     })
     .select("*")
     .single();
@@ -140,6 +150,7 @@ export async function updateReservation(
     .update({
       date,
 
+      // TODO(task5): department_id 연결되면 유지/수정 가능
       department_id: null,
       department: reservation.department ?? "",
 
@@ -149,7 +160,9 @@ export async function updateReservation(
       location: reservation.location ?? "",
 
       memo: reservation.memo ?? null,
+
       status: reservation.status ?? "pending",
+      settle_type: reservation.settleType ?? null,
     })
     .eq("id", reservation.id)
     .eq("shop_id", profile.shop_id)
@@ -168,6 +181,7 @@ export async function setReservationStatus(
   const profile = await getMyProfileFromClient();
   if (!profile.shop_id) throw new Error("No shop");
 
+  // NOTE(task5): 완료 처리 시 settle_type(deposit|debt)을 함께 저장하는 전용 메서드를 만들 예정.
   const { data, error } = await supabase
     .from("reservations")
     .update({ status })

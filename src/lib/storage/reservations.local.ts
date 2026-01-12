@@ -1,5 +1,9 @@
 import { STORAGE_KEYS } from "@/constants/config";
-import type { Reservation, ReservationStatus } from "@/lib/domain/reservation";
+import type {
+  Reservation,
+  ReservationStatus,
+  SettlementType,
+} from "@/lib/domain/reservation";
 
 const STORAGE_KEY = STORAGE_KEYS.reservations;
 
@@ -9,6 +13,10 @@ export type ReservationForCalendar = Reservation & { date: string };
 
 function isStatus(v: unknown): v is ReservationStatus {
   return v === "pending" || v === "completed";
+}
+
+function isSettlementType(v: unknown): v is SettlementType {
+  return v === "deposit" || v === "debt";
 }
 
 function normalizeReservation(raw: unknown): Reservation | null {
@@ -35,6 +43,10 @@ function normalizeReservation(raw: unknown): Reservation | null {
 
   const status: ReservationStatus = isStatus(r.status) ? r.status : "pending";
 
+  const settleType: SettlementType | null = isSettlementType(r.settleType)
+    ? r.settleType
+    : null;
+
   return {
     id,
     department,
@@ -44,6 +56,7 @@ function normalizeReservation(raw: unknown): Reservation | null {
     location,
     memo,
     status,
+    settleType,
   };
 }
 
@@ -79,7 +92,7 @@ export function loadReservationsByDate(date: string): Reservation[] {
 }
 
 /**
- * ✅ 캘린더 전용: date range를 한 번에 로드 (localStorage에서 합쳐서 반환)
+ * 캘린더 전용: date range를 한 번에 로드 (localStorage에서 합쳐서 반환)
  * - from/to: YYYY-MM-DD (inclusive)
  * - 반환: Reservation + { date }
  */
@@ -118,6 +131,7 @@ export function saveReservation(
   const withStatus: Reservation = {
     ...reservation,
     status: reservation.status ?? "pending",
+    settleType: reservation.settleType ?? null,
   };
 
   const nextStore: ReservationStore = {
