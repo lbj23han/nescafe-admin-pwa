@@ -188,6 +188,46 @@ export function setReservationStatus(
   return updated;
 }
 
+/**
+ * 완료 처리 API (local)
+ * - status=completed
+ * - (선택) settleType 저장
+ */
+export async function completeReservation(
+  date: string,
+  id: string,
+  params?: { settleType?: SettlementType | null }
+): Promise<Reservation | null> {
+  const allUnknown = loadAllUnknown();
+  const currentList = readList(allUnknown, date);
+
+  let updated: Reservation | null = null;
+
+  const next = currentList.map((r) => {
+    if (r.id !== id) return r;
+
+    const patch: Reservation = {
+      ...r,
+      status: "completed",
+    };
+
+    if ("settleType" in (params ?? {})) {
+      patch.settleType = params?.settleType ?? null;
+    }
+
+    updated = patch;
+    return patch;
+  });
+
+  const nextStore: ReservationStore = {
+    ...(allUnknown as unknown as ReservationStore),
+    [date]: next,
+  };
+
+  saveAll(nextStore);
+  return updated;
+}
+
 export function deleteReservation(date: string, id: string): void {
   const allUnknown = loadAllUnknown();
   const currentList = readList(allUnknown, date);

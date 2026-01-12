@@ -181,10 +181,46 @@ export async function setReservationStatus(
   const profile = await getMyProfileFromClient();
   if (!profile.shop_id) throw new Error("No shop");
 
-  // NOTE(task5): 완료 처리 시 settle_type(deposit|debt)을 함께 저장하는 전용 메서드를 만들 예정.
   const { data, error } = await supabase
     .from("reservations")
     .update({ status })
+    .eq("id", id)
+    .eq("shop_id", profile.shop_id)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return rowToReservation(data as ReservationRow);
+}
+
+/**
+ * 완료 처리 전용 API
+ * - status=completed로 변경
+ * - (선택) settle_type 저장
+ *
+ * NOTE:
+ * - direct input 예약은 settleType이 없어도 완료 가능
+ * - ledger 연동 예약은 task5 이후에 department_id 기반으로 settleType 필수 강제 예정
+ */
+export async function completeReservation(
+  date: string, // 로컬 시그니처 유지용
+  id: string,
+  params?: { settleType?: SettlementType | null }
+): Promise<Reservation> {
+  const profile = await getMyProfileFromClient();
+  if (!profile.shop_id) throw new Error("No shop");
+
+  const patch: Partial<Pick<ReservationRow, "status" | "settle_type">> = {
+    status: "completed",
+  };
+
+  if ("settleType" in (params ?? {})) {
+    patch.settle_type = params?.settleType ?? null;
+  }
+
+  const { data, error } = await supabase
+    .from("reservations")
+    .update(patch)
     .eq("id", id)
     .eq("shop_id", profile.shop_id)
     .select("*")
