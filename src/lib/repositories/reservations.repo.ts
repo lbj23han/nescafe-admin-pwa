@@ -35,7 +35,7 @@ export type ReservationForCalendar = Reservation & { date: string };
 function rowToReservation(r: ReservationRow): Reservation {
   return {
     id: r.id,
-    departmentId: r.department_id ?? null, // ✅ 추가
+    departmentId: r.department_id ?? null,
     department: r.department ?? "",
     menu: r.menu ?? "",
     amount: r.amount ?? undefined,
@@ -75,11 +75,6 @@ export async function loadReservationsByDate(
   return rows.map(rowToReservation);
 }
 
-/**
- * 캘린더 전용: date range를 한 번에 로드 (성능 목적)
- * - from/to: YYYY-MM-DD (inclusive)
- * - 반환: Reservation + { date }
- */
 export async function loadReservationsByDateRange(
   from: string,
   to: string
@@ -117,8 +112,7 @@ export async function saveReservation(
       shop_id: profile.shop_id,
       date,
 
-      // TODO(task5): department(string) -> department_id 매핑 후 연동
-      department_id: null,
+      department_id: reservation.departmentId ?? null,
       department: reservation.department ?? "",
 
       menu: reservation.menu ?? null,
@@ -129,7 +123,6 @@ export async function saveReservation(
       memo: reservation.memo ?? null,
       status: reservation.status ?? "pending",
 
-      // pending 생성에서는 보통 null
       settle_type: reservation.settleType ?? null,
     })
     .select("*")
@@ -151,8 +144,7 @@ export async function updateReservation(
     .update({
       date,
 
-      // TODO(task5): department_id 연결되면 유지/수정 가능
-      department_id: null,
+      department_id: reservation.departmentId ?? null,
       department: reservation.department ?? "",
 
       menu: reservation.menu ?? null,
@@ -175,7 +167,7 @@ export async function updateReservation(
 }
 
 export async function setReservationStatus(
-  date: string, // 로컬 시그니처 유지용 (쿼리엔 필요 없음)
+  date: string,
   id: string,
   status: ReservationStatus
 ): Promise<Reservation> {
@@ -194,13 +186,8 @@ export async function setReservationStatus(
   return rowToReservation(data as ReservationRow);
 }
 
-/**
- * 완료 처리 전용 API
- * - status=completed로 변경
- * - (선택) settle_type 저장
- */
 export async function completeReservation(
-  date: string, // 로컬 시그니처 유지용
+  date: string,
   id: string,
   params?: { settleType?: SettlementType | null }
 ): Promise<Reservation> {
