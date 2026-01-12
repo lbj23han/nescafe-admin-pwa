@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { Reservation } from "@/lib/domain/reservation";
-import { ReservationsRepo } from "@/lib/data";
+import { ReservationsRepo, DepartmentHistoryRepo } from "@/lib/data";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 
 // 수정 폼 상태 타입
@@ -21,6 +21,13 @@ type UseReservationStatusArgs = {
   setList: Dispatch<SetStateAction<Reservation[]>>;
 };
 
+function toSafeAmount(v: unknown): number | null {
+  const n = typeof v === "number" ? v : Number(v);
+  if (!Number.isFinite(n)) return null;
+  const out = Math.floor(n);
+  return out > 0 ? out : null;
+}
+
 export function useReservationStatus({
   date,
   list,
@@ -29,7 +36,7 @@ export function useReservationStatus({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<ReservationEditForm | null>(null);
 
-  const handleComplete = (id: string) => {
+  const handleComplete = async (id: string) => {
     const target = list.find((r) => r.id === id);
     if (!target) return;
 
@@ -38,12 +45,42 @@ export function useReservationStatus({
     const ok = window.confirm(DAY_PAGE_COPY.alerts.confirmComplete);
     if (!ok) return;
 
-    // NOTE(task5): department_id 연동 예약일 경우 완료 시 settleType(deposit|debt)을 반드시 받아야 함.
-    // 지금은 UI가 없으므로 status만 completed 처리(= settle_type은 null일 수 있음).
-    setList((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: "completed" } : r))
-    );
-    void ReservationsRepo.setReservationStatus(date, id, "completed");
+    try {
+      // 1) 완료 처리(서버/로컬 저장)
+      const completed = await ReservationsRepo.completeReservation(date, id);
+
+      // local repo는 Reservation | null 일 수 있음 → 가드
+      if (!completed) {
+        alert("완료 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
+      // 2) UI 반영은 성공 후
+      setList((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, status: "completed" } : r))
+      );
+
+      // 3) 장부 반영 조건(연동 예약만)
+      const deptId = completed.departmentId ?? null;
+      const settleType = completed.settleType ?? null;
+      const amount = toSafeAmount(completed.amount);
+
+      if (!deptId) return; // 비연동(직접입력)
+      if (!settleType) return; // task5에서 완료 시점에 필수로 받게 됨
+      if (!amount) return;
+
+      // 4) 예약 완료 정산을 장부에 기록
+      await DepartmentHistoryRepo.addReservationSettlementHistory({
+        reservationId: completed.id,
+        departmentId: deptId,
+        settleType,
+        amount,
+        memo: `${completed.department} · ${completed.menu}`,
+      });
+    } catch (e) {
+      console.error(e);
+      alert("완료 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
+    }
   };
 
   const handleCancel = (id: string) => {
@@ -122,7 +159,6 @@ export function useReservationStatus({
 
     setList((prev) => prev.map((r) => (r.id === editingId ? updated : r)));
 
-    // supabase에서도 id 유지 (update)
     void ReservationsRepo.updateReservation(date, updated);
 
     setEditingId(null);

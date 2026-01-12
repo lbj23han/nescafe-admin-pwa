@@ -27,6 +27,13 @@ function normalizeReservation(raw: unknown): Reservation | null {
   const id = typeof r.id === "string" ? r.id : null;
   if (!id) return null;
 
+  const departmentId =
+    typeof r.departmentId === "string"
+      ? r.departmentId
+      : r.departmentId === null
+      ? null
+      : null;
+
   const department = typeof r.department === "string" ? r.department : "";
   const menu = typeof r.menu === "string" ? r.menu : "";
 
@@ -49,6 +56,7 @@ function normalizeReservation(raw: unknown): Reservation | null {
 
   return {
     id,
+    departmentId,
     department,
     menu,
     amount: Number.isFinite(amount as number) ? (amount as number) : undefined,
@@ -130,6 +138,7 @@ export function saveReservation(
 
   const withStatus: Reservation = {
     ...reservation,
+    departmentId: reservation.departmentId ?? null,
     status: reservation.status ?? "pending",
     settleType: reservation.settleType ?? null,
   };

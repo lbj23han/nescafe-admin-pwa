@@ -42,6 +42,35 @@ export async function addDepartmentHistory(params: {
   };
 }
 
+/**
+ * 예약 완료 정산 반영 (local wrapper)
+ *
+ * settleType -> history.type 매핑:
+ * - deposit => 'deposit'
+ * - debt    => 'order'  (예치금 차감 + 부족분 debt 전환)
+ *
+ * NOTE:
+ * - localStorage는 source_type/source_id 컬럼이 없으므로
+ *   "중복 반영 방지"는 개발 중 편의상 보장하지 않음(실서비스는 Supabase unique index로 보장).
+ */
+export async function addReservationSettlementHistory(params: {
+  reservationId: string; // local에서는 사용하지 않음(시그니처 맞춤용)
+  departmentId: string;
+  settleType: "deposit" | "debt";
+  amount: number;
+  memo?: string;
+}) {
+  const mappedType: HistoryType =
+    params.settleType === "deposit" ? "deposit" : "order";
+
+  return addDepartmentHistory({
+    departmentId: params.departmentId,
+    type: mappedType,
+    amount: params.amount,
+    memo: params.memo,
+  });
+}
+
 export async function updateDepartmentHistory(params: {
   departmentId: string;
   historyId: string;

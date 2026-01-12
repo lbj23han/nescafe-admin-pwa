@@ -35,6 +35,7 @@ export type ReservationForCalendar = Reservation & { date: string };
 function rowToReservation(r: ReservationRow): Reservation {
   return {
     id: r.id,
+    departmentId: r.department_id ?? null, // ✅ 추가
     department: r.department ?? "",
     menu: r.menu ?? "",
     amount: r.amount ?? undefined,
@@ -197,10 +198,6 @@ export async function setReservationStatus(
  * 완료 처리 전용 API
  * - status=completed로 변경
  * - (선택) settle_type 저장
- *
- * NOTE:
- * - direct input 예약은 settleType이 없어도 완료 가능
- * - ledger 연동 예약은 task5 이후에 department_id 기반으로 settleType 필수 강제 예정
  */
 export async function completeReservation(
   date: string, // 로컬 시그니처 유지용

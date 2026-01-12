@@ -25,7 +25,7 @@ export type DepartmentsRepoContract = {
   createDepartment: (name: string) => Promise<Department>;
   deleteDepartment: (id: string) => Promise<void>;
 
-  // ✅ useNameEditor가 필요
+  // useNameEditor가 필요
   renameDepartment: (
     department: Department,
     name: string
@@ -89,6 +89,23 @@ export type DepartmentHistoryRepoContract = {
     next: Pick<Department, "deposit" | "debt" | "history">;
   }>;
 
+  /**
+   * 예약 완료 정산 반영(자동)
+   * settleType:
+   * - deposit: deposit 기록
+   * - debt: order 기록(예치금 차감 + 부족분 debt 전환)
+   */
+  addReservationSettlementHistory: (params: {
+    reservationId: string;
+    departmentId: string;
+    settleType: "deposit" | "debt";
+    amount: number;
+    memo?: string;
+  }) => Promise<{
+    history: DepartmentHistory;
+    next: Pick<Department, "deposit" | "debt" | "history">;
+  }>;
+
   updateDepartmentHistory: (params: {
     departmentId: string;
     historyId: string;
@@ -106,17 +123,20 @@ export type DepartmentHistoryRepoContract = {
   }>;
 };
 
-/** local adapter는 이미 departmentId 기반으로 구현돼 있어서 그대로 캐스팅 가능 */
-const DeptHistoryLocalAdapter =
+/** local adapter는 구현이 departmentId 기반으로 되어 있어 contract만 맞춰주면 됨 */
+const DeptHistoryLocalAdapter: DepartmentHistoryRepoContract =
   DeptHistoryLocal as unknown as DepartmentHistoryRepoContract;
 
-/** remote adapter도 그대로 캐스팅 가능 */
+/** remote adapter */
 const DeptHistoryRemoteAdapter: DepartmentHistoryRepoContract = {
   getDepartmentHistory: DeptHistoryRemote.getDepartmentHistory,
   addDepartmentHistory: DeptHistoryRemote.addDepartmentHistory,
+  addReservationSettlementHistory:
+    DeptHistoryRemote.addReservationSettlementHistory,
   updateDepartmentHistory: DeptHistoryRemote.updateDepartmentHistory,
   deleteDepartmentHistory: DeptHistoryRemote.deleteDepartmentHistory,
 };
+
 export const DepartmentHistoryRepo: DepartmentHistoryRepoContract =
   FLAGS.useSupabase ? DeptHistoryRemoteAdapter : DeptHistoryLocalAdapter;
 
