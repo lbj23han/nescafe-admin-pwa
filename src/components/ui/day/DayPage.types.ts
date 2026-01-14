@@ -1,3 +1,5 @@
+"use client";
+
 import type { ReactNode } from "react";
 import type { Reservation } from "@/lib/domain/reservation";
 import type { Department } from "@/lib/storage/departments.local";
@@ -24,7 +26,7 @@ export type ReservationListProps = {
     id: string,
     settleType?: SettleType,
     options?: { skipConfirm?: boolean }
-  ) => void;
+  ) => void | Promise<void>;
 
   onCancel: (id: string) => void;
 
@@ -32,7 +34,7 @@ export type ReservationListProps = {
   editingId?: string | null;
   editForm?: ReservationEditForm | null;
   onChangeEditField?: (field: keyof ReservationEditForm, value: string) => void;
-  onSubmitEdit?: () => void;
+  onSubmitEdit?: () => void | Promise<void>;
   onCancelEdit?: () => void;
   canManageActions?: boolean;
 };
@@ -72,4 +74,15 @@ export type LayoutProps = {
 
 export type MainProps = {
   children: ReactNode;
+};
+
+export type DayPageViewProps = {
+  header: HeaderProps;
+  list: ReservationListProps;
+
+  showForm: boolean;
+  form?: ReservationFormProps;
+
+  showAddButton: boolean;
+  addButton: AddButtonProps;
 };
