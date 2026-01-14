@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { Reservation } from "@/hooks/reservation";
 import { DayPageView } from "@/components/ui/day/DayPage.view";
-import { ReservationDebtSettleConfirmSheet } from "@/components/ui/day/ReservationDebtSettleConfirmSheet";
+import { ReservationDebtSettleConfirmSheet } from "@/components/ui/day/reservations";
 import { useMyRoleKey } from "@/components/ui/day/hooks/useMyRoleKey";
 import { useReservationSettleFlow } from "@/components/ui/day/hooks/useReservationSettleFlow";
 

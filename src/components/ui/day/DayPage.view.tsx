@@ -3,8 +3,7 @@
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 import { DayUI } from "./DayUI";
 import type { DayPageViewProps } from "./DayPage.types";
-import { ReservationListSection } from "./ReservationListSection";
-import { ReservationFormSection } from "./ReservationFormSection";
+import { ReservationListSection, ReservationFormSection } from "./reservations";
 
 export function DayPageView(props: DayPageViewProps) {
   const { header, list, showForm, form, showAddButton, addButton } = props;

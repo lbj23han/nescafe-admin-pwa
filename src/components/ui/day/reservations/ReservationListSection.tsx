@@ -1,8 +1,8 @@
 "use client";
 
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
-import { DayUI } from "./DayUI";
-import type { ReservationListProps } from "./DayPage.types";
+import { DayUI } from "../DayUI";
+import type { ReservationListProps } from "../DayPage.types";
 
 export function ReservationListSection({
   list,
