@@ -1,13 +1,14 @@
-// src/components/ui/day/DayPage.types.ts
 import type { ReactNode } from "react";
 import type { Reservation } from "@/lib/domain/reservation";
+import type { Department } from "@/lib/storage/departments.local";
 
 export type HeaderProps = {
   dateText: string;
   onBack: () => void;
 };
 
-// 수정 폼에서 사용할 필드 타입
+export type SettleType = "deposit" | "debt";
+
 export type ReservationEditForm = {
   department: string;
   menu: string;
@@ -18,10 +19,15 @@ export type ReservationEditForm = {
 
 export type ReservationListProps = {
   list: Reservation[];
-  onComplete: (id: string) => void;
+
+  onComplete: (
+    id: string,
+    settleType?: SettleType,
+    options?: { skipConfirm?: boolean }
+  ) => void;
+
   onCancel: (id: string) => void;
 
-  // 수정 관련 props
   onEdit: (id: string) => void;
   editingId?: string | null;
   editForm?: ReservationEditForm | null;
@@ -31,12 +37,23 @@ export type ReservationListProps = {
   canManageActions?: boolean;
 };
 
+export type DepartmentInputMode = "select" | "direct";
+
 export type ReservationFormProps = {
   department: string;
   menu: string;
   location: string;
   time: string;
   amount: string;
+
+  departmentMode: DepartmentInputMode;
+  departments: Department[];
+  selectedDepartmentId: string;
+  departmentsLoading?: boolean;
+
+  onChangeDepartmentMode: (mode: DepartmentInputMode) => void;
+  onChangeSelectedDepartmentId: (id: string) => void;
+
   onChangeDepartment: (v: string) => void;
   onChangeMenu: (v: string) => void;
   onChangeLocation: (v: string) => void;

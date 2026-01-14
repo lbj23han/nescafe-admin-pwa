@@ -10,7 +10,6 @@ import { useReservationStatus } from "./useReservationStatus";
 export function useDayReservation(date: string) {
   const [list, setList] = useState<Reservation[]>([]);
 
-  // local/supabase 공통 로드
   useEffect(() => {
     if (!date) return;
     let alive = true;

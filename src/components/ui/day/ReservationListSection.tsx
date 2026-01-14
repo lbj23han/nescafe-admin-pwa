@@ -56,6 +56,7 @@ export function ReservationListSection({
                   <DayUI.ActionGroup>
                     <DayUI.ActionButton
                       variant="edit"
+                      disabled={isCompleted}
                       onClick={() => onEdit(r.id)}
                     >
                       {DAY_PAGE_COPY.buttons.edit}
@@ -71,6 +72,7 @@ export function ReservationListSection({
 
                     <DayUI.ActionButton
                       variant="cancel"
+                      disabled={isCompleted}
                       onClick={() => onCancel(r.id)}
                     >
                       {DAY_PAGE_COPY.buttons.cancel}

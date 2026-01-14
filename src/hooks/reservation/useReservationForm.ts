@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Reservation } from "@/lib/domain/reservation";
-import { ReservationsRepo } from "@/lib/data";
+import { DepartmentsRepo, ReservationsRepo } from "@/lib/data";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
+import type { Department } from "@/lib/storage/departments.local";
+import type { DepartmentInputMode } from "@/components/ui/day/DayPage.types";
 
 type UseReservationFormArgs = {
   date: string;
@@ -11,12 +13,55 @@ type UseReservationFormArgs = {
 };
 
 export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
+  // direct input 텍스트
   const [department, setDepartment] = useState("");
+
+  // 모드 + 선택값
+  const [departmentMode, setDepartmentMode] =
+    useState<DepartmentInputMode>("select");
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
+
+  // 부서 목록
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [departmentsLoading, setDepartmentsLoading] = useState(false);
+
   const [menu, setMenu] = useState("");
   const [amount, setAmount] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
   const [showForm, setShowForm] = useState(false);
+
+  // 선택된 부서 객체
+  const selectedDepartment = useMemo(() => {
+    if (!selectedDepartmentId) return null;
+    return departments.find((d) => d.id === selectedDepartmentId) ?? null;
+  }, [departments, selectedDepartmentId]);
+
+  // 폼이 열릴 때 부서 목록 로드
+  useEffect(() => {
+    if (!showForm) return;
+
+    let alive = true;
+    setDepartmentsLoading(true);
+
+    (async () => {
+      try {
+        const items = await DepartmentsRepo.getDepartments();
+        if (!alive) return;
+        setDepartments(items);
+      } catch (e) {
+        console.error(e);
+        if (!alive) return;
+        setDepartments([]);
+      } finally {
+        if (alive) setDepartmentsLoading(false);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [showForm]);
 
   const handleAmountChange = (value: string) => {
     setAmount(value.replace(/\D/g, ""));
@@ -24,6 +69,8 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
 
   const resetForm = () => {
     setDepartment("");
+    setDepartmentMode("select");
+    setSelectedDepartmentId("");
     setMenu("");
     setAmount("");
     setTime("");
@@ -31,14 +78,27 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
   };
 
   const handleAdd = async () => {
-    if (!department || !menu) {
+    // 부서 값 확정 (연동/비연동)
+    const isDirect = departmentMode === "direct";
+
+    const resolvedDepartmentName = isDirect
+      ? department.trim()
+      : (selectedDepartment?.name ?? "").trim();
+
+    const resolvedDepartmentId = isDirect
+      ? null
+      : selectedDepartment?.id ?? null;
+
+    if (!resolvedDepartmentName || !menu) {
       alert(DAY_PAGE_COPY.alerts.requiredDepartmentAndMenu);
       return;
     }
 
+    // draft 생성: departmentId/department 스냅샷 세팅
     const draft: Reservation = {
       id: `${Date.now()}`,
-      department,
+      departmentId: resolvedDepartmentId,
+      department: resolvedDepartmentName,
       menu,
       amount: amount ? Number(amount) || 0 : 0,
       time,
@@ -65,6 +125,16 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
     void handleAdd();
   };
 
+  // 모드 변경 시 상태 정리
+  const handleChangeDepartmentMode = (mode: DepartmentInputMode) => {
+    setDepartmentMode(mode);
+    if (mode === "direct") {
+      setSelectedDepartmentId("");
+    } else {
+      setDepartment("");
+    }
+  };
+
   return {
     department,
     menu,
@@ -72,11 +142,19 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
     time,
     location,
     showForm,
+
     setDepartment,
     setMenu,
     setTime,
     setLocation,
     handleAmountChange,
     handleAddButtonClick,
+
+    departmentMode,
+    departments,
+    selectedDepartmentId,
+    departmentsLoading,
+    setDepartmentMode: handleChangeDepartmentMode,
+    setSelectedDepartmentId,
   };
 }

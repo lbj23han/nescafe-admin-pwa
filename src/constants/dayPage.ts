@@ -19,6 +19,14 @@ export const DAY_PAGE_COPY = {
     editCancel: "수정 취소",
   },
 
+  settleConfirm: {
+    title: "예치금 정산",
+    body: "예치금에서 차감합니다.\n예치금이 부족할 시 미수금 발생으로 전환됩니다.",
+    cancel: "닫기",
+    confirm: "확인",
+    loading: "처리 중…",
+  },
+
   alerts: {
     requiredDepartmentAndMenu: "부서와 메뉴는 필수입니다.",
     confirmComplete: "완료된 예약입니까?",

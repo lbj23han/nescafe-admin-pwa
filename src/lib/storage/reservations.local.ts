@@ -1,5 +1,9 @@
 import { STORAGE_KEYS } from "@/constants/config";
-import type { Reservation, ReservationStatus } from "@/lib/domain/reservation";
+import type {
+  Reservation,
+  ReservationStatus,
+  SettlementType,
+} from "@/lib/domain/reservation";
 
 const STORAGE_KEY = STORAGE_KEYS.reservations;
 
@@ -11,6 +15,10 @@ function isStatus(v: unknown): v is ReservationStatus {
   return v === "pending" || v === "completed";
 }
 
+function isSettlementType(v: unknown): v is SettlementType {
+  return v === "deposit" || v === "debt";
+}
+
 function normalizeReservation(raw: unknown): Reservation | null {
   if (!raw || typeof raw !== "object") return null;
 
@@ -18,6 +26,13 @@ function normalizeReservation(raw: unknown): Reservation | null {
 
   const id = typeof r.id === "string" ? r.id : null;
   if (!id) return null;
+
+  const departmentId =
+    typeof r.departmentId === "string"
+      ? r.departmentId
+      : r.departmentId === null
+      ? null
+      : null;
 
   const department = typeof r.department === "string" ? r.department : "";
   const menu = typeof r.menu === "string" ? r.menu : "";
@@ -35,8 +50,13 @@ function normalizeReservation(raw: unknown): Reservation | null {
 
   const status: ReservationStatus = isStatus(r.status) ? r.status : "pending";
 
+  const settleType: SettlementType | null = isSettlementType(r.settleType)
+    ? r.settleType
+    : null;
+
   return {
     id,
+    departmentId,
     department,
     menu,
     amount: Number.isFinite(amount as number) ? (amount as number) : undefined,
@@ -44,6 +64,7 @@ function normalizeReservation(raw: unknown): Reservation | null {
     location,
     memo,
     status,
+    settleType,
   };
 }
 
@@ -79,7 +100,7 @@ export function loadReservationsByDate(date: string): Reservation[] {
 }
 
 /**
- * ✅ 캘린더 전용: date range를 한 번에 로드 (localStorage에서 합쳐서 반환)
+ * 캘린더 전용: date range를 한 번에 로드 (localStorage에서 합쳐서 반환)
  * - from/to: YYYY-MM-DD (inclusive)
  * - 반환: Reservation + { date }
  */
@@ -117,7 +138,9 @@ export function saveReservation(
 
   const withStatus: Reservation = {
     ...reservation,
+    departmentId: reservation.departmentId ?? null,
     status: reservation.status ?? "pending",
+    settleType: reservation.settleType ?? null,
   };
 
   const nextStore: ReservationStore = {
@@ -163,6 +186,46 @@ export function setReservationStatus(
     if (r.id !== id) return r;
     updated = { ...r, status };
     return updated;
+  });
+
+  const nextStore: ReservationStore = {
+    ...(allUnknown as unknown as ReservationStore),
+    [date]: next,
+  };
+
+  saveAll(nextStore);
+  return updated;
+}
+
+/**
+ * 완료 처리 API (local)
+ * - status=completed
+ * - (선택) settleType 저장
+ */
+export async function completeReservation(
+  date: string,
+  id: string,
+  params?: { settleType?: SettlementType | null }
+): Promise<Reservation | null> {
+  const allUnknown = loadAllUnknown();
+  const currentList = readList(allUnknown, date);
+
+  let updated: Reservation | null = null;
+
+  const next = currentList.map((r) => {
+    if (r.id !== id) return r;
+
+    const patch: Reservation = {
+      ...r,
+      status: "completed",
+    };
+
+    if ("settleType" in (params ?? {})) {
+      patch.settleType = params?.settleType ?? null;
+    }
+
+    updated = patch;
+    return patch;
   });
 
   const nextStore: ReservationStore = {

@@ -1,6 +1,10 @@
 import { supabase } from "@/lib/supabaseClient";
 import { getMyProfileFromClient } from "@/lib/repositories/profile.client";
-import type { Reservation, ReservationStatus } from "@/lib/domain/reservation";
+import type {
+  Reservation,
+  ReservationStatus,
+  SettlementType,
+} from "@/lib/domain/reservation";
 
 type ReservationRow = {
   id: string;
@@ -20,6 +24,8 @@ type ReservationRow = {
   memo: string | null;
   status: ReservationStatus | null;
 
+  settle_type: SettlementType | null;
+
   created_at: string;
   updated_at: string;
 };
@@ -29,6 +35,7 @@ export type ReservationForCalendar = Reservation & { date: string };
 function rowToReservation(r: ReservationRow): Reservation {
   return {
     id: r.id,
+    departmentId: r.department_id ?? null,
     department: r.department ?? "",
     menu: r.menu ?? "",
     amount: r.amount ?? undefined,
@@ -36,6 +43,7 @@ function rowToReservation(r: ReservationRow): Reservation {
     location: r.location ?? undefined,
     memo: r.memo ?? undefined,
     status: r.status ?? "pending",
+    settleType: r.settle_type ?? null,
   };
 }
 
@@ -67,11 +75,6 @@ export async function loadReservationsByDate(
   return rows.map(rowToReservation);
 }
 
-/**
- * 캘린더 전용: date range를 한 번에 로드 (성능 목적)
- * - from/to: YYYY-MM-DD (inclusive)
- * - 반환: Reservation + { date }
- */
 export async function loadReservationsByDateRange(
   from: string,
   to: string
@@ -109,8 +112,7 @@ export async function saveReservation(
       shop_id: profile.shop_id,
       date,
 
-      // TODO: department(string) -> department_id 매핑은 departments supabase 이전 후 처리
-      department_id: null,
+      department_id: reservation.departmentId ?? null,
       department: reservation.department ?? "",
 
       menu: reservation.menu ?? null,
@@ -120,6 +122,8 @@ export async function saveReservation(
 
       memo: reservation.memo ?? null,
       status: reservation.status ?? "pending",
+
+      settle_type: reservation.settleType ?? null,
     })
     .select("*")
     .single();
@@ -140,7 +144,7 @@ export async function updateReservation(
     .update({
       date,
 
-      department_id: null,
+      department_id: reservation.departmentId ?? null,
       department: reservation.department ?? "",
 
       menu: reservation.menu ?? null,
@@ -149,7 +153,9 @@ export async function updateReservation(
       location: reservation.location ?? "",
 
       memo: reservation.memo ?? null,
+
       status: reservation.status ?? "pending",
+      settle_type: reservation.settleType ?? null,
     })
     .eq("id", reservation.id)
     .eq("shop_id", profile.shop_id)
@@ -161,7 +167,7 @@ export async function updateReservation(
 }
 
 export async function setReservationStatus(
-  date: string, // 로컬 시그니처 유지용 (쿼리엔 필요 없음)
+  date: string,
   id: string,
   status: ReservationStatus
 ): Promise<Reservation> {
@@ -171,6 +177,34 @@ export async function setReservationStatus(
   const { data, error } = await supabase
     .from("reservations")
     .update({ status })
+    .eq("id", id)
+    .eq("shop_id", profile.shop_id)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return rowToReservation(data as ReservationRow);
+}
+
+export async function completeReservation(
+  date: string,
+  id: string,
+  params?: { settleType?: SettlementType | null }
+): Promise<Reservation> {
+  const profile = await getMyProfileFromClient();
+  if (!profile.shop_id) throw new Error("No shop");
+
+  const patch: Partial<Pick<ReservationRow, "status" | "settle_type">> = {
+    status: "completed",
+  };
+
+  if ("settleType" in (params ?? {})) {
+    patch.settle_type = params?.settleType ?? null;
+  }
+
+  const { data, error } = await supabase
+    .from("reservations")
+    .update(patch)
     .eq("id", id)
     .eq("shop_id", profile.shop_id)
     .select("*")
