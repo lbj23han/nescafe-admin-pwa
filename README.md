@@ -94,6 +94,19 @@
   - 주말 강조
   - 공휴일 자동 표시
 
+#### 예약 완료 시 장부 자동 반영 (v2.1 추가)
+
+- **부서 연동 예약(= `department_id` 존재)**만 완료 시점에 장부(`department_history`)에 자동 반영
+- 정산 방식
+  - **주문(debt)** 고정: 예치금 우선 차감 → 부족분은 미수금으로 전환
+- 예약 1건당 장부 기록은 최대 1건(중복 방지)
+  - `source_type = 'reservation'`
+  - `source_id = reservation.id`
+  - DB unique index로 idempotent 보장
+- UX
+  - 부서 연동 예약 완료 시 **정산 안내 확인 Sheet**를 거친 뒤 완료 처리
+  - direct input 예약은 장부 미연동(기존 UX 유지)
+
 ---
 
 ### 🧭 Bottom Navigation
@@ -139,8 +152,12 @@
 
 ## 📌 Changelog
 
-### v2.1 (2025-12)
+### v2.1 (2026-01)
 
+- 예약 완료 시 장부 자동 반영(부서 연동 예약만)
+  - 주문(debt) 정산: 예치금 차감 + 부족분 미수금 전환
+  - reservation당 history 1건 보장(중복 방지 unique index)
+  - 정산 안내 확인 Sheet UX 추가
 - 직원 초대(Invite) 기능 구현
 - 권한 모델 정리 (Owner/Admin/Staff/Viewer)
 - 초대 수락 시 profile ↔ shop 자동 연결
