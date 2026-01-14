@@ -16,7 +16,7 @@ export function DayDetailPageContainer({ date }: Props) {
   const router = useRouter();
   const isReady = useAuthGuard();
 
-  const { canManageActions } = useMyRoleKey(isReady);
+  const role = useMyRoleKey(isReady);
 
   const {
     list,
@@ -56,6 +56,8 @@ export function DayDetailPageContainer({ date }: Props) {
 
   if (!isReady) return null;
 
+  const canManageActions = !!role.canManageActions;
+
   const showAddButton = canManageActions && editingId === null;
 
   return (
@@ -68,7 +70,7 @@ export function DayDetailPageContainer({ date }: Props) {
         list={{
           list,
           departments,
-          departmentsLoading,
+          departmentsLoading: !!departmentsLoading,
           onComplete: settle.onClickComplete,
           onCancel: handleCancel,
           onEdit: handleEdit,
@@ -96,7 +98,7 @@ export function DayDetailPageContainer({ date }: Props) {
                 departmentMode,
                 departments,
                 selectedDepartmentId,
-                departmentsLoading,
+                departmentsLoading: !!departmentsLoading,
                 onChangeDepartmentMode: setDepartmentMode,
                 onChangeSelectedDepartmentId: setSelectedDepartmentId,
               }

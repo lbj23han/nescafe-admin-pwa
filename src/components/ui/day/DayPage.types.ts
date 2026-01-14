@@ -30,7 +30,7 @@ export type ReservationListProps = {
   list: Reservation[];
 
   departments: Department[];
-  departmentsLoading?: boolean;
+  departmentsLoading: boolean;
 
   onComplete: (
     id: string,
@@ -41,12 +41,15 @@ export type ReservationListProps = {
   onCancel: (id: string) => void;
 
   onEdit: (id: string) => void;
+
+  // 편집 UX는 "가능하면 제공" 수준이라 optional 유지
   editingId?: string | null;
   editForm?: ReservationEditForm | null;
   onChangeEditField?: (field: keyof ReservationEditForm, value: string) => void;
   onSubmitEdit?: () => void | Promise<void>;
   onCancelEdit?: () => void;
-  canManageActions?: boolean;
+
+  canManageActions: boolean;
 };
 
 export type DepartmentInputMode = "select" | "direct";
@@ -61,7 +64,7 @@ export type ReservationFormProps = {
   departmentMode: DepartmentInputMode;
   departments: Department[];
   selectedDepartmentId: string;
-  departmentsLoading?: boolean;
+  departmentsLoading: boolean;
 
   onChangeDepartmentMode: (mode: DepartmentInputMode) => void;
   onChangeSelectedDepartmentId: (id: string) => void;
