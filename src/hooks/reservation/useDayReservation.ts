@@ -42,6 +42,7 @@ export function useDayReservation(date: string) {
     date,
     list,
     setList,
+    departments: form.departments,
   });
 
   return {

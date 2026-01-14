@@ -67,6 +67,8 @@ export function DayDetailPageContainer({ date }: Props) {
         }}
         list={{
           list,
+          departments,
+          departmentsLoading,
           onComplete: settle.onClickComplete,
           onCancel: handleCancel,
           onEdit: handleEdit,

@@ -6,6 +6,8 @@ import type { ReservationListProps } from "../DayPage.types";
 
 export function ReservationListSection({
   list,
+  departments,
+  departmentsLoading,
   onComplete,
   onCancel,
   onEdit,
@@ -30,6 +32,8 @@ export function ReservationListSection({
         {list.map((r) => {
           const isCompleted = r.status === "completed";
           const isEditing = editingId === r.id;
+
+          const isDirect = !!editForm && editForm.departmentId === "";
 
           return (
             <DayUI.ReservationCard key={r.id} isCompleted={isCompleted}>
@@ -85,11 +89,40 @@ export function ReservationListSection({
                 <DayUI.EditSection>
                   <div className="space-y-3">
                     <DayUI.Field label={DAY_PAGE_COPY.form.department.label}>
-                      <DayUI.TextInput
-                        value={editForm.department}
-                        onChange={(v) => onChangeEditField?.("department", v)}
-                        placeholder={DAY_PAGE_COPY.form.department.placeholder}
-                      />
+                      <div className="space-y-2">
+                        <select
+                          className="w-full h-10 rounded-xl border border-zinc-200 px-3 text-sm text-black"
+                          value={editForm.departmentId}
+                          onChange={(e) =>
+                            onChangeEditField?.("departmentId", e.target.value)
+                          }
+                          disabled={departmentsLoading}
+                        >
+                          <option value="">
+                            {departmentsLoading
+                              ? DAY_PAGE_COPY.form.department.loadingPlaceholder
+                              : DAY_PAGE_COPY.form.department.selectPlaceholder}
+                          </option>
+
+                          {departments.map((d) => (
+                            <option key={d.id} value={d.id}>
+                              {d.name}
+                            </option>
+                          ))}
+                        </select>
+
+                        {isDirect && (
+                          <DayUI.TextInput
+                            value={editForm.department}
+                            onChange={(v) =>
+                              onChangeEditField?.("department", v)
+                            }
+                            placeholder={
+                              DAY_PAGE_COPY.form.department.placeholder
+                            }
+                          />
+                        )}
+                      </div>
                     </DayUI.Field>
 
                     <DayUI.Field label={DAY_PAGE_COPY.form.menu.label}>

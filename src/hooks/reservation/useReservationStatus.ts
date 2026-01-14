@@ -3,11 +3,13 @@
 import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { Reservation, SettlementType } from "@/lib/domain/reservation";
+import type { Department } from "@/lib/storage/departments.local";
 import { ReservationsRepo, DepartmentHistoryRepo } from "@/lib/data";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 
 type ReservationEditForm = {
-  department: string;
+  departmentId: string; // "" => direct
+  department: string; // direct text
   menu: string;
   location: string;
   time: string;
@@ -18,6 +20,7 @@ type UseReservationStatusArgs = {
   date: string;
   list: Reservation[];
   setList: Dispatch<SetStateAction<Reservation[]>>;
+  departments: Department[];
 };
 
 type CompleteOptions = {
@@ -31,10 +34,15 @@ function toSafeAmount(v: unknown): number | null {
   return out > 0 ? out : null;
 }
 
+function findDeptName(departments: Department[], id: string) {
+  return departments.find((d) => d.id === id)?.name ?? "";
+}
+
 export function useReservationStatus({
   date,
   list,
   setList,
+  departments,
 }: UseReservationStatusArgs) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<ReservationEditForm | null>(null);
@@ -55,7 +63,6 @@ export function useReservationStatus({
     }
 
     try {
-      // 완료 처리(서버/로컬 저장) + settleType 전달
       const completed = await ReservationsRepo.completeReservation(date, id, {
         settleType: settleType ?? null,
       });
@@ -65,7 +72,6 @@ export function useReservationStatus({
         return;
       }
 
-      // UI 반영 (status + settleType + departmentId 동기화)
       setList((prev) =>
         prev.map((r) =>
           r.id === id
@@ -79,13 +85,12 @@ export function useReservationStatus({
         )
       );
 
-      // 장부 반영 조건(연동 예약만)
       const deptId = completed.departmentId ?? null;
       const appliedSettleType = completed.settleType ?? null;
       const amount = toSafeAmount(completed.amount);
 
-      if (!deptId) return; // 비연동(직접입력)
-      if (!appliedSettleType) return; // 연동 예약인데 settleType이 없으면 반영하지 않음
+      if (!deptId) return;
+      if (!appliedSettleType) return;
       if (!amount) return;
 
       await DepartmentHistoryRepo.addReservationSettlementHistory({
@@ -128,6 +133,7 @@ export function useReservationStatus({
 
     setEditingId(id);
     setEditForm({
+      departmentId: target.departmentId ?? "",
       department: target.department ?? "",
       menu: target.menu ?? "",
       location: target.location ?? "",
@@ -163,9 +169,22 @@ export function useReservationStatus({
     const ok = window.confirm(DAY_PAGE_COPY.alerts.editConfirm);
     if (!ok) return;
 
+    const isDirect = !editForm.departmentId;
+
+    const resolvedDepartmentId = isDirect ? null : editForm.departmentId;
+    const resolvedDepartmentName = isDirect
+      ? editForm.department.trim()
+      : findDeptName(departments, editForm.departmentId).trim();
+
+    if (!resolvedDepartmentName || !editForm.menu.trim()) {
+      alert(DAY_PAGE_COPY.alerts.requiredDepartmentAndMenu);
+      return;
+    }
+
     const updated: Reservation = {
       ...target,
-      department: editForm.department,
+      departmentId: resolvedDepartmentId,
+      department: resolvedDepartmentName,
       menu: editForm.menu,
       location: editForm.location,
       time: editForm.time,
@@ -173,7 +192,6 @@ export function useReservationStatus({
     };
 
     setList((prev) => prev.map((r) => (r.id === editingId ? updated : r)));
-
     void ReservationsRepo.updateReservation(date, updated);
 
     setEditingId(null);

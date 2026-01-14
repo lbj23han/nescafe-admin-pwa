@@ -37,10 +37,8 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
     return departments.find((d) => d.id === selectedDepartmentId) ?? null;
   }, [departments, selectedDepartmentId]);
 
-  // 폼이 열릴 때 부서 목록 로드
+  // mount 시 부서 목록 1회 로드 (edit에서도 필요)
   useEffect(() => {
-    if (!showForm) return;
-
     let alive = true;
     setDepartmentsLoading(true);
 
@@ -61,7 +59,7 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
     return () => {
       alive = false;
     };
-  }, [showForm]);
+  }, []);
 
   const handleAmountChange = (value: string) => {
     setAmount(value.replace(/\D/g, ""));
@@ -79,7 +77,7 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
 
   const handleAdd = async () => {
     // 부서 값 확정 (연동/비연동)
-    const isDirect = departmentMode === "direct";
+    const isDirect = departmentMode === "direct" || !selectedDepartmentId;
 
     const resolvedDepartmentName = isDirect
       ? department.trim()
@@ -94,7 +92,6 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
       return;
     }
 
-    // draft 생성: departmentId/department 스냅샷 세팅
     const draft: Reservation = {
       id: `${Date.now()}`,
       departmentId: resolvedDepartmentId,

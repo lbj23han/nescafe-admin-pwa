@@ -12,7 +12,14 @@ export type HeaderProps = {
 export type SettleType = "deposit" | "debt";
 
 export type ReservationEditForm = {
+  /**
+   * ""  => 직접 입력
+   * "id" => 기존 부서 선택
+   */
+  departmentId: string;
+
   department: string;
+
   menu: string;
   location: string;
   time: string;
@@ -21,6 +28,9 @@ export type ReservationEditForm = {
 
 export type ReservationListProps = {
   list: Reservation[];
+
+  departments: Department[];
+  departmentsLoading?: boolean;
 
   onComplete: (
     id: string,
