@@ -38,6 +38,8 @@ export const DAY_PAGE_COPY = {
     department: {
       label: "부서",
       placeholder: "예: 모아주택",
+      selectPlaceholder: "직접 입력 (부서 선택 가능)",
+      loadingPlaceholder: "부서 목록 불러오는 중…",
     },
     menu: {
       label: "메뉴",
