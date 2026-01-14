@@ -3,6 +3,8 @@
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 import { DayUI } from "../DayUI";
 import type { ReservationListProps } from "../DayPage.types";
+import { ReservationRow } from "./parts/ReservationRow";
+import { ReservationEditFields } from "./parts/ReservationEditFields";
 
 export function ReservationListSection({
   list,
@@ -30,152 +32,29 @@ export function ReservationListSection({
     <DayUI.Section>
       <ul className="space-y-2">
         {list.map((r) => {
-          const isCompleted = r.status === "completed";
           const isEditing = editingId === r.id;
 
-          const isDirect = !!editForm && editForm.departmentId === "";
-
           return (
-            <DayUI.ReservationCard key={r.id} isCompleted={isCompleted}>
-              <DayUI.ReservationTitle>
-                {r.department} · {r.menu}
-              </DayUI.ReservationTitle>
-
-              <DayUI.MetaText>
-                {DAY_PAGE_COPY.format.reservationMeta({
-                  amount: r.amount,
-                  time: r.time,
-                  location: r.location,
-                })}
-              </DayUI.MetaText>
-
-              <DayUI.FooterRow>
-                <DayUI.StatusText>
-                  {isCompleted
-                    ? DAY_PAGE_COPY.status.completed
-                    : DAY_PAGE_COPY.status.inProgress}
-                </DayUI.StatusText>
-
-                {canManageActions ? (
-                  <DayUI.ActionGroup>
-                    <DayUI.ActionButton
-                      variant="edit"
-                      disabled={isCompleted}
-                      onClick={() => onEdit(r.id)}
-                    >
-                      {DAY_PAGE_COPY.buttons.edit}
-                    </DayUI.ActionButton>
-
-                    <DayUI.ActionButton
-                      variant="complete"
-                      disabled={isCompleted}
-                      onClick={() => onComplete(r.id)}
-                    >
-                      {DAY_PAGE_COPY.buttons.complete}
-                    </DayUI.ActionButton>
-
-                    <DayUI.ActionButton
-                      variant="cancel"
-                      disabled={isCompleted}
-                      onClick={() => onCancel(r.id)}
-                    >
-                      {DAY_PAGE_COPY.buttons.cancel}
-                    </DayUI.ActionButton>
-                  </DayUI.ActionGroup>
-                ) : null}
-              </DayUI.FooterRow>
+            <li key={r.id}>
+              <ReservationRow
+                r={r}
+                canManageActions={canManageActions}
+                onEdit={onEdit}
+                onComplete={onComplete}
+                onCancel={onCancel}
+              />
 
               {canManageActions && isEditing && editForm ? (
-                <DayUI.EditSection>
-                  <div className="space-y-3">
-                    <DayUI.Field label={DAY_PAGE_COPY.form.department.label}>
-                      <div className="space-y-2">
-                        <select
-                          className="w-full h-10 rounded-xl border border-zinc-200 px-3 text-sm text-black"
-                          value={editForm.departmentId}
-                          onChange={(e) =>
-                            onChangeEditField?.("departmentId", e.target.value)
-                          }
-                          disabled={departmentsLoading}
-                        >
-                          <option value="">
-                            {departmentsLoading
-                              ? DAY_PAGE_COPY.form.department.loadingPlaceholder
-                              : DAY_PAGE_COPY.form.department.selectPlaceholder}
-                          </option>
-
-                          {departments.map((d) => (
-                            <option key={d.id} value={d.id}>
-                              {d.name}
-                            </option>
-                          ))}
-                        </select>
-
-                        {isDirect && (
-                          <DayUI.TextInput
-                            value={editForm.department}
-                            onChange={(v) =>
-                              onChangeEditField?.("department", v)
-                            }
-                            placeholder={
-                              DAY_PAGE_COPY.form.department.placeholder
-                            }
-                          />
-                        )}
-                      </div>
-                    </DayUI.Field>
-
-                    <DayUI.Field label={DAY_PAGE_COPY.form.menu.label}>
-                      <DayUI.TextInput
-                        value={editForm.menu}
-                        onChange={(v) => onChangeEditField?.("menu", v)}
-                        placeholder={DAY_PAGE_COPY.form.menu.placeholder}
-                      />
-                    </DayUI.Field>
-
-                    <DayUI.Field label={DAY_PAGE_COPY.form.location.label}>
-                      <DayUI.TextInput
-                        value={editForm.location}
-                        onChange={(v) => onChangeEditField?.("location", v)}
-                        placeholder={DAY_PAGE_COPY.form.location.placeholder}
-                      />
-                    </DayUI.Field>
-
-                    <DayUI.Field label={DAY_PAGE_COPY.form.time.label}>
-                      <DayUI.TextInput
-                        value={editForm.time}
-                        onChange={(v) => onChangeEditField?.("time", v)}
-                        placeholder={DAY_PAGE_COPY.form.time.placeholder}
-                      />
-                    </DayUI.Field>
-
-                    <DayUI.Field label={DAY_PAGE_COPY.form.amount.label}>
-                      <DayUI.TextInput
-                        value={editForm.amount}
-                        onChange={(v) => onChangeEditField?.("amount", v)}
-                        placeholder={DAY_PAGE_COPY.form.amount.placeholder}
-                        numeric
-                      />
-                    </DayUI.Field>
-                  </div>
-
-                  <div className="flex justify-end gap-2 pt-1">
-                    <DayUI.ActionButton
-                      variant="edit"
-                      onClick={() => onCancelEdit?.()}
-                    >
-                      {DAY_PAGE_COPY.buttons.editCancel}
-                    </DayUI.ActionButton>
-                    <DayUI.ActionButton
-                      variant="complete"
-                      onClick={() => onSubmitEdit?.()}
-                    >
-                      {DAY_PAGE_COPY.buttons.editSave}
-                    </DayUI.ActionButton>
-                  </div>
-                </DayUI.EditSection>
+                <ReservationEditFields
+                  editForm={editForm}
+                  departments={departments}
+                  departmentsLoading={departmentsLoading}
+                  onChangeEditField={onChangeEditField}
+                  onSubmitEdit={onSubmitEdit}
+                  onCancelEdit={onCancelEdit}
+                />
               ) : null}
-            </DayUI.ReservationCard>
+            </li>
           );
         })}
       </ul>
