@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 
 type ActionButtonVariant = "complete" | "cancel" | "edit";
+type SheetActionVariant = "primary" | "secondary";
 
 export const DayUI = {
   Layout({ children }: { children: ReactNode }) {
@@ -21,14 +22,12 @@ export const DayUI = {
     return <section className="mb-4">{children}</section>;
   },
 
-  /** 상단 헤더 레이아웃 (좌측/우측 정렬) */
   HeaderRow({ children }: { children: ReactNode }) {
     return (
       <div className="flex items-center justify-between mb-4">{children}</div>
     );
   },
 
-  /** 헤더 좌측 Back 버튼 */
   BackButton({
     children,
     onClick,
@@ -43,7 +42,6 @@ export const DayUI = {
     );
   },
 
-  /** 헤더 우측: 타이틀 + 날짜 묶음 */
   HeaderTitleBlock({ title, dateText }: { title: string; dateText: string }) {
     return (
       <div className="text-right">
@@ -53,7 +51,6 @@ export const DayUI = {
     );
   },
 
-  /** Day 헤더 완전체 */
   Header({
     backLabel,
     title,
@@ -77,7 +74,6 @@ export const DayUI = {
     return <label className="block text-xs text-black mb-1">{children}</label>;
   },
 
-  /** 라벨 + 인풋(혹은 다른 컴포넌트)을 묶는 필드 래퍼 */
   Field({ label, children }: { label: string; children: ReactNode }) {
     return (
       <div>
@@ -144,34 +140,28 @@ export const DayUI = {
     );
   },
 
-  /** 카드 안의 타이틀 텍스트 (부서 · 메뉴) */
   ReservationTitle({ children }: { children: ReactNode }) {
     return <p className="font-medium text-black">{children}</p>;
   },
 
-  /** 카드 안의 보조 정보 텍스트 (금액/시간/위치) */
   MetaText({ children }: { children: ReactNode }) {
     return <p className="mt-1 text-[11px] text-black">{children}</p>;
   },
 
-  /** 상태 + 액션 버튼이 들어가는 하단 행 */
   FooterRow({ children }: { children: ReactNode }) {
     return (
       <div className="mt-2 flex items-center justify-between">{children}</div>
     );
   },
 
-  /** 상태 텍스트 */
   StatusText({ children }: { children: ReactNode }) {
     return <span className="text-[11px] text-black">{children}</span>;
   },
 
-  /** 액션 버튼 묶음 (완료/취소/수정 등) */
   ActionGroup({ children }: { children: ReactNode }) {
     return <div className="flex gap-2">{children}</div>;
   },
 
-  /** 수정 모드일 때 카드 아래쪽 확장 영역 */
   EditSection({ children }: { children: ReactNode }) {
     return (
       <div className="mt-3 border-t border-zinc-200 pt-3 space-y-2">
@@ -202,7 +192,6 @@ export const DayUI = {
     } else if (variant === "cancel") {
       variantClass = "border-red-400 text-red-600 bg-red-50";
     } else {
-      // edit
       variantClass = "border-zinc-300 text-zinc-700 bg-zinc-100";
     }
 
@@ -211,6 +200,114 @@ export const DayUI = {
         onClick={onClick}
         disabled={disabled}
         className={`${base} ${variantClass}`}
+      >
+        {children}
+      </button>
+    );
+  },
+
+  SheetOverlay({
+    children,
+    onBackdropClick,
+  }: {
+    children: ReactNode;
+    onBackdropClick: () => void;
+  }) {
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+        role="dialog"
+        aria-modal="true"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onBackdropClick();
+        }}
+      >
+        {children}
+      </div>
+    );
+  },
+
+  SheetContainer({ children }: { children: ReactNode }) {
+    return (
+      <div className="w-[80vw] max-w-[480px] max-h-[80vh] overflow-auto rounded-2xl bg-white border border-zinc-200 shadow-sm p-4">
+        {children}
+      </div>
+    );
+  },
+
+  SheetHeader({ children }: { children: ReactNode }) {
+    return (
+      <div className="flex items-start justify-between gap-2">{children}</div>
+    );
+  },
+
+  SheetTitle({ children }: { children: ReactNode }) {
+    return <p className="text-sm font-semibold text-black">{children}</p>;
+  },
+
+  SheetDesc({ children }: { children: ReactNode }) {
+    return (
+      <p className="mt-1 text-xs text-zinc-600 whitespace-pre-line">
+        {children}
+      </p>
+    );
+  },
+
+  SheetCloseButton({
+    children,
+    onClick,
+    disabled,
+  }: {
+    children: ReactNode;
+    onClick: () => void;
+    disabled?: boolean;
+  }) {
+    return (
+      <button
+        type="button"
+        className="px-2 py-1 rounded-lg text-[11px] border border-zinc-300 text-zinc-700 bg-zinc-100 disabled:opacity-60"
+        onClick={onClick}
+        disabled={disabled}
+      >
+        {children}
+      </button>
+    );
+  },
+
+  SheetFooter({ children }: { children: ReactNode }) {
+    return <div className="mt-4 flex justify-end gap-2">{children}</div>;
+  },
+
+  SheetActionButton({
+    children,
+    variant,
+    onClick,
+    disabled,
+  }: {
+    children: ReactNode;
+    variant: SheetActionVariant;
+    onClick: () => void;
+    disabled?: boolean;
+  }) {
+    if (variant === "primary") {
+      return (
+        <button
+          type="button"
+          className="px-3 py-2 rounded-xl text-sm font-semibold bg-black text-white shadow-sm disabled:opacity-40 active:scale-[0.99] transition"
+          onClick={onClick}
+          disabled={disabled}
+        >
+          {children}
+        </button>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        className="px-3 py-2 rounded-xl text-sm font-semibold border border-zinc-300 text-zinc-700 bg-zinc-100 disabled:opacity-60"
+        onClick={onClick}
+        disabled={disabled}
       >
         {children}
       </button>

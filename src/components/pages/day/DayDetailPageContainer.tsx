@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { Reservation } from "@/hooks/reservation";
 import { DayPageUI as UI } from "@/components/ui/day/DayPage.view";
+import { ReservationDebtSettleConfirmSheet } from "@/components/ui/day/ReservationDebtSettleConfirmSheet";
 import { supabase } from "@/lib/supabaseClient";
 
 type Props = {
@@ -25,7 +26,6 @@ async function fetchMyRole(): Promise<string> {
   const userId = sessionRes.session?.user.id;
   if (!userId) return "unknown";
 
-  // 1차: user_id
   const byUserId = await supabase
     .from("profiles")
     .select("role")
@@ -35,7 +35,6 @@ async function fetchMyRole(): Promise<string> {
   if (byUserId.error) throw byUserId.error;
   if (byUserId.data?.role) return byUserId.data.role;
 
-  // 2차: id
   const byId = await supabase
     .from("profiles")
     .select("role")
@@ -51,6 +50,11 @@ export function DayDetailPageContainer({ date }: Props) {
   const isReady = useAuthGuard();
 
   const [roleKey, setRoleKey] = useState<string>("unknown");
+  const [settleOpen, setSettleOpen] = useState(false);
+  const [pendingCompleteId, setPendingCompleteId] = useState<string | null>(
+    null
+  );
+  const [settleLoading, setSettleLoading] = useState(false);
 
   useEffect(() => {
     if (!isReady) return;
@@ -97,17 +101,63 @@ export function DayDetailPageContainer({ date }: Props) {
     handleChangeEditField,
     handleSubmitEdit,
     handleCancelEdit,
+    departmentMode,
+    departments,
+    selectedDepartmentId,
+    departmentsLoading,
+    setDepartmentMode,
+    setSelectedDepartmentId,
   } = Reservation.useDay(date);
+
+  const handleClickComplete = (id: string) => {
+    const target = list.find((x) => x.id === id);
+    if (!target) return;
+
+    const hasDepartmentLink = !!target.departmentId;
+
+    if (!hasDepartmentLink) {
+      // direct input → 기존 confirm 사용
+      handleComplete(id);
+      return;
+    }
+
+    // 연동 예약 → 정산 안내 sheet
+    setPendingCompleteId(id);
+    setSettleOpen(true);
+  };
+
+  const closeSettle = () => {
+    if (settleLoading) return;
+    setSettleOpen(false);
+    setPendingCompleteId(null);
+  };
+
+  const confirmSettle = async () => {
+    if (!pendingCompleteId) return;
+
+    setSettleLoading(true);
+    try {
+      await Promise.resolve(
+        handleComplete(pendingCompleteId, "debt", { skipConfirm: true })
+      );
+
+      setSettleOpen(false);
+      setPendingCompleteId(null);
+    } finally {
+      setSettleLoading(false);
+    }
+  };
 
   if (!isReady) return null;
 
   return (
     <UI.Layout>
       <UI.Header dateText={formattedDate} onBack={() => router.back()} />
+
       <UI.Main>
         <UI.ReservationList
           list={list}
-          onComplete={handleComplete}
+          onComplete={handleClickComplete}
           onCancel={handleCancel}
           onEdit={handleEdit}
           editingId={editingId}
@@ -115,7 +165,7 @@ export function DayDetailPageContainer({ date }: Props) {
           onChangeEditField={handleChangeEditField}
           onSubmitEdit={handleSubmitEdit}
           onCancelEdit={handleCancelEdit}
-          canManageActions={canManageActions} // ✅ 추가
+          canManageActions={canManageActions}
         />
 
         {showForm && (
@@ -130,6 +180,12 @@ export function DayDetailPageContainer({ date }: Props) {
             onChangeLocation={setLocation}
             onChangeTime={setTime}
             onChangeAmount={handleAmountChange}
+            departmentMode={departmentMode}
+            departments={departments}
+            selectedDepartmentId={selectedDepartmentId}
+            departmentsLoading={departmentsLoading}
+            onChangeDepartmentMode={setDepartmentMode}
+            onChangeSelectedDepartmentId={setSelectedDepartmentId}
           />
         )}
 
@@ -137,6 +193,13 @@ export function DayDetailPageContainer({ date }: Props) {
           <UI.AddButton showForm={showForm} onClick={handleAddButtonClick} />
         )}
       </UI.Main>
+
+      <ReservationDebtSettleConfirmSheet
+        open={settleOpen}
+        onClose={closeSettle}
+        onConfirm={confirmSettle}
+        loading={settleLoading}
+      />
     </UI.Layout>
   );
 }
