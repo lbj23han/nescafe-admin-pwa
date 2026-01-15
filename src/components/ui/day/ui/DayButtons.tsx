@@ -35,6 +35,12 @@ export function ActionGroup({ children }: { children: ReactNode }) {
   return <div className="flex gap-2">{children}</div>;
 }
 
+function disabledCls(disabled?: boolean) {
+  return disabled
+    ? "border-zinc-300 text-zinc-500 bg-zinc-100 cursor-default"
+    : null;
+}
+
 export function ActionButton({
   children,
   variant,
@@ -47,14 +53,15 @@ export function ActionButton({
   onClick: () => void;
 }) {
   const base = "px-2 py-1 rounded-lg text-[11px] border transition";
-  const cls =
+
+  const normal =
     variant === "complete"
-      ? disabled
-        ? "border-zinc-300 text-zinc-500 bg-zinc-100 cursor-default"
-        : "border-emerald-500 text-emerald-700 bg-emerald-50"
+      ? "border-emerald-500 text-emerald-700 bg-emerald-50"
       : variant === "cancel"
       ? "border-red-400 text-red-600 bg-red-50"
       : "border-zinc-300 text-zinc-700 bg-zinc-100";
+
+  const cls = disabledCls(disabled) ?? normal;
 
   return (
     <button onClick={onClick} disabled={disabled} className={`${base} ${cls}`}>
