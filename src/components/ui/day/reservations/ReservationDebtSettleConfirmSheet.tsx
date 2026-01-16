@@ -1,7 +1,7 @@
 "use client";
 
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
-import { DayUI } from "./DayUI";
+import { DayUI } from "../DayUI";
 
 type Props = {
   open: boolean;

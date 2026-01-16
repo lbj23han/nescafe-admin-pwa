@@ -2,50 +2,34 @@
 
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 import { DayUI } from "./DayUI";
-import type {
-  HeaderProps,
-  ReservationListProps,
-  ReservationFormProps,
-  AddButtonProps,
-  LayoutProps,
-  MainProps,
-} from "./DayPage.types";
-import { ReservationListSection } from "./ReservationListSection";
-import { ReservationFormSection } from "./ReservationFormSection";
+import type { DayPageViewProps } from "./DayPage.types";
+import { ReservationListSection, ReservationFormSection } from "./reservations";
 
-export const DayPageUI = {
-  Layout({ children }: LayoutProps) {
-    return <DayUI.Layout>{children}</DayUI.Layout>;
-  },
+export function DayPageView(props: DayPageViewProps) {
+  const { header, list, showForm, form, showAddButton, addButton } = props;
 
-  Header({ dateText, onBack }: HeaderProps) {
-    return (
+  return (
+    <DayUI.Layout>
       <DayUI.Header
         backLabel={DAY_PAGE_COPY.backButton}
         title={DAY_PAGE_COPY.title}
-        dateText={dateText}
-        onBack={onBack}
+        dateText={header.dateText}
+        onBack={header.onBack}
       />
-    );
-  },
 
-  Main({ children }: MainProps) {
-    return <DayUI.Main>{children}</DayUI.Main>;
-  },
+      <DayUI.Main>
+        <ReservationListSection {...list} />
 
-  ReservationList(props: ReservationListProps) {
-    return <ReservationListSection {...props} />;
-  },
+        {showForm && form && <ReservationFormSection {...form} />}
 
-  ReservationForm(props: ReservationFormProps) {
-    return <ReservationFormSection {...props} />;
-  },
-
-  AddButton({ showForm, onClick }: AddButtonProps) {
-    return (
-      <DayUI.PrimaryButton onClick={onClick}>
-        {showForm ? DAY_PAGE_COPY.buttons.submit : DAY_PAGE_COPY.buttons.add}
-      </DayUI.PrimaryButton>
-    );
-  },
-};
+        {showAddButton && (
+          <DayUI.PrimaryButton onClick={addButton.onClick}>
+            {addButton.showForm
+              ? DAY_PAGE_COPY.buttons.submit
+              : DAY_PAGE_COPY.buttons.add}
+          </DayUI.PrimaryButton>
+        )}
+      </DayUI.Main>
+    </DayUI.Layout>
+  );
+}
