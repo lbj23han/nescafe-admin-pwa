@@ -10,13 +10,13 @@ export function ReservationCard({
   isCompleted: boolean;
 }) {
   return (
-    <li
+    <div
       className={`border border-zinc-200 rounded-2xl px-3 py-2 text-xs mb-1 ${
         isCompleted ? "bg-zinc-200 opacity-80" : "bg-zinc-50"
       }`}
     >
       {children}
-    </li>
+    </div>
   );
 }
 
