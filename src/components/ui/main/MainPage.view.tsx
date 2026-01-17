@@ -1,29 +1,7 @@
+"use client";
+
 import { MainUI } from "./MainUI";
-import type {
-  LayoutProps,
-  HeaderProps,
-  FooterProps,
-  MainPageViewProps,
-} from "./MainPage.types";
-
-export const MainPageUI = {
-  Layout({ children }: LayoutProps) {
-    return <MainUI.Layout>{children}</MainUI.Layout>;
-  },
-
-  Header({ title, description }: HeaderProps) {
-    return (
-      <MainUI.HeaderContainer>
-        <MainUI.Title>{title}</MainUI.Title>
-        <MainUI.Description>{description}</MainUI.Description>
-      </MainUI.HeaderContainer>
-    );
-  },
-
-  Footer({ children }: FooterProps) {
-    return <MainUI.Footer>{children}</MainUI.Footer>;
-  },
-};
+import type { MainPageViewProps } from "./MainPage.types";
 
 export function MainPageView({
   title,
@@ -31,9 +9,13 @@ export function MainPageView({
   children,
 }: MainPageViewProps) {
   return (
-    <MainPageUI.Layout>
-      <MainPageUI.Header title={title} description={description} />
+    <MainUI.Layout>
+      <MainUI.HeaderContainer>
+        <MainUI.Title>{title}</MainUI.Title>
+        <MainUI.Description>{description}</MainUI.Description>
+      </MainUI.HeaderContainer>
+
       {children}
-    </MainPageUI.Layout>
+    </MainUI.Layout>
   );
 }
