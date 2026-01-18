@@ -38,6 +38,7 @@ export function AuthForm({
   disableModeToggle = false,
   inviteShopName = "",
   onRequestPasswordReset,
+  onRequestEmailHelp,
   resetLoading = false,
   resetMessage = "",
 }: Props) {
@@ -73,6 +74,9 @@ export function AuthForm({
     !isSignup &&
     !disableModeToggle &&
     typeof onRequestPasswordReset === "function";
+
+  const showEmailHelpLink =
+    !isSignup && !disableModeToggle && typeof onRequestEmailHelp === "function";
 
   const inputClass =
     "mt-2 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-200";
@@ -133,13 +137,15 @@ export function AuthForm({
       <ActionsSection
         copy={copy}
         isSignup={isSignup}
-        loading={loading}
         disabled={disabled}
+        loading={loading}
         disableModeToggle={disableModeToggle}
         onSubmit={onSubmit}
         onToggleMode={onToggleMode}
         showResetLink={showResetLink}
         onRequestPasswordReset={onRequestPasswordReset}
+        showEmailHelpLink={showEmailHelpLink}
+        onRequestEmailHelp={onRequestEmailHelp}
         resetLoading={resetLoading}
       />
     </section>

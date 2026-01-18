@@ -10,8 +10,13 @@ export function ActionsSection(props: {
   disableModeToggle: boolean;
   onSubmit: () => void;
   onToggleMode: () => void;
+
   showResetLink: boolean;
   onRequestPasswordReset?: () => void;
+
+  showEmailHelpLink: boolean;
+  onRequestEmailHelp?: () => void;
+
   resetLoading: boolean;
 }) {
   const {
@@ -24,8 +29,12 @@ export function ActionsSection(props: {
     onToggleMode,
     showResetLink,
     onRequestPasswordReset,
+    showEmailHelpLink,
+    onRequestEmailHelp,
     resetLoading,
   } = props;
+
+  const showLinks = showResetLink || showEmailHelpLink;
 
   return (
     <>
@@ -53,16 +62,29 @@ export function ActionsSection(props: {
         </button>
       ) : null}
 
-      {showResetLink ? (
-        <div className="mt-[1.5vh] flex justify-center">
-          <button
-            type="button"
-            className="text-[11px] text-zinc-500 underline underline-offset-2 hover:text-zinc-700 disabled:opacity-50"
-            onClick={onRequestPasswordReset}
-            disabled={loading || resetLoading}
-          >
-            {resetLoading ? "재설정 메일 요청 중…" : "비밀번호 재설정"}
-          </button>
+      {showLinks ? (
+        <div className="mt-[1.5vh] flex justify-center gap-2">
+          {showEmailHelpLink ? (
+            <button
+              type="button"
+              className="text-[11px] text-zinc-500 underline underline-offset-2 hover:text-zinc-700 disabled:opacity-50"
+              onClick={onRequestEmailHelp}
+              disabled={loading}
+            >
+              아이디(이메일) 찾기
+            </button>
+          ) : null}
+
+          {showResetLink ? (
+            <button
+              type="button"
+              className="text-[11px] text-zinc-500 underline underline-offset-2 hover:text-zinc-700 disabled:opacity-50"
+              onClick={onRequestPasswordReset}
+              disabled={loading || resetLoading}
+            >
+              {resetLoading ? "재설정 메일 요청 중…" : "비밀번호 재설정"}
+            </button>
+          ) : null}
         </div>
       ) : null}
     </>
