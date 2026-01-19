@@ -1,4 +1,3 @@
-// src/constants/loginpage.ts
 export const LOGIN_PAGE_COPY = {
   appName: "Cafe Ledger",
 
@@ -43,6 +42,12 @@ export const LOGIN_PAGE_COPY = {
     loading: "처리 중...",
     toLogin: "로그인으로",
     toSignup: "회원가입",
+  },
+
+  links: {
+    findEmail: "아이디(이메일) 찾기",
+    passwordReset: "비밀번호 재설정",
+    passwordResetLoading: "재설정 메일 요청 중…",
   },
 
   errors: {

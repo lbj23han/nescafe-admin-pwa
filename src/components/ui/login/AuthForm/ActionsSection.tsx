@@ -73,7 +73,7 @@ export function ActionsSection(props: {
               onClick={onRequestEmailHelp}
               disabled={loading}
             >
-              아이디(이메일) 찾기
+              {copy.links.findEmail}
             </button>
           ) : null}
 
@@ -84,7 +84,9 @@ export function ActionsSection(props: {
               onClick={onRequestPasswordReset}
               disabled={loading || resetLoading}
             >
-              {resetLoading ? "재설정 메일 요청 중…" : "비밀번호 재설정"}
+              {resetLoading
+                ? copy.links.passwordResetLoading
+                : copy.links.passwordReset}
             </button>
           ) : null}
         </div>
