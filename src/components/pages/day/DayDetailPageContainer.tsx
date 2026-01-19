@@ -90,6 +90,14 @@ export function DayDetailPageContainer({ date }: Props) {
                 location,
                 time,
                 amount,
+
+                quantity: "",
+                unitPrice: "",
+                amountMode: "manual",
+                onChangeQuantity: () => {},
+                onChangeUnitPrice: () => {},
+                onChangeAmountMode: () => {},
+
                 onChangeDepartment: setDepartment,
                 onChangeMenu: setMenu,
                 onChangeLocation: setLocation,

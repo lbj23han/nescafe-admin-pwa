@@ -10,6 +10,8 @@ export type HeaderProps = {
 };
 
 export type SettleType = "deposit" | "debt";
+export type DepartmentInputMode = "select" | "direct";
+export type AmountMode = "auto" | "manual";
 
 export type ReservationEditForm = {
   /**
@@ -52,13 +54,15 @@ export type ReservationListProps = {
   canManageActions: boolean;
 };
 
-export type DepartmentInputMode = "select" | "direct";
-
 export type ReservationFormProps = {
   department: string;
   menu: string;
   location: string;
   time: string;
+
+  quantity: string;
+  unitPrice: string;
+  amountMode: AmountMode;
   amount: string;
 
   departmentMode: DepartmentInputMode;
@@ -73,6 +77,10 @@ export type ReservationFormProps = {
   onChangeMenu: (v: string) => void;
   onChangeLocation: (v: string) => void;
   onChangeTime: (v: string) => void;
+
+  onChangeQuantity: (v: string) => void;
+  onChangeUnitPrice: (v: string) => void;
+  onChangeAmountMode: (mode: AmountMode) => void;
   onChangeAmount: (v: string) => void;
 };
 
