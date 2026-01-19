@@ -11,6 +11,7 @@ import { PasswordSection } from "./PasswordSection";
 import { ConfirmPasswordSection } from "./ConfirmPasswordSection";
 import { MessagesSection } from "./MessagesSection";
 import { ActionsSection } from "./ActionsSection";
+import { AUTH_FORM_STYLES } from "./styles/authForm.styles";
 
 type Copy = typeof import("@/constants/loginpage").LOGIN_PAGE_COPY;
 type Policy = { valid: boolean; errors: string[] };
@@ -38,6 +39,7 @@ export function AuthForm({
   disableModeToggle = false,
   inviteShopName = "",
   onRequestPasswordReset,
+  onRequestEmailHelp,
   resetLoading = false,
   resetMessage = "",
 }: Props) {
@@ -74,15 +76,15 @@ export function AuthForm({
     !disableModeToggle &&
     typeof onRequestPasswordReset === "function";
 
-  const inputClass =
-    "mt-2 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-200";
+  const showEmailHelpLink =
+    !isSignup && !disableModeToggle && typeof onRequestEmailHelp === "function";
 
   const lockedClass = emailLocked
-    ? "bg-zinc-100 text-zinc-500 cursor-not-allowed"
-    : "bg-white";
+    ? AUTH_FORM_STYLES.emailLocked
+    : AUTH_FORM_STYLES.emailUnlocked;
 
   return (
-    <section className="mt-6">
+    <section className={AUTH_FORM_STYLES.section}>
       <HeaderSection copy={copy} isSignup={isSignup} />
 
       <ShopSection
@@ -90,14 +92,14 @@ export function AuthForm({
         isSignup={isSignup}
         hideShopName={hideShopName}
         inviteShopName={inviteShopName}
-        inputClass={inputClass}
+        inputClass={AUTH_FORM_STYLES.input}
         shopName={shopName}
         onChangeShopName={onChangeShopName}
       />
 
       <EmailSection
         copy={copy}
-        inputClass={inputClass}
+        inputClass={AUTH_FORM_STYLES.input}
         lockedClass={lockedClass}
         email={email}
         emailLocked={emailLocked}
@@ -107,7 +109,7 @@ export function AuthForm({
       <PasswordSection
         copy={copy}
         isSignup={isSignup}
-        inputClass={inputClass}
+        inputClass={AUTH_FORM_STYLES.input}
         password={password}
         onChangePassword={onChangePassword}
         showPolicy={isSignup && pwFocused}
@@ -119,7 +121,7 @@ export function AuthForm({
       <ConfirmPasswordSection
         copy={copy}
         isSignup={isSignup}
-        inputClass={inputClass}
+        inputClass={AUTH_FORM_STYLES.input}
         confirmPassword={confirmPassword}
         onChangeConfirmPassword={onChangeConfirmPassword}
       />
@@ -133,13 +135,15 @@ export function AuthForm({
       <ActionsSection
         copy={copy}
         isSignup={isSignup}
-        loading={loading}
         disabled={disabled}
+        loading={loading}
         disableModeToggle={disableModeToggle}
         onSubmit={onSubmit}
         onToggleMode={onToggleMode}
         showResetLink={showResetLink}
         onRequestPasswordReset={onRequestPasswordReset}
+        showEmailHelpLink={showEmailHelpLink}
+        onRequestEmailHelp={onRequestEmailHelp}
         resetLoading={resetLoading}
       />
     </section>

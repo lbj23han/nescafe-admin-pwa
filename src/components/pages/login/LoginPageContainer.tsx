@@ -77,6 +77,12 @@ export function LoginPageContainer() {
     router.push("/reset-password-request");
   };
 
+  const handleGoFindEmail = () => {
+    if (inviteMode) return;
+    if (effectiveMode !== "login") return;
+    router.push("/find-email");
+  };
+
   const toggleMode = () => {
     if (inviteMode) return;
 
@@ -117,6 +123,7 @@ export function LoginPageContainer() {
       onRequestPasswordReset={
         inviteMode ? undefined : handleGoPasswordResetRequest
       }
+      onRequestEmailHelp={inviteMode ? undefined : handleGoFindEmail}
       resetLoading={false}
       resetMessage={""}
     />
