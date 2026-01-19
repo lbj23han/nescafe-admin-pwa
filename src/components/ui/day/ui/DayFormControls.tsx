@@ -26,19 +26,22 @@ export function TextInput({
   onChange,
   placeholder,
   numeric,
+  disabled,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   numeric?: boolean;
+  disabled?: boolean;
 }) {
   return (
     <input
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full h-10 rounded-xl border border-zinc-200 px-3 text-sm text-black placeholder:text-zinc-400"
+      className="w-full h-10 rounded-xl border border-zinc-200 px-3 text-sm text-black placeholder:text-zinc-400 disabled:bg-zinc-50 disabled:text-zinc-500"
       placeholder={placeholder}
       inputMode={numeric ? "numeric" : undefined}
+      disabled={disabled}
     />
   );
 }
