@@ -1,5 +1,7 @@
 "use client";
 
+import { AUTH_ACTIONS_STYLES } from "./styles/authActions.styles";
+
 type Copy = typeof import("@/constants/loginpage").LOGIN_PAGE_COPY;
 
 export function ActionsSection(props: {
@@ -40,7 +42,7 @@ export function ActionsSection(props: {
     <>
       <button
         type="button"
-        className="mt-6 w-full rounded-xl bg-black px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+        className={AUTH_ACTIONS_STYLES.primaryButton}
         onClick={onSubmit}
         disabled={disabled}
       >
@@ -54,7 +56,7 @@ export function ActionsSection(props: {
       {!disableModeToggle ? (
         <button
           type="button"
-          className="mt-3 w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-900 disabled:opacity-50"
+          className={AUTH_ACTIONS_STYLES.secondaryButton}
           onClick={onToggleMode}
           disabled={loading}
         >
@@ -63,11 +65,11 @@ export function ActionsSection(props: {
       ) : null}
 
       {showLinks ? (
-        <div className="mt-[1.5vh] flex justify-center gap-2">
+        <div className={AUTH_ACTIONS_STYLES.linksRow}>
           {showEmailHelpLink ? (
             <button
               type="button"
-              className="text-[11px] text-zinc-500 underline underline-offset-2 hover:text-zinc-700 disabled:opacity-50"
+              className={AUTH_ACTIONS_STYLES.linkButton}
               onClick={onRequestEmailHelp}
               disabled={loading}
             >
@@ -78,7 +80,7 @@ export function ActionsSection(props: {
           {showResetLink ? (
             <button
               type="button"
-              className="text-[11px] text-zinc-500 underline underline-offset-2 hover:text-zinc-700 disabled:opacity-50"
+              className={AUTH_ACTIONS_STYLES.linkButton}
               onClick={onRequestPasswordReset}
               disabled={loading || resetLoading}
             >
