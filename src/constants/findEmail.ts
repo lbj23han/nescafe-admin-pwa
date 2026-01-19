@@ -1,7 +1,7 @@
 export const FIND_EMAIL_COPY = {
   title: "아이디(이메일) 찾기",
   subtitle: "확인할 이메일을 입력해 주세요.",
-  hint: "계정이 존재하는 경우에만 안내 메일이 발송됩니다. (계정 존재 여부는 안내하지 않습니다)",
+  hint: "계정이 존재하는 경우, 안내 메일이 발송됩니다.",
 
   fields: {
     email: "이메일",
