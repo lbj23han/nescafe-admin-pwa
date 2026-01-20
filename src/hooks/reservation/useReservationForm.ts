@@ -8,8 +8,11 @@ import type { DepartmentInputMode } from "@/components/ui/day/DayPage.types";
 import { useDepartments } from "./internal/useDepartments";
 import { resolveAddDepartment } from "./internal/resolveAddDepartment";
 import {
-  computeAutoAmount,
   digitsOnly,
+  serializeItemsToMenu,
+  type ReservationItem,
+} from "./internal/reservationItems";
+import {
   resolveDisplayAmount,
   resolveFinalAmountNumber,
   type AmountMode,
@@ -20,6 +23,32 @@ type UseReservationFormArgs = {
   onAdded: (reservation: Reservation) => void;
 };
 
+type ItemWithId = ReservationItem & { id: string };
+
+function createId() {
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function createEmptyItem(): ItemWithId {
+  return {
+    id: createId(),
+    menu: "",
+    quantity: "",
+    unitPrice: "",
+  };
+}
+
+function computeItemsAutoAmount(items: ItemWithId[]): string {
+  // amountCalc가 string 기반을 기대하는 구조라 string으로 반환
+  let total = 0;
+  for (const it of items) {
+    const q = Number(digitsOnly(it.quantity || "0")) || 0;
+    const p = Number(digitsOnly(it.unitPrice || "0")) || 0;
+    total += q * p;
+  }
+  return total > 0 ? String(total) : "";
+}
+
 export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
   const [department, setDepartment] = useState("");
   const [departmentMode, setDepartmentMode] =
@@ -28,21 +57,15 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
 
   const { departments, departmentsLoading } = useDepartments();
 
-  const [menu, setMenu] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
   const [showForm, setShowForm] = useState(false);
 
-  // UI only
-  const [quantity, setQuantity] = useState("");
-  const [unitPrice, setUnitPrice] = useState("");
-  const [amountMode, setAmountMode] = useState<AmountMode>("manual");
+  const [items, setItems] = useState<ItemWithId[]>([createEmptyItem()]);
+  const [amountMode, setAmountMode] = useState<AmountMode>("auto");
   const [manualAmount, setManualAmount] = useState("");
 
-  const autoAmount = useMemo(
-    () => computeAutoAmount(quantity, unitPrice),
-    [quantity, unitPrice]
-  );
+  const autoAmount = useMemo(() => computeItemsAutoAmount(items), [items]);
 
   const amount = useMemo(
     () =>
@@ -63,15 +86,39 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
     setDepartment("");
     setDepartmentMode("select");
     setSelectedDepartmentId("");
-    setMenu("");
     setTime("");
     setLocation("");
     setShowForm(false);
 
-    setQuantity("");
-    setUnitPrice("");
-    setAmountMode("manual");
+    setItems([createEmptyItem()]);
+    setAmountMode("auto");
     setManualAmount("");
+  };
+
+  const onAddItem = () => {
+    setItems((prev) => [...prev, createEmptyItem()]);
+  };
+
+  const onRemoveItem = (id: string) => {
+    setItems((prev) => {
+      const next = prev.filter((it) => it.id !== id);
+      return next.length > 0 ? next : [createEmptyItem()];
+    });
+  };
+
+  const onChangeItemField = (
+    id: string,
+    field: "menu" | "quantity" | "unitPrice",
+    value: string
+  ) => {
+    setItems((prev) =>
+      prev.map((it) => {
+        if (it.id !== id) return it;
+        if (field === "menu") return { ...it, menu: value };
+        if (field === "quantity") return { ...it, quantity: digitsOnly(value) };
+        return { ...it, unitPrice: digitsOnly(value) };
+      })
+    );
   };
 
   const handleAdd = async () => {
@@ -83,10 +130,13 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
         departments,
       });
 
-    if (!resolvedDepartmentName || !menu) {
+    const hasMenu = items.some((it) => it.menu.trim().length > 0);
+    if (!resolvedDepartmentName || !hasMenu) {
       alert(DAY_PAGE_COPY.alerts.requiredDepartmentAndMenu);
       return;
     }
+
+    const menu = serializeItemsToMenu(items);
 
     const draft: Reservation = {
       id: `${Date.now()}`,
@@ -118,12 +168,12 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
     void handleAdd();
   };
 
-  const handleAmountChange = (value: string) => {
+  const onChangeAmount = (value: string) => {
     if (amountMode !== "manual") return;
     setManualAmount(digitsOnly(value));
   };
 
-  const handleChangeAmountMode = (mode: AmountMode) => {
+  const onChangeAmountMode = (mode: AmountMode) => {
     setAmountMode(mode);
     if (mode === "manual" && !manualAmount && autoAmount) {
       setManualAmount(autoAmount);
@@ -137,29 +187,36 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
   };
 
   return {
+    // values
     department,
-    menu,
-    amount,
-    time,
     location,
+    time,
+    amount,
+    amountMode,
     showForm,
 
-    quantity,
-    unitPrice,
-    amountMode,
+    // items props
+    items,
+    onAddItem,
+    onRemoveItem,
+    onChangeItemField,
 
+    // setters (기존 컨벤션 유지)
     setDepartment,
-    setMenu,
     setTime,
     setLocation,
 
-    onChangeQuantity: (v: string) => setQuantity(digitsOnly(v)),
-    onChangeUnitPrice: (v: string) => setUnitPrice(digitsOnly(v)),
-    onChangeAmountMode: handleChangeAmountMode,
+    // handlers (ReservationFormProps 맞춤)
+    onChangeDepartment: setDepartment,
+    onChangeLocation: setLocation,
+    onChangeTime: setTime,
+    onChangeAmount,
+    onChangeAmountMode,
 
-    handleAmountChange,
+    // add
     handleAddButtonClick,
 
+    // department select/direct
     departmentMode,
     departments,
     selectedDepartmentId,

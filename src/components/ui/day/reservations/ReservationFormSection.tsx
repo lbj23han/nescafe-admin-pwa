@@ -3,25 +3,34 @@
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 import { DayUI } from "../DayUI";
 import type { ReservationFormProps } from "../DayPage.types";
+import { ReservationItemsSection } from "./ReservationItemsSection";
+import { AmountSection } from "./AmountSection";
 
 export function ReservationFormSection(props: ReservationFormProps) {
   const {
     department,
-    menu,
     location,
     time,
+
+    items,
+    onAddItem,
+    onRemoveItem,
+    onChangeItemField,
+
     amount,
-    onChangeDepartment,
-    onChangeMenu,
-    onChangeLocation,
-    onChangeTime,
+    amountMode,
     onChangeAmount,
+    onChangeAmountMode,
 
     departments,
     selectedDepartmentId,
     departmentsLoading,
     onChangeDepartmentMode,
     onChangeSelectedDepartmentId,
+    onChangeDepartment,
+
+    onChangeLocation,
+    onChangeTime,
   } = props;
 
   const isDirect = !selectedDepartmentId;
@@ -71,10 +80,11 @@ export function ReservationFormSection(props: ReservationFormProps) {
         </DayUI.Field>
 
         <DayUI.Field label={DAY_PAGE_COPY.form.menu.label}>
-          <DayUI.TextInput
-            value={menu}
-            onChange={onChangeMenu}
-            placeholder={DAY_PAGE_COPY.form.menu.placeholder}
+          <ReservationItemsSection
+            items={items}
+            onAddItem={onAddItem}
+            onRemoveItem={onRemoveItem}
+            onChangeItemField={onChangeItemField}
           />
         </DayUI.Field>
 
@@ -95,11 +105,12 @@ export function ReservationFormSection(props: ReservationFormProps) {
         </DayUI.Field>
 
         <DayUI.Field label={DAY_PAGE_COPY.form.amount.label}>
-          <DayUI.TextInput
-            value={amount}
-            onChange={onChangeAmount}
-            placeholder={DAY_PAGE_COPY.form.amount.placeholder}
-            numeric
+          <AmountSection
+            items={items}
+            amount={amount}
+            amountMode={amountMode}
+            onChangeAmount={onChangeAmount}
+            onChangeAmountMode={onChangeAmountMode}
           />
         </DayUI.Field>
       </div>

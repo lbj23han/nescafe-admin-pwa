@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import type { Reservation } from "@/lib/domain/reservation";
 import type { Department } from "@/lib/storage/departments.local";
+import type { ReservationItem } from "@/hooks/reservation/internal/reservationItems";
 
 export type HeaderProps = {
   dateText: string;
@@ -14,14 +15,8 @@ export type DepartmentInputMode = "select" | "direct";
 export type AmountMode = "auto" | "manual";
 
 export type ReservationEditForm = {
-  /**
-   * ""  => 직접 입력
-   * "id" => 기존 부서 선택
-   */
   departmentId: string;
-
   department: string;
-
   menu: string;
   location: string;
   time: string;
@@ -41,10 +36,8 @@ export type ReservationListProps = {
   ) => void | Promise<void>;
 
   onCancel: (id: string) => void;
-
   onEdit: (id: string) => void;
 
-  // 편집 UX는 "가능하면 제공" 수준이라 optional 유지
   editingId?: string | null;
   editForm?: ReservationEditForm | null;
   onChangeEditField?: (field: keyof ReservationEditForm, value: string) => void;
@@ -54,16 +47,26 @@ export type ReservationListProps = {
   canManageActions: boolean;
 };
 
+type ItemWithId = ReservationItem & { id: string };
+
 export type ReservationFormProps = {
   department: string;
-  menu: string;
   location: string;
   time: string;
 
-  quantity: string;
-  unitPrice: string;
+  items: ItemWithId[];
+  onAddItem: () => void;
+  onRemoveItem: (id: string) => void;
+  onChangeItemField: (
+    id: string,
+    field: "menu" | "quantity" | "unitPrice",
+    value: string
+  ) => void;
+
   amountMode: AmountMode;
   amount: string;
+  onChangeAmountMode: (mode: AmountMode) => void;
+  onChangeAmount: (v: string) => void;
 
   departmentMode: DepartmentInputMode;
   departments: Department[];
@@ -74,14 +77,8 @@ export type ReservationFormProps = {
   onChangeSelectedDepartmentId: (id: string) => void;
 
   onChangeDepartment: (v: string) => void;
-  onChangeMenu: (v: string) => void;
   onChangeLocation: (v: string) => void;
   onChangeTime: (v: string) => void;
-
-  onChangeQuantity: (v: string) => void;
-  onChangeUnitPrice: (v: string) => void;
-  onChangeAmountMode: (mode: AmountMode) => void;
-  onChangeAmount: (v: string) => void;
 };
 
 export type AddButtonProps = {
