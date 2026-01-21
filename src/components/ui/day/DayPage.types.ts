@@ -13,6 +13,7 @@ export type HeaderProps = {
 export type SettleType = "deposit" | "debt";
 export type DepartmentInputMode = "select" | "direct";
 export type AmountMode = "auto" | "manual";
+export type AddButtonIntent = "open" | "close" | "submit";
 
 export type ReservationEditForm = {
   departmentId: string;
@@ -84,7 +85,7 @@ export type ReservationFormProps = {
 };
 
 export type AddButtonProps = {
-  showForm: boolean;
+  intent: AddButtonIntent;
   onClick: () => void;
 };
 

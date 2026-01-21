@@ -4,7 +4,10 @@ import { useMemo, useState } from "react";
 import type { Reservation } from "@/lib/domain/reservation";
 import { ReservationsRepo } from "@/lib/data";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
-import type { DepartmentInputMode } from "@/components/ui/day/DayPage.types";
+import type {
+  DepartmentInputMode,
+  AddButtonIntent,
+} from "@/components/ui/day/DayPage.types";
 import { useDepartments } from "./internal/useDepartments";
 import { resolveAddDepartment } from "./internal/resolveAddDepartment";
 import {
@@ -39,7 +42,6 @@ function createEmptyItem(): ItemWithId {
 }
 
 function computeItemsAutoAmount(items: ItemWithId[]): string {
-  // amountCalc가 string 기반을 기대하는 구조라 string으로 반환
   let total = 0;
   for (const it of items) {
     const q = Number(digitsOnly(it.quantity || "0")) || 0;
@@ -47,6 +49,36 @@ function computeItemsAutoAmount(items: ItemWithId[]): string {
     total += q * p;
   }
   return total > 0 ? String(total) : "";
+}
+
+function hasAnyDraftInput(args: {
+  departmentMode: DepartmentInputMode;
+  selectedDepartmentId: string;
+  department: string;
+  time: string;
+  location: string;
+  items: ItemWithId[];
+  amountMode: AmountMode;
+  manualAmount: string;
+}) {
+  const dep =
+    args.departmentMode === "select"
+      ? args.selectedDepartmentId.trim()
+      : args.department.trim();
+
+  return (
+    dep.length > 0 ||
+    args.time.trim().length > 0 ||
+    args.location.trim().length > 0 ||
+    args.items.some(
+      (it) =>
+        it.menu.trim().length > 0 ||
+        digitsOnly(it.quantity || "").length > 0 ||
+        digitsOnly(it.unitPrice || "").length > 0
+    ) ||
+    (args.amountMode === "manual" &&
+      digitsOnly(args.manualAmount || "").length > 0)
+  );
 }
 
 export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
@@ -163,8 +195,36 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
     }
   };
 
+  const addButtonIntent: AddButtonIntent = useMemo(() => {
+    if (!showForm) return "open";
+
+    const hasInput = hasAnyDraftInput({
+      departmentMode,
+      selectedDepartmentId,
+      department,
+      time,
+      location,
+      items,
+      amountMode,
+      manualAmount,
+    });
+
+    return hasInput ? "submit" : "close";
+  }, [
+    showForm,
+    departmentMode,
+    selectedDepartmentId,
+    department,
+    time,
+    location,
+    items,
+    amountMode,
+    manualAmount,
+  ]);
+
   const handleAddButtonClick = () => {
-    if (!showForm) return void setShowForm(true);
+    if (addButtonIntent === "open") return void setShowForm(true);
+    if (addButtonIntent === "close") return void setShowForm(false);
     void handleAdd();
   };
 
@@ -195,18 +255,21 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
     amountMode,
     showForm,
 
+    // add button intent
+    addButtonIntent,
+
     // items props
     items,
     onAddItem,
     onRemoveItem,
     onChangeItemField,
 
-    // setters (기존 컨벤션 유지)
+    // setters
     setDepartment,
     setTime,
     setLocation,
 
-    // handlers (ReservationFormProps 맞춤)
+    // handlers
     onChangeDepartment: setDepartment,
     onChangeLocation: setLocation,
     onChangeTime: setTime,

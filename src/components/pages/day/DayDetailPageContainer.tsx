@@ -40,6 +40,8 @@ export function DayDetailPageContainer({ date }: Props) {
     setDepartment,
     setTime,
     setLocation,
+
+    addButtonIntent,
     handleAddButtonClick,
 
     handleComplete,
@@ -123,7 +125,7 @@ export function DayDetailPageContainer({ date }: Props) {
         }
         showAddButton={showAddButton}
         addButton={{
-          showForm,
+          intent: addButtonIntent,
           onClick: handleAddButtonClick,
         }}
       />
