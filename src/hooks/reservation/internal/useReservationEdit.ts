@@ -55,7 +55,7 @@ export function useReservationEdit({ date, list, setList, departments }: Args) {
     setEditForm((prev) => (prev ? { ...prev, [field]: value } : prev));
   };
 
-  const handleSubmitEdit = () => {
+  const handleSubmitEdit = (override?: Partial<ReservationEditForm>) => {
     if (!editingId || !editForm) return;
 
     const target = list.find((r) => r.id === editingId);
@@ -64,12 +64,17 @@ export function useReservationEdit({ date, list, setList, departments }: Args) {
     const ok = window.confirm(DAY_PAGE_COPY.alerts.editConfirm);
     if (!ok) return;
 
+    const formToSave: ReservationEditForm = {
+      ...editForm,
+      ...(override ?? {}),
+    };
+
     const { resolvedDepartmentId, resolvedDepartmentName } = resolveDepartment(
       departments,
-      editForm
+      formToSave
     );
 
-    if (!resolvedDepartmentName || !editForm.menu.trim()) {
+    if (!resolvedDepartmentName || !formToSave.menu.trim()) {
       alert(DAY_PAGE_COPY.alerts.requiredDepartmentAndMenu);
       return;
     }
@@ -78,10 +83,10 @@ export function useReservationEdit({ date, list, setList, departments }: Args) {
       ...target,
       departmentId: resolvedDepartmentId,
       department: resolvedDepartmentName,
-      menu: editForm.menu,
-      location: editForm.location,
-      time: editForm.time,
-      amount: editForm.amount ? Number(editForm.amount) || 0 : 0,
+      menu: formToSave.menu,
+      location: formToSave.location,
+      time: formToSave.time,
+      amount: formToSave.amount ? Number(formToSave.amount) || 0 : 0,
     };
 
     setList((prev) => prev.map((r) => (r.id === editingId ? updated : r)));

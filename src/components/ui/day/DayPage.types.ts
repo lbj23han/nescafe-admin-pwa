@@ -41,7 +41,9 @@ export type ReservationListProps = {
   editingId?: string | null;
   editForm?: ReservationEditForm | null;
   onChangeEditField?: (field: keyof ReservationEditForm, value: string) => void;
-  onSubmitEdit?: () => void | Promise<void>;
+  onSubmitEdit?: (
+    override?: Partial<ReservationEditForm>
+  ) => void | Promise<void>;
   onCancelEdit?: () => void;
 
   canManageActions: boolean;
