@@ -2,6 +2,8 @@
 
 import type { ReservationItem } from "@/hooks/reservation/internal/reservationItems";
 import { ReservationItemRow } from "./ReservationItemRow";
+import { DAY_PAGE_COPY } from "@/constants/dayPage";
+import { RESERVATION_UI } from "./reservation.ui";
 
 type ItemWithId = ReservationItem & { id: string };
 
@@ -23,8 +25,8 @@ export function ReservationItemsSection({
   onChangeItemField,
 }: Props) {
   return (
-    <div className="space-y-2">
-      <div className="space-y-2">
+    <div className={RESERVATION_UI.stack2}>
+      <div className={RESERVATION_UI.stack2}>
         {items.map((it) => (
           <ReservationItemRow
             key={it.id}
@@ -37,11 +39,11 @@ export function ReservationItemsSection({
 
       <button
         type="button"
-        className="w-full h-10 rounded-xl border border-zinc-300 px-3 text-sm font-medium text-zinc-800 active:scale-[0.99]"
+        className={RESERVATION_UI.addRowButton}
         onClick={onAddItem}
-        aria-label="항목 추가"
+        aria-label={DAY_PAGE_COPY.buttons.addRow}
       >
-        + 추가
+        {DAY_PAGE_COPY.buttons.addRow}
       </button>
     </div>
   );
