@@ -1,5 +1,6 @@
 export const RESERVATION_UI = {
   stack2: "space-y-2",
+  emptyText: "text-xs text-black",
 
   row: "flex items-center gap-2",
 

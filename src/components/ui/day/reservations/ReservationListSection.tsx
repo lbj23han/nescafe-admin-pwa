@@ -5,6 +5,7 @@ import { DayUI } from "../DayUI";
 import type { ReservationListProps } from "../DayPage.types";
 import { ReservationRow } from "./parts/ReservationRow";
 import { ReservationEditFields } from "./parts/ReservationEditFields";
+import { RESERVATION_UI } from "./reservation.ui";
 
 export function ReservationListSection({
   list,
@@ -23,14 +24,14 @@ export function ReservationListSection({
   if (list.length === 0) {
     return (
       <DayUI.Section>
-        <p className="text-xs text-black">{DAY_PAGE_COPY.emptyList}</p>
+        <p className={RESERVATION_UI.emptyText}>{DAY_PAGE_COPY.emptyList}</p>
       </DayUI.Section>
     );
   }
 
   return (
     <DayUI.Section>
-      <ul className="space-y-2">
+      <ul className={RESERVATION_UI.stack2}>
         {list.map((r) => {
           const isEditing = editingId === r.id;
 
