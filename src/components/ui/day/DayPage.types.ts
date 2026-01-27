@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import type { Reservation } from "@/lib/domain/reservation";
 import type { Department } from "@/lib/storage/departments.local";
-import type { ReservationItem } from "@/hooks/reservation/internal/reservationItems";
+import type { ReservationItem } from "@/hooks/reservation/internal/domain/reservationItems";
 
 export type HeaderProps = {
   dateText: string;

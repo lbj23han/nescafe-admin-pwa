@@ -3,7 +3,7 @@
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 import { DayUI } from "../../DayUI";
 import type { Department } from "@/lib/storage/departments.local";
-import type { ReservationEditForm } from "@/hooks/reservation/internal/useReservationEdit";
+import type { ReservationEditForm } from "@/hooks/reservation/internal/actions/useReservationEdit";
 
 import { ReservationItemsSection } from "../ReservationItemsSection";
 import { AmountSection } from "../AmountSection";

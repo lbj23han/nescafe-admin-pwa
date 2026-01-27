@@ -4,8 +4,8 @@ import type {
   AddButtonIntent,
   DepartmentInputMode,
 } from "@/components/ui/day/DayPage.types";
-import type { AmountMode } from "./amountCalc";
-import { digitsOnly } from "./reservationItems";
+import type { AmountMode } from "../domain/amountCalc";
+import { digitsOnly } from "../domain/reservationItems";
 import type { ReservationItemWithId } from "./reservationForm.items";
 
 type Args = {

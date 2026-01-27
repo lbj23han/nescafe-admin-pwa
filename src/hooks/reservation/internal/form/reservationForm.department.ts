@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { DepartmentInputMode } from "@/components/ui/day/DayPage.types";
-import { useDepartments } from "./useDepartments";
+import { useDepartments } from "../departments/useDepartments";
 
 export function useReservationFormDepartment() {
   const [department, setDepartment] = useState("");

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { digitsOnly, type ReservationItem } from "./reservationItems";
+import { digitsOnly, type ReservationItem } from "../domain/reservationItems";
 
 export type ReservationItemWithId = ReservationItem & { id: string };
 

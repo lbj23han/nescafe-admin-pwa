@@ -1,10 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { digitsOnly, computeItemsTotal } from "./reservationItems";
-import { resolveDisplayAmount, type AmountMode } from "./amountCalc";
+import { digitsOnly, computeItemsTotal } from "../domain/reservationItems";
+import { resolveDisplayAmount, type AmountMode } from "../domain/amountCalc";
 import type { ReservationItemWithId } from "./reservationForm.items";
-
 function toAutoAmount(items: ReservationItemWithId[]): string {
   const total = computeItemsTotal(items);
   const digits = digitsOnly(String(total ?? ""));

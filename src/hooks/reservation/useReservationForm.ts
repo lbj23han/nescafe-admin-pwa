@@ -4,13 +4,13 @@ import { useState } from "react";
 import type { Reservation } from "@/lib/domain/reservation";
 import { ReservationsRepo } from "@/lib/data";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
-import { resolveAddDepartment } from "./internal/resolveAddDepartment";
-import { serializeItemsToMenu } from "./internal/reservationItems";
-import { resolveFinalAmountNumber } from "./internal/amountCalc";
-import { useReservationFormItems } from "./internal/reservationForm.items";
-import { useReservationFormAmount } from "./internal/reservationForm.amount";
-import { useReservationFormDepartment } from "./internal/reservationForm.department";
-import { resolveReservationFormIntent } from "./internal/reservationForm.intent";
+import { resolveAddDepartment } from "./internal/departments/resolveAddDepartment";
+import { serializeItemsToMenu } from "./internal/domain/reservationItems";
+import { resolveFinalAmountNumber } from "./internal/domain/amountCalc";
+import { useReservationFormItems } from "./internal/form/reservationForm.items";
+import { useReservationFormAmount } from "./internal/form/reservationForm.amount";
+import { useReservationFormDepartment } from "./internal/form/reservationForm.department";
+import { resolveReservationFormIntent } from "./internal/form/reservationForm.intent";
 
 type UseReservationFormArgs = {
   date: string;

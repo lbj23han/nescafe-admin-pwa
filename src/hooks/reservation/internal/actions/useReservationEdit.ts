@@ -6,7 +6,7 @@ import type { Reservation } from "@/lib/domain/reservation";
 import type { Department } from "@/lib/storage/departments.local";
 import { ReservationsRepo } from "@/lib/data";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
-import { resolveDepartment } from "./reservationDept";
+import { resolveDepartment } from "../departments/reservationDept";
 
 export type ReservationEditForm = {
   departmentId: string; // "" => direct

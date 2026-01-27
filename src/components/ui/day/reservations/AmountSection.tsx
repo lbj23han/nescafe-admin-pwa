@@ -3,8 +3,8 @@
 import {
   computeItemsTotal,
   digitsOnly,
-} from "@/hooks/reservation/internal/reservationItems";
-import type { ReservationItem } from "@/hooks/reservation/internal/reservationItems";
+} from "@/hooks/reservation/internal/domain/reservationItems";
+import type { ReservationItem } from "@/hooks/reservation/internal/domain/reservationItems";
 
 type AmountMode = "auto" | "manual";
 

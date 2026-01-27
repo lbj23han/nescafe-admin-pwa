@@ -3,8 +3,8 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { Reservation, SettlementType } from "@/lib/domain/reservation";
 import type { Department } from "@/lib/storage/departments.local";
-import { useReservationActions } from "./internal/useReservationActions";
-import { useReservationEdit } from "./internal/useReservationEdit";
+import { useReservationActions } from "./internal/actions/useReservationActions";
+import { useReservationEdit } from "./internal/actions/useReservationEdit";
 
 type UseReservationStatusArgs = {
   date: string;

@@ -4,8 +4,8 @@ import {
   computeItemsTotal,
   serializeItemsToMenu,
   type ReservationItem,
-} from "@/hooks/reservation/internal/reservationItems";
-import { parseMenuToItems } from "@/hooks/reservation/internal/parseMenuToItems";
+} from "@/hooks/reservation/internal/domain/reservationItems";
+import { parseMenuToItems } from "@/hooks/reservation/internal/domain/parseMenuToItems";
 
 type ItemWithId = ReservationItem & { id: string };
 type AmountMode = "auto" | "manual";

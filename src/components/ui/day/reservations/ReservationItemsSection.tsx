@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReservationItem } from "@/hooks/reservation/internal/reservationItems";
+import type { ReservationItem } from "@/hooks/reservation/internal/domain/reservationItems";
 import { ReservationItemRow } from "./ReservationItemRow";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 import { RESERVATION_UI } from "./reservation.ui";
