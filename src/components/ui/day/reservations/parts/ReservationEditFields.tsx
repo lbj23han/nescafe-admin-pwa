@@ -8,6 +8,7 @@ import type { ReservationEditForm } from "@/hooks/reservation/internal/actions/u
 import { ReservationItemsSection } from "../ReservationItemsSection";
 import { AmountSection } from "../AmountSection";
 import { useReservationEditItems } from "./hooks/useReservationEditItems";
+import { ReservationTimeField } from "./ReservationTimeField";
 
 type Props = {
   editForm: ReservationEditForm;
@@ -99,7 +100,7 @@ export function ReservationEditFields({
         </DayUI.Field>
 
         <DayUI.Field label={DAY_PAGE_COPY.form.time.label}>
-          <DayUI.TextInput
+          <ReservationTimeField
             value={editForm.time}
             onChange={(v) => onChangeEditField?.("time", v)}
             placeholder={DAY_PAGE_COPY.form.time.placeholder}

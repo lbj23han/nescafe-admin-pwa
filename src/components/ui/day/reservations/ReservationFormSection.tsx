@@ -5,6 +5,7 @@ import { DayUI } from "../DayUI";
 import type { ReservationFormProps } from "../DayPage.types";
 import { ReservationItemsSection } from "./ReservationItemsSection";
 import { AmountSection } from "./AmountSection";
+import { ReservationTimeField } from "./parts/ReservationTimeField";
 
 export function ReservationFormSection(props: ReservationFormProps) {
   const {
@@ -97,7 +98,7 @@ export function ReservationFormSection(props: ReservationFormProps) {
         </DayUI.Field>
 
         <DayUI.Field label={DAY_PAGE_COPY.form.time.label}>
-          <DayUI.TextInput
+          <ReservationTimeField
             value={time}
             onChange={onChangeTime}
             placeholder={DAY_PAGE_COPY.form.time.placeholder}
