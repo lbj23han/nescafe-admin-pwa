@@ -3,14 +3,18 @@
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 import { DayUI } from "../../DayUI";
 import type { Department } from "@/lib/storage/departments.local";
-import type { ReservationEditForm } from "@/hooks/reservation/internal/useReservationEdit";
+import type { ReservationEditForm } from "@/hooks/reservation/internal/actions/useReservationEdit";
+
+import { ReservationItemsSection } from "../ReservationItemsSection";
+import { AmountSection } from "../AmountSection";
+import { useReservationEditItems } from "./hooks/useReservationEditItems";
 
 type Props = {
   editForm: ReservationEditForm;
   departments: Department[];
   departmentsLoading: boolean;
   onChangeEditField?: (field: keyof ReservationEditForm, value: string) => void;
-  onSubmitEdit?: () => void;
+  onSubmitEdit?: (override?: Partial<ReservationEditForm>) => void;
   onCancelEdit?: () => void;
 };
 
@@ -23,6 +27,23 @@ export function ReservationEditFields({
   onCancelEdit,
 }: Props) {
   const isDirect = editForm.departmentId === "";
+
+  const {
+    items,
+    amountMode,
+    displayAmount,
+    addItem,
+    removeItem,
+    changeItem,
+    changeAmount,
+    changeAmountMode,
+    buildSubmitPayload,
+  } = useReservationEditItems(editForm.menu, editForm.amount);
+
+  const handleSubmit = () => {
+    const { menu, amount } = buildSubmitPayload();
+    onSubmitEdit?.({ menu, amount });
+  };
 
   return (
     <DayUI.EditSection>
@@ -50,21 +71,22 @@ export function ReservationEditFields({
               ))}
             </select>
 
-            {isDirect ? (
+            {isDirect && (
               <DayUI.TextInput
                 value={editForm.department}
                 onChange={(v) => onChangeEditField?.("department", v)}
                 placeholder={DAY_PAGE_COPY.form.department.placeholder}
               />
-            ) : null}
+            )}
           </div>
         </DayUI.Field>
 
         <DayUI.Field label={DAY_PAGE_COPY.form.menu.label}>
-          <DayUI.TextInput
-            value={editForm.menu}
-            onChange={(v) => onChangeEditField?.("menu", v)}
-            placeholder={DAY_PAGE_COPY.form.menu.placeholder}
+          <ReservationItemsSection
+            items={items}
+            onAddItem={addItem}
+            onRemoveItem={removeItem}
+            onChangeItemField={changeItem}
           />
         </DayUI.Field>
 
@@ -85,11 +107,12 @@ export function ReservationEditFields({
         </DayUI.Field>
 
         <DayUI.Field label={DAY_PAGE_COPY.form.amount.label}>
-          <DayUI.TextInput
-            value={editForm.amount}
-            onChange={(v) => onChangeEditField?.("amount", v)}
-            placeholder={DAY_PAGE_COPY.form.amount.placeholder}
-            numeric
+          <AmountSection
+            items={items}
+            amount={displayAmount}
+            amountMode={amountMode}
+            onChangeAmount={changeAmount}
+            onChangeAmountMode={changeAmountMode}
           />
         </DayUI.Field>
       </div>
@@ -98,7 +121,8 @@ export function ReservationEditFields({
         <DayUI.ActionButton variant="edit" onClick={() => onCancelEdit?.()}>
           {DAY_PAGE_COPY.buttons.editCancel}
         </DayUI.ActionButton>
-        <DayUI.ActionButton variant="complete" onClick={() => onSubmitEdit?.()}>
+
+        <DayUI.ActionButton variant="complete" onClick={handleSubmit}>
           {DAY_PAGE_COPY.buttons.editSave}
         </DayUI.ActionButton>
       </div>

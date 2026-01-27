@@ -21,18 +21,29 @@ export function DayDetailPageContainer({ date }: Props) {
   const {
     list,
     department,
-    menu,
-    amount,
-    time,
     location,
+    time,
+
+    items,
+    onAddItem,
+    onRemoveItem,
+    onChangeItemField,
+
+    amount,
+    amountMode,
+    onChangeAmountMode,
+    onChangeAmount,
+
     showForm,
     formattedDate,
+
     setDepartment,
-    setMenu,
     setTime,
     setLocation,
-    handleAmountChange,
+
+    addButtonIntent,
     handleAddButtonClick,
+
     handleComplete,
     handleCancel,
     handleEdit,
@@ -41,6 +52,7 @@ export function DayDetailPageContainer({ date }: Props) {
     handleChangeEditField,
     handleSubmitEdit,
     handleCancelEdit,
+
     departmentMode,
     departments,
     selectedDepartmentId,
@@ -57,7 +69,6 @@ export function DayDetailPageContainer({ date }: Props) {
   if (!isReady) return null;
 
   const canManageActions = !!role.canManageActions;
-
   const showAddButton = canManageActions && editingId === null;
 
   return (
@@ -86,15 +97,23 @@ export function DayDetailPageContainer({ date }: Props) {
           showForm
             ? {
                 department,
-                menu,
                 location,
                 time,
+
+                items,
+                onAddItem,
+                onRemoveItem,
+                onChangeItemField,
+
                 amount,
+                amountMode,
+                onChangeAmountMode,
+                onChangeAmount,
+
                 onChangeDepartment: setDepartment,
-                onChangeMenu: setMenu,
                 onChangeLocation: setLocation,
                 onChangeTime: setTime,
-                onChangeAmount: handleAmountChange,
+
                 departmentMode,
                 departments,
                 selectedDepartmentId,
@@ -106,7 +125,7 @@ export function DayDetailPageContainer({ date }: Props) {
         }
         showAddButton={showAddButton}
         addButton={{
-          showForm,
+          intent: addButtonIntent,
           onClick: handleAddButtonClick,
         }}
       />

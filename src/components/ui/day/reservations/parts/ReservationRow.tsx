@@ -12,6 +12,14 @@ type Props = {
   onCancel: (id: string) => void;
 };
 
+function stripUnitPrice(menu: string): string {
+  return (menu ?? "")
+    .replace(/\(\d+\)/g, "") // 숫자 제거
+    .replace(/\s+,/g, ",") // 공백 정리
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 export function ReservationRow({
   r,
   canManageActions,
@@ -24,7 +32,7 @@ export function ReservationRow({
   return (
     <DayUI.ReservationCard isCompleted={isCompleted}>
       <DayUI.ReservationTitle>
-        {r.department} · {r.menu}
+        {r.department} · {stripUnitPrice(r.menu)}
       </DayUI.ReservationTitle>
 
       <DayUI.MetaText>

@@ -2,8 +2,14 @@
 
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 import { DayUI } from "./DayUI";
-import type { DayPageViewProps } from "./DayPage.types";
+import type { DayPageViewProps, AddButtonIntent } from "./DayPage.types";
 import { ReservationListSection, ReservationFormSection } from "./reservations";
+
+const ADD_BUTTON_LABEL: Record<AddButtonIntent, string> = {
+  open: DAY_PAGE_COPY.buttons.add,
+  close: DAY_PAGE_COPY.buttons.close,
+  submit: DAY_PAGE_COPY.buttons.submit,
+};
 
 export function DayPageView(props: DayPageViewProps) {
   const { header, list, showForm, form, showAddButton, addButton } = props;
@@ -24,9 +30,7 @@ export function DayPageView(props: DayPageViewProps) {
 
         {showAddButton && (
           <DayUI.PrimaryButton onClick={addButton.onClick}>
-            {addButton.showForm
-              ? DAY_PAGE_COPY.buttons.submit
-              : DAY_PAGE_COPY.buttons.add}
+            {ADD_BUTTON_LABEL[addButton.intent]}
           </DayUI.PrimaryButton>
         )}
       </DayUI.Main>

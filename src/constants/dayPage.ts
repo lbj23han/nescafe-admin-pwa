@@ -17,6 +17,8 @@ export const DAY_PAGE_COPY = {
     edit: "수정",
     editSave: "수정 완료",
     editCancel: "수정 취소",
+    close: "닫기",
+    addRow: "+ 추가",
   },
 
   settleConfirm: {

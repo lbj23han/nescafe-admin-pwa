@@ -4,7 +4,7 @@ import type { Dispatch, SetStateAction } from "react";
 import type { Reservation, SettlementType } from "@/lib/domain/reservation";
 import { ReservationsRepo, DepartmentHistoryRepo } from "@/lib/data";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
-import { toSafeAmount } from "./toSafeAmount";
+import { toSafeAmount } from "../domain/toSafeAmount";
 
 type Args = {
   date: string;

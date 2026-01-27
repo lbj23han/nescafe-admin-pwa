@@ -1,12 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { Reservation } from "@/lib/domain/reservation";
 import { ReservationsRepo } from "@/lib/data";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
-import type { DepartmentInputMode } from "@/components/ui/day/DayPage.types";
-import { useDepartments } from "./internal/useDepartments";
-import { resolveAddDepartment } from "./internal/resolveAddDepartment";
+import { resolveAddDepartment } from "./internal/departments/resolveAddDepartment";
+import { serializeItemsToMenu } from "./internal/domain/reservationItems";
+import { resolveFinalAmountNumber } from "./internal/domain/amountCalc";
+import { useReservationFormItems } from "./internal/form/reservationForm.items";
+import { useReservationFormAmount } from "./internal/form/reservationForm.amount";
+import { useReservationFormDepartment } from "./internal/form/reservationForm.department";
+import { resolveReservationFormIntent } from "./internal/form/reservationForm.intent";
 
 type UseReservationFormArgs = {
   date: string;
@@ -14,58 +18,63 @@ type UseReservationFormArgs = {
 };
 
 export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
-  const [department, setDepartment] = useState("");
-  const [departmentMode, setDepartmentMode] =
-    useState<DepartmentInputMode>("select");
-  const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
+  const dept = useReservationFormDepartment();
+  const itemsState = useReservationFormItems();
+  const amountState = useReservationFormAmount(itemsState.items);
 
-  const { departments, departmentsLoading } = useDepartments();
-
-  const [menu, setMenu] = useState("");
-  const [amount, setAmount] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
   const [showForm, setShowForm] = useState(false);
 
-  const selectedDepartment = useMemo(() => {
-    if (!selectedDepartmentId) return null;
-    return departments.find((d) => d.id === selectedDepartmentId) ?? null;
-  }, [departments, selectedDepartmentId]);
-
-  const handleAmountChange = (value: string) => {
-    setAmount(value.replace(/\D/g, ""));
-  };
+  const addButtonIntent = resolveReservationFormIntent({
+    showForm,
+    departmentMode: dept.departmentMode,
+    selectedDepartmentId: dept.selectedDepartmentId,
+    department: dept.department,
+    time,
+    location,
+    items: itemsState.items,
+    amountMode: amountState.amountMode,
+    manualAmount: amountState.manualAmount,
+  });
 
   const resetForm = () => {
-    setDepartment("");
-    setDepartmentMode("select");
-    setSelectedDepartmentId("");
-    setMenu("");
-    setAmount("");
+    dept.resetDepartment();
+    itemsState.resetItems();
+    amountState.resetAmount();
     setTime("");
     setLocation("");
+    setShowForm(false);
   };
 
   const handleAdd = async () => {
     const { resolvedDepartmentId, resolvedDepartmentName } =
       resolveAddDepartment({
-        departmentMode,
-        selectedDepartmentId,
-        departmentText: department,
-        departments,
+        departmentMode: dept.departmentMode,
+        selectedDepartmentId: dept.selectedDepartmentId,
+        departmentText: dept.department,
+        departments: dept.departments,
       });
 
-    if (!resolvedDepartmentName || !menu) {
+    const hasMenu = itemsState.items.some((it) => it.menu.trim().length > 0);
+    if (!resolvedDepartmentName || !hasMenu) {
       alert(DAY_PAGE_COPY.alerts.requiredDepartmentAndMenu);
       return;
     }
+
+    const menu = serializeItemsToMenu(itemsState.items);
+    const amount = resolveFinalAmountNumber({
+      mode: amountState.amountMode,
+      autoAmount: amountState.autoAmount,
+      manualAmount: amountState.manualAmount,
+    });
 
     const draft: Reservation = {
       id: `${Date.now()}`,
       departmentId: resolvedDepartmentId,
       department: resolvedDepartmentName,
       menu,
-      amount: amount ? Number(amount) || 0 : 0,
+      amount,
       time,
       location,
       status: "pending",
@@ -75,7 +84,6 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
       const saved = await ReservationsRepo.saveReservation(date, draft);
       onAdded(saved);
       resetForm();
-      setShowForm(false);
     } catch (e) {
       console.error(e);
       alert("저장에 실패했어요. 잠시 후 다시 시도해주세요.");
@@ -83,41 +91,42 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
   };
 
   const handleAddButtonClick = () => {
-    if (!showForm) {
-      setShowForm(true);
-      return;
-    }
+    if (addButtonIntent === "open") return void setShowForm(true);
+    if (addButtonIntent === "close") return void setShowForm(false);
     void handleAdd();
   };
 
-  const handleChangeDepartmentMode = (mode: DepartmentInputMode) => {
-    setDepartmentMode(mode);
-    if (mode === "direct") setSelectedDepartmentId("");
-    else setDepartment("");
-  };
-
   return {
-    department,
-    menu,
-    amount,
+    department: dept.department,
+    departmentMode: dept.departmentMode,
+    selectedDepartmentId: dept.selectedDepartmentId,
+    departments: dept.departments,
+    departmentsLoading: dept.departmentsLoading,
+    selectedDepartment: dept.selectedDepartment,
+    setDepartment: dept.setDepartment,
+    setSelectedDepartmentId: dept.setSelectedDepartmentId,
+    setDepartmentMode: dept.setDepartmentMode,
+
+    items: itemsState.items,
+    onAddItem: itemsState.onAddItem,
+    onRemoveItem: itemsState.onRemoveItem,
+    onChangeItemField: itemsState.onChangeItemField,
+
     time,
     location,
-    showForm,
-
-    setDepartment,
-    setMenu,
     setTime,
     setLocation,
-    handleAmountChange,
+    onChangeDepartment: dept.setDepartment,
+    onChangeLocation: setLocation,
+    onChangeTime: setTime,
+
+    amount: amountState.amount,
+    amountMode: amountState.amountMode,
+    onChangeAmount: amountState.onChangeAmount,
+    onChangeAmountMode: amountState.onChangeAmountMode,
+
+    showForm,
+    addButtonIntent,
     handleAddButtonClick,
-
-    departmentMode,
-    departments,
-    selectedDepartmentId,
-    departmentsLoading,
-    setDepartmentMode: handleChangeDepartmentMode,
-    setSelectedDepartmentId,
-
-    selectedDepartment,
   };
 }
