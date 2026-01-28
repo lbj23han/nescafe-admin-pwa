@@ -6,6 +6,7 @@ import type { ReservationFormProps } from "../DayPage.types";
 import { ReservationItemsSection } from "./ReservationItemsSection";
 import { AmountSection } from "./AmountSection";
 import { ReservationTimeField } from "./parts/ReservationTimeField";
+import { RESERVATION_UI } from "./reservation.ui";
 
 export function ReservationFormSection(props: ReservationFormProps) {
   const {
@@ -48,11 +49,11 @@ export function ReservationFormSection(props: ReservationFormProps) {
 
   return (
     <DayUI.Section>
-      <div className="space-y-3">
+      <div className={RESERVATION_UI.formStack}>
         <DayUI.Field label={DAY_PAGE_COPY.form.department.label}>
-          <div className="space-y-2">
+          <div className={RESERVATION_UI.stack2}>
             <select
-              className="w-full h-10 rounded-xl border border-zinc-200 px-3 text-sm text-black"
+              className={RESERVATION_UI.selectBase}
               value={selectedDepartmentId}
               onChange={(e) => handleChangeSelect(e.target.value)}
               disabled={departmentsLoading}

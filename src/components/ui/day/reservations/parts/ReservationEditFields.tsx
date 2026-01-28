@@ -9,6 +9,7 @@ import { ReservationItemsSection } from "../ReservationItemsSection";
 import { AmountSection } from "../AmountSection";
 import { useReservationEditItems } from "./hooks/useReservationEditItems";
 import { ReservationTimeField } from "./ReservationTimeField";
+import { RESERVATION_UI } from "../reservation.ui";
 
 type Props = {
   editForm: ReservationEditForm;
@@ -48,11 +49,11 @@ export function ReservationEditFields({
 
   return (
     <DayUI.EditSection>
-      <div className="space-y-3">
+      <div className={RESERVATION_UI.formStack}>
         <DayUI.Field label={DAY_PAGE_COPY.form.department.label}>
-          <div className="space-y-2">
+          <div className={RESERVATION_UI.stack2}>
             <select
-              className="w-full h-10 rounded-xl border border-zinc-200 px-3 text-sm text-black"
+              className={RESERVATION_UI.selectBase}
               value={editForm.departmentId}
               onChange={(e) =>
                 onChangeEditField?.("departmentId", e.target.value)
@@ -118,7 +119,7 @@ export function ReservationEditFields({
         </DayUI.Field>
       </div>
 
-      <div className="flex justify-end gap-2 pt-1">
+      <div className={RESERVATION_UI.footerActions}>
         <DayUI.ActionButton variant="edit" onClick={() => onCancelEdit?.()}>
           {DAY_PAGE_COPY.buttons.editCancel}
         </DayUI.ActionButton>

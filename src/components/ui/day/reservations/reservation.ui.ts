@@ -29,9 +29,16 @@ export const RESERVATION_UI = {
 
   deleteIcon: "×",
 
+  // --- form layout ---
+  // NOTE: stack2(=space-y-2)는 이미 존재. 폼 전체는 별도 토큰으로.
+  formStack: "space-y-3",
+  footerActions: "flex justify-end gap-2 pt-1",
+
+  selectBase:
+    "w-full h-10 rounded-xl border border-zinc-200 px-3 text-sm text-black",
+
   // --- time field (quick chips) ---
   timeFieldWrap: "space-y-2",
-
   timeChipsRow: "flex flex-wrap gap-2",
 
   timeChip:
