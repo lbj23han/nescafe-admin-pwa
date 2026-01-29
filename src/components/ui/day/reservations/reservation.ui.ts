@@ -28,4 +28,28 @@ export const RESERVATION_UI = {
     "active:scale-[0.99] transition",
 
   deleteIcon: "×",
+
+  // --- form layout ---
+  // NOTE: stack2(=space-y-2)는 이미 존재. 폼 전체는 별도 토큰으로.
+  formStack: "space-y-3",
+  footerActions: "flex justify-end gap-2 pt-1",
+
+  selectBase:
+    "w-full h-10 rounded-xl border border-zinc-200 px-3 text-sm text-black",
+
+  // --- time field (quick chips) ---
+  timeFieldWrap: "space-y-2",
+  timeChipsRow: "flex flex-wrap gap-2",
+
+  timeChip:
+    "h-8 px-3 rounded-full border border-zinc-300 " +
+    "text-xs font-medium text-zinc-800 " +
+    "active:scale-[0.98] transition " +
+    "disabled:opacity-40",
+
+  timeChipActive:
+    "h-8 px-3 rounded-full border border-zinc-900 " +
+    "text-xs font-semibold text-black " +
+    "active:scale-[0.98] transition " +
+    "disabled:opacity-40",
 } as const;

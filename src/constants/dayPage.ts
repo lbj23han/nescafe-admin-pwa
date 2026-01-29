@@ -54,6 +54,17 @@ export const DAY_PAGE_COPY = {
     time: {
       label: "시간 (선택)",
       placeholder: "예: 14:00",
+      quickOptions: [
+        "09:00",
+        "10:00",
+        "11:00",
+        "12:00",
+        "13:00",
+        "14:00",
+        "15:00",
+        "16:00",
+        "17:00",
+      ],
     },
     amount: {
       label: "금액 (선택)",
