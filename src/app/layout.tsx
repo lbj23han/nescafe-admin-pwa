@@ -17,13 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className="bg-zinc-50 text-black">
-        <div className="min-h-screen flex items-center justify-center">
-          <main className="w-full max-w-md min-h-screen bg-white shadow-sm pb-14">
-            {children}
-          </main>
-        </div>
-      </body>
+      <body className="min-h-screen bg-zinc-50 text-zinc-900">{children}</body>
     </html>
   );
 }
