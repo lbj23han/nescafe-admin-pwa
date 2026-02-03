@@ -6,7 +6,6 @@ import { useAiAssistantModal } from "@/hooks/ai/useAiAssistantModal";
 import { AiAssistantModalUI } from "@/components/ui/ai/AiAssistantModalUI";
 
 export function FloatingMenu() {
-  //const router = useRouter();
   const { onPointerDown, onPointerMove, onPointerUp, consumeWasDragging } =
     useDraggableFab();
 
@@ -36,6 +35,7 @@ export function FloatingMenu() {
         input={ai.input}
         inputPlaceholder={ai.copy.inputPlaceholder}
         helperText={ai.copy.helperText}
+        errorText={ai.errorText}
         previewText={ai.previewText}
         onClose={ai.onClose}
         onBack={ai.onBack}

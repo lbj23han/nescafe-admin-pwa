@@ -2,8 +2,6 @@ export type AiTask = "reservation" | "ledger";
 
 export type AiAssistantRequest = {
   task: AiTask;
-  //  서버는 text를 받도록 구현되어 있을 가능성이 높지만
-  // 현재 타입은 input으로 되어 있으니, 훅에서 요청 시 { task, text }로 보낼 것(Commit 3).
   input: string;
 };
 
@@ -12,6 +10,7 @@ export type AiAssistantErrorCode =
   | "INVALID_TASK"
   | "NOT_IMPLEMENTED"
   | "DATE_REQUIRED"
+  | "UNRECOGNIZED_INPUT"
   | "OPENAI_KEY_MISSING"
   | "OPENAI_FAILED"
   | "INVALID_MODEL_OUTPUT";

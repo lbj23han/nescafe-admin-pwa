@@ -21,7 +21,8 @@ async function postAiAssistant(args: PostArgs): Promise<AiAssistantResponse> {
     body: JSON.stringify({ task: args.task, input: args.text }),
   });
 
-  const json = await res.json().catch(() => null);
+  const json = (await res.json().catch(() => null)) as unknown;
+
   if (json && typeof json === "object" && "ok" in json) {
     return json as AiAssistantResponse;
   }
@@ -46,12 +47,21 @@ function toUserErrorMessage(codeOrUnknown: unknown) {
   switch (code) {
     case "DATE_REQUIRED":
       return "날짜를 포함해서 다시 입력해주세요. (예: 2/2, 2026-02-02)";
+    case "UNRECOGNIZED_INPUT":
+      return (
+        "입력을 이해하지 못했어요. 날짜 + (메뉴/부서/시간/금액) 중 1개 이상을 포함해 다시 입력해주세요.\n" +
+        '예: "2/2 3시 A부서 아메리카노 2잔 8000원"'
+      );
     case "NOT_IMPLEMENTED":
       return "장부 관리는 아직 준비 중입니다. (예약관리만 가능)";
     case "INPUT_REQUIRED":
       return "내용을 입력해주세요.";
     case "OPENAI_KEY_MISSING":
       return "서버 설정이 필요합니다. (OPENAI 키 누락)";
+    case "INVALID_TASK":
+      return "지원하지 않는 업무 유형입니다. (예약/장부 중 선택)";
+    case "INVALID_MODEL_OUTPUT":
+      return "AI 응답 형식이 올바르지 않습니다. 다시 시도해주세요.";
     default:
       return "AI 요청에 실패했습니다. 잠시 후 다시 시도해주세요.";
   }
@@ -105,7 +115,6 @@ export function useAiAssistantModal() {
 
   const onChangeInput = useCallback((v: string) => {
     setInput(v);
-    // 입력이 바뀌면 프리뷰 무효화
     setPreviewText(null);
     setErrorText(null);
     setIntent(null);
@@ -145,13 +154,13 @@ export function useAiAssistantModal() {
         return;
       }
 
-      //  성공: preview 단계로 전환 + 요약 텍스트 생성
+      // 성공: preview 단계로 전환 + 요약 텍스트 생성
       setIntent(out.data);
       setPreviewText(toReservationPreviewText(out.data));
       setStep("preview");
-    } catch (e) {
+    } catch {
       setStep("input");
-      setErrorText(toUserErrorMessage(e));
+      setErrorText("AI 요청에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setLoadingPreview(false);
     }

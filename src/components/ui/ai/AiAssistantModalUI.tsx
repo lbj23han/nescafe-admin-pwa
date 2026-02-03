@@ -17,6 +17,7 @@ type Props = {
   inputPlaceholder: string;
   helperText: string;
 
+  errorText: string | null;
   previewText: string | null;
 
   onClose: () => void;
@@ -39,6 +40,7 @@ export function AiAssistantModalUI({
   input,
   inputPlaceholder,
   helperText,
+  errorText,
   previewText,
   onClose,
   onBack,
@@ -122,6 +124,16 @@ export function AiAssistantModalUI({
                 placeholder={inputPlaceholder}
                 onChange={(e) => onChangeInput(e.target.value)}
               />
+
+              {errorText ? (
+                <div
+                  className={FLOATING_MENU_UI.helper}
+                  role="alert"
+                  aria-live="polite"
+                >
+                  {errorText}
+                </div>
+              ) : null}
 
               <div className={FLOATING_MENU_UI.helper}>{helperText}</div>
 

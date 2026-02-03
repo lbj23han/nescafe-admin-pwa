@@ -49,7 +49,7 @@ export async function POST(req: Request) {
       return json(400, { ok: false, error: "DATE_REQUIRED" });
     }
 
-    //  금액 선추출: 단위가 없으면 null (추정 금지)
+    // 금액 선추출: 단위가 없으면 null (추정 금지)
     const extractedAmount = extractAmountKRW(input);
 
     const model = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
@@ -94,6 +94,18 @@ export async function POST(req: Request) {
       normalizedDate: normalized.date,
       extractedAmount,
     });
+
+    const hasAnySignal =
+      intent.department !== null ||
+      intent.menu !== null ||
+      intent.time !== null ||
+      intent.location !== null ||
+      intent.memo !== null ||
+      intent.amount !== null;
+
+    if (!hasAnySignal || intent.confidence < 0.35) {
+      return json(422, { ok: false, error: "UNRECOGNIZED_INPUT" });
+    }
 
     return json(200, { ok: true, data: intent });
   } catch (e) {
