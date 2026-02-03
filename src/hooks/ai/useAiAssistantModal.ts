@@ -1,9 +1,61 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import type {
+  AiAssistantResponse,
+  ReservationIntent,
+  Scope,
+  Step,
+} from "./internal/types";
+import { toReservationPreviewText } from "./internal/preview";
 
-type Scope = "reservation" | "ledger";
-type Step = "pickScope" | "input" | "preview";
+type PostArgs = {
+  task: Scope;
+  text: string;
+};
+
+async function postAiAssistant(args: PostArgs): Promise<AiAssistantResponse> {
+  const res = await fetch("/api/ai/assistant", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ task: args.task, input: args.text }),
+  });
+
+  const json = await res.json().catch(() => null);
+  if (json && typeof json === "object" && "ok" in json) {
+    return json as AiAssistantResponse;
+  }
+
+  return { ok: false, error: "OPENAI_FAILED" };
+}
+
+function isReservationIntent(v: unknown): v is ReservationIntent {
+  if (!v || typeof v !== "object") return false;
+  const obj = v as Record<string, unknown>;
+  return (
+    obj.kind === "reservation" &&
+    typeof obj.date === "string" &&
+    "assumptions" in obj &&
+    "warnings" in obj
+  );
+}
+
+function toUserErrorMessage(codeOrUnknown: unknown) {
+  // error code 기반 UX(최소). 상세 메시지는 추후 확장 가능.
+  const code = String(codeOrUnknown ?? "");
+  switch (code) {
+    case "DATE_REQUIRED":
+      return "날짜를 포함해서 다시 입력해주세요. (예: 2/2, 2026-02-02)";
+    case "NOT_IMPLEMENTED":
+      return "장부 관리는 아직 준비 중입니다. (예약관리만 가능)";
+    case "INPUT_REQUIRED":
+      return "내용을 입력해주세요.";
+    case "OPENAI_KEY_MISSING":
+      return "서버 설정이 필요합니다. (OPENAI 키 누락)";
+    default:
+      return "AI 요청에 실패했습니다. 잠시 후 다시 시도해주세요.";
+  }
+}
 
 export function useAiAssistantModal() {
   const [open, setOpen] = useState(false);
@@ -14,13 +66,25 @@ export function useAiAssistantModal() {
   const [input, setInput] = useState("");
   const [previewText, setPreviewText] = useState<string | null>(null);
 
-  const onOpen = useCallback(() => {
-    setOpen(true);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+  const [errorText, setErrorText] = useState<string | null>(null);
+
+  const [intent, setIntent] = useState<ReservationIntent | null>(null);
+
+  const resetAll = useCallback(() => {
     setStep("pickScope");
     setScope(null);
     setInput("");
     setPreviewText(null);
+    setLoadingPreview(false);
+    setErrorText(null);
+    setIntent(null);
   }, []);
+
+  const onOpen = useCallback(() => {
+    setOpen(true);
+    resetAll();
+  }, [resetAll]);
 
   const onClose = useCallback(() => {
     setOpen(false);
@@ -31,45 +95,78 @@ export function useAiAssistantModal() {
     setStep("input");
     setInput("");
     setPreviewText(null);
+    setErrorText(null);
+    setIntent(null);
   }, []);
 
   const onBack = useCallback(() => {
-    setStep("pickScope");
-    setScope(null);
-    setInput("");
-    setPreviewText(null);
-  }, []);
+    resetAll();
+  }, [resetAll]);
 
   const onChangeInput = useCallback((v: string) => {
     setInput(v);
     // 입력이 바뀌면 프리뷰 무효화
     setPreviewText(null);
+    setErrorText(null);
+    setIntent(null);
   }, []);
 
   // input -> preview (강제)
-  const onRequestPreview = useCallback(() => {
+  const onRequestPreview = useCallback(async () => {
     const trimmed = input.trim();
     if (!trimmed || !scope) return;
 
-    setStep("preview");
+    // reset
+    setErrorText(null);
+    setPreviewText(null);
+    setIntent(null);
 
-    // 지금은 placeholder 프리뷰
-    const title = scope === "reservation" ? "예약관리" : "장부관리";
-    setPreviewText(
-      `${title} 요청을 아래 내용으로 처리할까요?\n\n“${trimmed}”\n\n(다음 단계에서 AI가 구조화 결과를 보여줍니다)`
-    );
+    setLoadingPreview(true);
+
+    try {
+      const out = await postAiAssistant({ task: scope, text: trimmed });
+
+      if (!out.ok) {
+        // 실패 시: input 단계로 되돌림 + 에러 표시
+        setStep("input");
+        setErrorText(toUserErrorMessage(out.error));
+        return;
+      }
+
+      // ok: true
+      if (!isReservationIntent(out.data)) {
+        // ledger거나 스키마가 예상과 다르면 입력으로 복귀
+        setStep("input");
+        setErrorText(
+          scope === "ledger"
+            ? "장부 관리는 아직 준비 중입니다. (예약관리만 가능)"
+            : "AI 응답 형식이 올바르지 않습니다. 다시 시도해주세요."
+        );
+        return;
+      }
+
+      //  성공: preview 단계로 전환 + 요약 텍스트 생성
+      setIntent(out.data);
+      setPreviewText(toReservationPreviewText(out.data));
+      setStep("preview");
+    } catch (e) {
+      setStep("input");
+      setErrorText(toUserErrorMessage(e));
+    } finally {
+      setLoadingPreview(false);
+    }
   }, [input, scope]);
 
   // preview -> input
   const onEdit = useCallback(() => {
     setStep("input");
-    // previewText는 남겨도 되지만, 수정 유도라면 null 처리하는 게 깔끔
     setPreviewText(null);
+    setErrorText(null);
+    // intent는 수정 후 다시 preview 생성해야 하므로 제거
+    setIntent(null);
   }, []);
 
-  // 확인(적용) - 다음 단계에서 기존 로직에 위임
   const onConfirm = useCallback(() => {
-    // placeholder: 실제 적용 연결 예정
     setPreviewText((p) => (p ? `${p}\n\n✅ 확인됨 (적용 연결 예정)` : p));
   }, []);
 
@@ -106,6 +203,10 @@ export function useAiAssistantModal() {
       scope,
       input,
       previewText,
+      loadingPreview,
+      errorText,
+      intent,
+
       copy,
       onOpen,
       onClose,
@@ -122,6 +223,9 @@ export function useAiAssistantModal() {
       scope,
       input,
       previewText,
+      loadingPreview,
+      errorText,
+      intent,
       copy,
       onOpen,
       onClose,
