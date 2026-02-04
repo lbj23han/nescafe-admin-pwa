@@ -42,7 +42,7 @@ export function parseReservationIntent(params: {
     date: normalizedDate,
     department: null,
     menu: null,
-    amount: extractedAmount, // ✅ 서버 추출값으로 기본 고정
+    amount: extractedAmount,
     time: null,
     location: null,
     memo: null,
@@ -62,7 +62,6 @@ export function parseReservationIntent(params: {
 
   const warnings = toStrArr(data.warnings);
 
-  // date 불일치 방어
   const modelDate = toStrOrNull(data.date);
   if (modelDate && modelDate !== normalizedDate) {
     warnings.push(
@@ -70,7 +69,6 @@ export function parseReservationIntent(params: {
     );
   }
 
-  // amount 불일치/추정 방지
   const modelAmount = toNumOrNull(data.amount);
   if (extractedAmount === null) {
     if (modelAmount !== null) {
@@ -90,10 +88,7 @@ export function parseReservationIntent(params: {
     ...base,
     department: toStrOrNull(data.department),
     menu: toStrOrNull(data.menu),
-
-    // amount는 base에서 이미 서버 추출로 고정
     amount: extractedAmount,
-
     time: toStrOrNull(data.time),
     location: toStrOrNull(data.location),
     memo: toStrOrNull(data.memo),
@@ -102,6 +97,6 @@ export function parseReservationIntent(params: {
     ),
     assumptions: toStrArr(data.assumptions),
     warnings,
-    raw_text: typeof data.raw_text === "string" ? data.raw_text : rawText,
+    raw_text: rawText,
   };
 }

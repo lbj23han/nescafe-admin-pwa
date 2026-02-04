@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { digitsOnly, computeItemsTotal } from "../domain/reservationItems";
 import { resolveDisplayAmount, type AmountMode } from "../domain/amountCalc";
 import type { ReservationItemWithId } from "./reservationForm.items";
+
 function toAutoAmount(items: ReservationItemWithId[]): string {
   const total = computeItemsTotal(items);
   const digits = digitsOnly(String(total ?? ""));
@@ -38,6 +39,12 @@ export function useReservationFormAmount(items: ReservationItemWithId[]) {
     }
   };
 
+  //  AI 프리필용 (mode+value를 원자적으로)
+  const applyManualAmount = (value: string) => {
+    setAmountMode("manual");
+    setManualAmount(digitsOnly(value));
+  };
+
   const resetAmount = () => {
     setAmountMode("auto");
     setManualAmount("");
@@ -50,6 +57,7 @@ export function useReservationFormAmount(items: ReservationItemWithId[]) {
     autoAmount,
     onChangeAmount,
     onChangeAmountMode,
+    applyManualAmount,
     resetAmount,
   };
 }

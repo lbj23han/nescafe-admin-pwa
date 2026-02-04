@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import type {
   AiAssistantResponse,
   ReservationIntent,
@@ -8,6 +9,10 @@ import type {
   Step,
 } from "./internal/types";
 import { toReservationPreviewText } from "./internal/preview";
+import {
+  buildDayReservationPrefillQuery,
+  toQueryString,
+} from "./internal/prefill";
 
 type PostArgs = {
   task: Scope;
@@ -42,7 +47,6 @@ function isReservationIntent(v: unknown): v is ReservationIntent {
 }
 
 function toUserErrorMessage(codeOrUnknown: unknown) {
-  // error code 기반 UX(최소). 상세 메시지는 추후 확장 가능.
   const code = String(codeOrUnknown ?? "");
   switch (code) {
     case "DATE_REQUIRED":
@@ -68,6 +72,8 @@ function toUserErrorMessage(codeOrUnknown: unknown) {
 }
 
 export function useAiAssistantModal() {
+  const router = useRouter();
+
   const [open, setOpen] = useState(false);
 
   const [step, setStep] = useState<Step>("pickScope");
@@ -120,12 +126,10 @@ export function useAiAssistantModal() {
     setIntent(null);
   }, []);
 
-  // input -> preview (강제)
   const onRequestPreview = useCallback(async () => {
     const trimmed = input.trim();
     if (!trimmed || !scope) return;
 
-    // reset
     setErrorText(null);
     setPreviewText(null);
     setIntent(null);
@@ -136,15 +140,12 @@ export function useAiAssistantModal() {
       const out = await postAiAssistant({ task: scope, text: trimmed });
 
       if (!out.ok) {
-        // 실패 시: input 단계로 되돌림 + 에러 표시
         setStep("input");
         setErrorText(toUserErrorMessage(out.error));
         return;
       }
 
-      // ok: true
       if (!isReservationIntent(out.data)) {
-        // ledger거나 스키마가 예상과 다르면 입력으로 복귀
         setStep("input");
         setErrorText(
           scope === "ledger"
@@ -154,7 +155,6 @@ export function useAiAssistantModal() {
         return;
       }
 
-      // 성공: preview 단계로 전환 + 요약 텍스트 생성
       setIntent(out.data);
       setPreviewText(toReservationPreviewText(out.data));
       setStep("preview");
@@ -166,18 +166,23 @@ export function useAiAssistantModal() {
     }
   }, [input, scope]);
 
-  // preview -> input
   const onEdit = useCallback(() => {
     setStep("input");
     setPreviewText(null);
     setErrorText(null);
-    // intent는 수정 후 다시 preview 생성해야 하므로 제거
     setIntent(null);
   }, []);
 
+  // ✅ Commit 5: 확인 시 Day 페이지로 이동 + items 포함 query 전달
   const onConfirm = useCallback(() => {
-    setPreviewText((p) => (p ? `${p}\n\n✅ 확인됨 (적용 연결 예정)` : p));
-  }, []);
+    if (!intent) return;
+
+    const q = buildDayReservationPrefillQuery(intent);
+    const qs = toQueryString(q);
+
+    router.push(`/day/${intent.date}${qs}`);
+    setOpen(false);
+  }, [intent, router]);
 
   const copy = useMemo(() => {
     const subtitle =
