@@ -29,6 +29,41 @@ function clamp01(n: number) {
   return n;
 }
 
+function shouldHideMultipleAmountWarning(w: string) {
+  const t = w.trim();
+  return /금액이\s*여러\s*개/.test(t) && /(하나|1개).*(사용|적용)/.test(t);
+}
+
+/**
+ * 단가(라인 금액)로 해석 가능한 패턴이 rawText에 있는지
+ * - (수량+단위)+금액원: "10잔 3000원"
+ * - 또는 (메뉴)+금액원: "아메 3000원"
+ */
+function hasUnitPriceLikePattern(rawText: string) {
+  const t = rawText.trim();
+  if (!t) return false;
+
+  // "10잔 3000원", "10개 8,000원" 등
+  const withQty = /\d+\s*(잔|개|명|건)\s*(\d{1,3}(?:,\d{3})+|\d+)\s*원/.test(t);
+
+  if (withQty) return true;
+
+  // "아메 3000원" 같이 메뉴+단가만 있는 케이스(보수적으로)
+  // 너무 넓게 잡으면 총액/기타와 충돌하니:
+  // - 숫자 앞에 한글/영문 메뉴 토큰이 있고
+  // - "원"이 붙어있는 경우만
+  const menuPriceOnly = /[가-힣A-Za-z]+\s*(\d{1,3}(?:,\d{3})+|\d+)\s*원/.test(
+    t
+  );
+
+  return menuPriceOnly;
+}
+
+function shouldHideAmountAmbiguousWarning(w: string) {
+  const t = w.trim();
+  return /금액.*(단위|명확)/.test(t);
+}
+
 export function parseReservationIntent(params: {
   data: unknown;
   rawText: string;
@@ -60,7 +95,7 @@ export function parseReservationIntent(params: {
     };
   }
 
-  const warnings = toStrArr(data.warnings);
+  let warnings = toStrArr(data.warnings);
 
   const modelDate = toStrOrNull(data.date);
   if (modelDate && modelDate !== normalizedDate) {
@@ -70,11 +105,20 @@ export function parseReservationIntent(params: {
   }
 
   const modelAmount = toNumOrNull(data.amount);
+
+  const unitPriceLike = hasUnitPriceLikePattern(rawText);
+
   if (extractedAmount === null) {
     if (modelAmount !== null) {
       warnings.push(
-        `AI가 amount를 '${modelAmount}'로 추정했지만, 사용자 입력에 금액이 없어 null로 고정했어요.`
+        `AI가 amount를 '${modelAmount}'로 추정했지만, 총액 키워드가 없어 null로 고정했어요.`
       );
+    }
+
+    // 단가 패턴이 있는 케이스에서 아래 warning들은 UX상 혼란이라 숨김
+    warnings = warnings.filter((w) => !shouldHideMultipleAmountWarning(w));
+    if (unitPriceLike) {
+      warnings = warnings.filter((w) => !shouldHideAmountAmbiguousWarning(w));
     }
   } else {
     if (modelAmount !== null && modelAmount !== extractedAmount) {
