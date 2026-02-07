@@ -45,10 +45,12 @@ function normalizePrefillItems(
   items: PrefillFormItem[] | null
 ): PrefillFormItem[] | null {
   if (!items || items.length === 0) return null;
+
   const cleaned = items
     .map((it) => ({
       menu: (it.menu ?? "").trim(),
       quantity: (it.quantity ?? "").toString(),
+      unitPrice: (it.unitPrice ?? "").toString(),
     }))
     .filter((it) => it.menu.length > 0);
 
@@ -78,7 +80,7 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
     manualAmount: amountState.manualAmount,
   });
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     dept.resetDepartment();
     itemsState.resetItems();
     amountState.resetAmount();
@@ -86,9 +88,9 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
     setLocation("");
     setShowForm(false);
     lastPrefillKeyRef.current = null;
-  };
+  }, [amountState, dept, itemsState]);
 
-  const handleAdd = async () => {
+  const handleAdd = useCallback(async () => {
     const { resolvedDepartmentId, resolvedDepartmentName } =
       resolveAddDepartment({
         departmentMode: dept.departmentMode,
@@ -129,13 +131,27 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
       console.error(e);
       alert("저장에 실패했어요. 잠시 후 다시 시도해주세요.");
     }
-  };
+  }, [
+    amountState.amountMode,
+    amountState.autoAmount,
+    amountState.manualAmount,
+    date,
+    dept.department,
+    dept.departmentMode,
+    dept.departments,
+    dept.selectedDepartmentId,
+    itemsState.items,
+    location,
+    onAdded,
+    resetForm,
+    time,
+  ]);
 
-  const handleAddButtonClick = () => {
+  const handleAddButtonClick = useCallback(() => {
     if (addButtonIntent === "open") return void setShowForm(true);
     if (addButtonIntent === "close") return void setShowForm(false);
     void handleAdd();
-  };
+  }, [addButtonIntent, handleAdd]);
 
   const openForm = useCallback(() => {
     setShowForm(true);
@@ -171,16 +187,16 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
       if (loc) setLocation(loc);
 
       if (items) {
-        // 복수 아이템 한번에 세팅
         itemsState.applyPrefillItems(items);
       }
 
       if (amt) {
         // manual 모드 전환 + 값 주입(원자적)
+        // (총액 자동확정 금지 정책: amount가 들어온 경우만 manual로 고정)
         amountState.applyManualAmount(amt);
       }
 
-      // memo / unitPrice(단가)는 Commit 6에서 연결
+      // memo는 아직 폼에 필드 없음(Commit 6 범위 밖)
     },
     [amountState, dept, itemsState]
   );
@@ -232,16 +248,20 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
       dept.setDepartment,
       dept.setSelectedDepartmentId,
       dept.setDepartmentMode,
+
       itemsState.items,
       itemsState.onAddItem,
       itemsState.onRemoveItem,
       itemsState.onChangeItemField,
+
       time,
       location,
+
       amountState.amount,
       amountState.amountMode,
       amountState.onChangeAmount,
       amountState.onChangeAmountMode,
+
       showForm,
       addButtonIntent,
       handleAddButtonClick,

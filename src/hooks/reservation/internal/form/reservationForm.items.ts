@@ -8,6 +8,7 @@ export type ReservationItemWithId = ReservationItem & { id: string };
 export type PrefillFormItem = {
   menu: string;
   quantity: string;
+  unitPrice?: string;
 };
 
 function createId() {
@@ -23,7 +24,7 @@ function toItem(it: PrefillFormItem): ReservationItemWithId {
     id: createId(),
     menu: it.menu,
     quantity: digitsOnly(it.quantity),
-    unitPrice: "",
+    unitPrice: digitsOnly(it.unitPrice ?? ""),
   };
 }
 
@@ -64,6 +65,7 @@ export function useReservationFormItems() {
       .map((p) => ({
         menu: p.menu.trim(),
         quantity: digitsOnly(p.quantity ?? ""),
+        unitPrice: digitsOnly(p.unitPrice ?? ""),
       }))
       .filter((p) => p.menu.length > 0);
 
