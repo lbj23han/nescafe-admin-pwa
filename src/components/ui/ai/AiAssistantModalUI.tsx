@@ -1,7 +1,7 @@
 "use client";
 
 import { FLOATING_MENU_UI } from "@/components/ui/navigation/floatingMenu.ui";
-import { ReservationDepartmentLinkConfirmSheet } from "@/components/ui/day/reservations";
+import { ReservationDepartmentLinkConfirmSheet } from "@/components/ui/day/reservations/ReservationDepartmentLinkConfirmSheet";
 import type { DepartmentLinkCandidate } from "@/hooks/reservation/internal/departments/resolveDepartmentLink";
 
 type AiAssistantScope = "reservation" | "ledger";
