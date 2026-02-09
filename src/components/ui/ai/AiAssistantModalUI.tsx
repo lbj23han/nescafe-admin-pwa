@@ -1,6 +1,8 @@
 "use client";
 
 import { FLOATING_MENU_UI } from "@/components/ui/navigation/floatingMenu.ui";
+import { ReservationDepartmentLinkConfirmSheet } from "@/components/ui/day/reservations";
+import type { DepartmentLinkCandidate } from "@/hooks/reservation/internal/departments/resolveDepartmentLink";
 
 type AiAssistantScope = "reservation" | "ledger";
 
@@ -19,6 +21,15 @@ type Props = {
 
   errorText: string | null;
   previewText: string | null;
+
+  departmentLink?: {
+    open: boolean;
+    inputText: string;
+    candidates: DepartmentLinkCandidate[];
+  };
+  onCloseDepartmentLink?: () => void;
+  onConfirmDepartmentLink?: (departmentId: string) => void;
+  onConfirmDepartmentUnlink?: () => void;
 
   onClose: () => void;
   onBack: () => void;
@@ -42,6 +53,12 @@ export function AiAssistantModalUI({
   helperText,
   errorText,
   previewText,
+
+  departmentLink,
+  onCloseDepartmentLink,
+  onConfirmDepartmentLink,
+  onConfirmDepartmentUnlink,
+
   onClose,
   onBack,
   onPickScope,
@@ -52,11 +69,15 @@ export function AiAssistantModalUI({
 }: Props) {
   if (!open) return null;
 
+  const linkOpen = !!departmentLink?.open;
+
   return (
     <>
       <button
         type="button"
-        className={FLOATING_MENU_UI.overlay}
+        className={`${FLOATING_MENU_UI.overlay} ${
+          linkOpen ? "pointer-events-none" : ""
+        }`}
         data-state={open ? "open" : "closed"}
         aria-label="AI비서 닫기"
         onClick={onClose}
@@ -80,6 +101,7 @@ export function AiAssistantModalUI({
               type="button"
               className={FLOATING_MENU_UI.closeBtn}
               onClick={onClose}
+              disabled={linkOpen}
             >
               닫기
             </button>
@@ -93,6 +115,7 @@ export function AiAssistantModalUI({
                   type="button"
                   className={FLOATING_MENU_UI.cardBtn}
                   onClick={() => onPickScope("reservation")}
+                  disabled={linkOpen}
                 >
                   <div className={FLOATING_MENU_UI.cardTitle}>예약관리</div>
                   <div className={FLOATING_MENU_UI.cardDesc}>
@@ -104,6 +127,7 @@ export function AiAssistantModalUI({
                   type="button"
                   className={FLOATING_MENU_UI.cardBtn}
                   onClick={() => onPickScope("ledger")}
+                  disabled={linkOpen}
                 >
                   <div className={FLOATING_MENU_UI.cardTitle}>장부관리</div>
                   <div className={FLOATING_MENU_UI.cardDesc}>
@@ -123,6 +147,7 @@ export function AiAssistantModalUI({
                 value={input}
                 placeholder={inputPlaceholder}
                 onChange={(e) => onChangeInput(e.target.value)}
+                disabled={linkOpen}
               />
 
               {errorText ? (
@@ -142,6 +167,7 @@ export function AiAssistantModalUI({
                   type="button"
                   className={FLOATING_MENU_UI.ghostBtn}
                   onClick={onBack}
+                  disabled={linkOpen}
                 >
                   뒤로
                 </button>
@@ -150,7 +176,7 @@ export function AiAssistantModalUI({
                   type="button"
                   className={FLOATING_MENU_UI.primaryBtn}
                   onClick={onRequestPreview}
-                  disabled={!input.trim()}
+                  disabled={linkOpen || !input.trim()}
                 >
                   등록
                 </button>
@@ -173,6 +199,7 @@ export function AiAssistantModalUI({
                   type="button"
                   className={FLOATING_MENU_UI.ghostBtn}
                   onClick={onEdit}
+                  disabled={linkOpen}
                 >
                   수정
                 </button>
@@ -181,7 +208,7 @@ export function AiAssistantModalUI({
                   type="button"
                   className={FLOATING_MENU_UI.primaryBtn}
                   onClick={onConfirm}
-                  disabled={!previewText}
+                  disabled={linkOpen || !previewText}
                 >
                   확인
                 </button>
@@ -190,6 +217,15 @@ export function AiAssistantModalUI({
           )}
         </div>
       </div>
+
+      <ReservationDepartmentLinkConfirmSheet
+        open={!!departmentLink?.open}
+        inputText={departmentLink?.inputText ?? ""}
+        candidates={departmentLink?.candidates ?? []}
+        onClose={onCloseDepartmentLink ?? (() => {})}
+        onConfirmLink={onConfirmDepartmentLink ?? (() => {})}
+        onConfirmUnlink={onConfirmDepartmentUnlink ?? (() => {})}
+      />
     </>
   );
 }

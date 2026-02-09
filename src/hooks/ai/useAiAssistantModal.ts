@@ -13,6 +13,11 @@ import {
   buildDayReservationPrefillQuery,
   toQueryString,
 } from "./internal/prefill";
+import { DepartmentsRepo } from "@/lib/data";
+import {
+  resolveDepartmentLink,
+  type DepartmentLinkCandidate,
+} from "@/hooks/reservation/internal/departments/resolveDepartmentLink";
 
 type PostArgs = {
   task: Scope;
@@ -71,6 +76,60 @@ function toUserErrorMessage(codeOrUnknown: unknown) {
   }
 }
 
+type DeptLinkSheetState =
+  | { open: false }
+  | {
+      open: true;
+      inputText: string;
+      candidates: DepartmentLinkCandidate[];
+    };
+
+function toNonEmpty(v: string | null | undefined): string | null {
+  if (!v) return null;
+  const t = v.trim();
+  return t ? t : null;
+}
+
+function buildDeptCandidateTextFromRaw(raw: string) {
+  let t = raw;
+
+  // 날짜
+  t = t
+    .replace(/\b\d{4}-\d{2}-\d{2}\b/g, " ")
+    .replace(/\b\d{1,2}[./]\d{1,2}\b/g, " ")
+    .replace(/\b\d{1,2}\s*월\s*\d{1,2}\s*일\b/g, " ");
+
+  // 시간(경계 문제로 시만 남는 케이스 방지: \b 제거)
+  t = t
+    .replace(/(?:^|[\s,])\d{1,2}\s*:\s*\d{2}(?=\s|,|$)/g, " ")
+    .replace(/(?:^|[\s,])\d{1,2}\s*시(\s*\d{1,2}\s*분)?(?=\s|,|$)/g, " ")
+    .replace(
+      /(?:^|[\s,])(오전|오후)\s*\d{1,2}\s*시(\s*\d{1,2}\s*분)?(?=\s|,|$)/g,
+      " "
+    );
+
+  // 금액
+  t = t.replace(/\b\d{1,3}(?:,\d{3})+\s*원\b/g, " ");
+  t = t.replace(/\b\d+\s*원\b/g, " ");
+
+  // 수량
+  t = t.replace(/\b\d+\s*(잔|개|명|건)\b/g, " ");
+
+  // 총액 키워드
+  t = t.replace(/(총액|합계|총\s*금액|총\s*계|총\s*[:：]?)/g, " ");
+
+  // 구두점
+  t = t.replace(/[(){}\[\]_.,:;'"“”‘’·\-]/g, " ");
+
+  return t.replace(/\s+/g, " ").trim();
+}
+
+function firstToken(v: string): string {
+  const t = v.trim();
+  if (!t) return "";
+  return t.split(/\s+/)[0] ?? "";
+}
+
 export function useAiAssistantModal() {
   const router = useRouter();
 
@@ -87,6 +146,9 @@ export function useAiAssistantModal() {
 
   const [intent, setIntent] = useState<ReservationIntent | null>(null);
 
+  // ✅ Dept link sheet state (단일 타입으로 고정)
+  const [deptLink, setDeptLink] = useState<DeptLinkSheetState>({ open: false });
+
   const resetAll = useCallback(() => {
     setStep("pickScope");
     setScope(null);
@@ -95,6 +157,7 @@ export function useAiAssistantModal() {
     setLoadingPreview(false);
     setErrorText(null);
     setIntent(null);
+    setDeptLink({ open: false });
   }, []);
 
   const onOpen = useCallback(() => {
@@ -113,6 +176,7 @@ export function useAiAssistantModal() {
     setPreviewText(null);
     setErrorText(null);
     setIntent(null);
+    setDeptLink({ open: false });
   }, []);
 
   const onBack = useCallback(() => {
@@ -124,6 +188,7 @@ export function useAiAssistantModal() {
     setPreviewText(null);
     setErrorText(null);
     setIntent(null);
+    setDeptLink({ open: false });
   }, []);
 
   const onRequestPreview = useCallback(async () => {
@@ -133,6 +198,7 @@ export function useAiAssistantModal() {
     setErrorText(null);
     setPreviewText(null);
     setIntent(null);
+    setDeptLink({ open: false });
 
     setLoadingPreview(true);
 
@@ -171,18 +237,128 @@ export function useAiAssistantModal() {
     setPreviewText(null);
     setErrorText(null);
     setIntent(null);
+    setDeptLink({ open: false });
   }, []);
 
-  // ✅ Commit 5: 확인 시 Day 페이지로 이동 + items 포함 query 전달
-  const onConfirm = useCallback(() => {
+  const pushToDay = useCallback(
+    (
+      it: ReservationIntent,
+      extra?: {
+        departmentMode?: "select" | "direct";
+        selectedDepartmentId?: string;
+      }
+    ) => {
+      const q = buildDayReservationPrefillQuery(it, extra);
+      const qs = toQueryString(q);
+      router.push(`/day/${it.date}${qs}`);
+      setOpen(false);
+    },
+    [router]
+  );
+
+  /**
+   * Confirm 버튼: "항상" 연동 여부 sheet를 띄우되,
+   * - 후보가 있으면 후보 리스트 포함
+   * - 후보가 없으면 candidates=[] 로 "연동 안 함/그대로" 선택만 하게(UX는 UI에서)
+   *
+   * 주의: open:false 케이스에 candidates를 두지 않아서 never[] 문제 원천 차단
+   */
+  const onConfirm = useCallback(async () => {
     if (!intent) return;
 
-    const q = buildDayReservationPrefillQuery(intent);
-    const qs = toQueryString(q);
+    try {
+      const departments = await DepartmentsRepo.getDepartments();
 
-    router.push(`/day/${intent.date}${qs}`);
-    setOpen(false);
-  }, [intent, router]);
+      const depFromModel = toNonEmpty(intent.department);
+      if (depFromModel) {
+        const link = resolveDepartmentLink({
+          inputText: depFromModel,
+          departments,
+        });
+
+        if (link.kind === "confirm") {
+          setDeptLink({
+            open: true,
+            inputText: link.inputText,
+            candidates: link.candidates,
+          });
+          return;
+        }
+
+        // confirm이 아니면(= linked/unlinked)이라도, "항상 띄우기" 정책이면 sheet는 띄워야 함
+        setDeptLink({
+          open: true,
+          inputText: depFromModel,
+          candidates: [],
+        });
+        return;
+      }
+
+      // department를 못 받았으면 raw_text에서 후보 시도
+      const candidateText = buildDeptCandidateTextFromRaw(intent.raw_text);
+      const first = firstToken(candidateText);
+
+      if (first) {
+        const linkFirst = resolveDepartmentLink({
+          inputText: first,
+          departments,
+        });
+
+        if (linkFirst.kind === "confirm") {
+          setDeptLink({
+            open: true,
+            inputText: linkFirst.inputText,
+            candidates: linkFirst.candidates,
+          });
+          return;
+        }
+
+        setDeptLink({
+          open: true,
+          inputText: first,
+          candidates: [],
+        });
+        return;
+      }
+
+      // 아무것도 못 찾았으면 그래도 시트는 띄움(입력값 없음 → UI에서 안내)
+      setDeptLink({
+        open: true,
+        inputText: "",
+        candidates: [],
+      });
+    } catch (e) {
+      console.error(e);
+      // 실패해도 시트는 띄우기(사용자가 unlink 선택 가능)
+      setDeptLink({
+        open: true,
+        inputText: toNonEmpty(intent.department) ?? "",
+        candidates: [],
+      });
+    }
+  }, [intent]);
+
+  const onCloseDeptLink = useCallback(() => {
+    setDeptLink({ open: false });
+  }, []);
+
+  const onConfirmDeptLink = useCallback(
+    (departmentId: string) => {
+      if (!intent) return;
+      setDeptLink({ open: false });
+      pushToDay(intent, {
+        departmentMode: "select",
+        selectedDepartmentId: departmentId,
+      });
+    },
+    [intent, pushToDay]
+  );
+
+  const onConfirmDeptUnlink = useCallback(() => {
+    if (!intent) return;
+    setDeptLink({ open: false });
+    pushToDay(intent, { departmentMode: "direct" });
+  }, [intent, pushToDay]);
 
   const copy = useMemo(() => {
     const subtitle =
@@ -221,6 +397,11 @@ export function useAiAssistantModal() {
       errorText,
       intent,
 
+      deptLink,
+      onCloseDeptLink,
+      onConfirmDeptLink,
+      onConfirmDeptUnlink,
+
       copy,
       onOpen,
       onClose,
@@ -240,6 +421,12 @@ export function useAiAssistantModal() {
       loadingPreview,
       errorText,
       intent,
+
+      deptLink,
+      onCloseDeptLink,
+      onConfirmDeptLink,
+      onConfirmDeptUnlink,
+
       copy,
       onOpen,
       onClose,

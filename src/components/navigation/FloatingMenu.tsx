@@ -44,6 +44,18 @@ export function FloatingMenu() {
         onRequestPreview={ai.onRequestPreview}
         onEdit={ai.onEdit}
         onConfirm={ai.onConfirm}
+        departmentLink={
+          ai.deptLink.open
+            ? {
+                open: true,
+                inputText: ai.deptLink.inputText,
+                candidates: ai.deptLink.candidates,
+              }
+            : undefined
+        }
+        onCloseDepartmentLink={ai.onCloseDeptLink}
+        onConfirmDepartmentLink={ai.onConfirmDeptLink}
+        onConfirmDepartmentUnlink={ai.onConfirmDeptUnlink}
       />
     </>
   );
