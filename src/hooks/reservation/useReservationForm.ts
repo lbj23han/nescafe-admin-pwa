@@ -16,12 +16,14 @@ import { useReservationFormDepartment } from "./internal/form/reservationForm.de
 import { resolveReservationFormIntent } from "./internal/form/reservationForm.intent";
 
 export type ReservationFormAiPrefill = {
-  items: PrefillFormItem[] | null; // 복수 아이템
+  items: PrefillFormItem[] | null;
   department: string | null;
+  departmentMode?: "select" | "direct";
+  selectedDepartmentId?: string | null;
   time: string | null;
   location: string | null;
-  amount: string | null; // digits only string (총액)
-  memo: string | null; // 현재 폼에 memo 필드 없음
+  amount: string | null;
+  memo: string | null;
 };
 
 type UseReservationFormArgs = {
@@ -90,6 +92,50 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
     lastPrefillKeyRef.current = null;
   }, [amountState, dept, itemsState]);
 
+  const buildDraft = useCallback(
+    (resolved: {
+      resolvedDepartmentId: string | null;
+      resolvedDepartmentName: string;
+    }) => {
+      const menu = serializeItemsToMenu(itemsState.items);
+      const amount = resolveFinalAmountNumber({
+        mode: amountState.amountMode,
+        autoAmount: amountState.autoAmount,
+        manualAmount: amountState.manualAmount,
+      });
+
+      const draft: Reservation = {
+        id: `${Date.now()}`,
+        departmentId: resolved.resolvedDepartmentId,
+        department: resolved.resolvedDepartmentName,
+        menu,
+        amount,
+        time,
+        location,
+        status: "pending",
+      };
+
+      return draft;
+    },
+    [
+      amountState.amountMode,
+      amountState.autoAmount,
+      amountState.manualAmount,
+      itemsState.items,
+      location,
+      time,
+    ]
+  );
+
+  const saveDraft = useCallback(
+    async (draft: Reservation) => {
+      const saved = await ReservationsRepo.saveReservation(date, draft);
+      onAdded(saved);
+      resetForm();
+    },
+    [date, onAdded, resetForm]
+  );
+
   const handleAdd = useCallback(async () => {
     const { resolvedDepartmentId, resolvedDepartmentName } =
       resolveAddDepartment({
@@ -105,46 +151,22 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
       return;
     }
 
-    const menu = serializeItemsToMenu(itemsState.items);
-    const amount = resolveFinalAmountNumber({
-      mode: amountState.amountMode,
-      autoAmount: amountState.autoAmount,
-      manualAmount: amountState.manualAmount,
-    });
-
-    const draft: Reservation = {
-      id: `${Date.now()}`,
-      departmentId: resolvedDepartmentId,
-      department: resolvedDepartmentName,
-      menu,
-      amount,
-      time,
-      location,
-      status: "pending",
-    };
+    const draft = buildDraft({ resolvedDepartmentId, resolvedDepartmentName });
 
     try {
-      const saved = await ReservationsRepo.saveReservation(date, draft);
-      onAdded(saved);
-      resetForm();
+      await saveDraft(draft);
     } catch (e) {
       console.error(e);
       alert("저장에 실패했어요. 잠시 후 다시 시도해주세요.");
     }
   }, [
-    amountState.amountMode,
-    amountState.autoAmount,
-    amountState.manualAmount,
-    date,
+    buildDraft,
     dept.department,
     dept.departmentMode,
     dept.departments,
     dept.selectedDepartmentId,
     itemsState.items,
-    location,
-    onAdded,
-    resetForm,
-    time,
+    saveDraft,
   ]);
 
   const handleAddButtonClick = useCallback(() => {
@@ -160,6 +182,9 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
   const applyAiPrefill = useCallback(
     (prefill: ReservationFormAiPrefill) => {
       const dep = toNonEmpty(prefill.department);
+      const depMode = prefill.departmentMode;
+      const depId = (prefill.selectedDepartmentId ?? "").trim() || null;
+
       const t = toNonEmpty(prefill.time);
       const loc = toNonEmpty(prefill.location);
       const amt = digitsOnly(prefill.amount);
@@ -167,6 +192,8 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
 
       const key = [
         dep ?? "",
+        depMode ?? "",
+        depId ?? "",
         t ?? "",
         loc ?? "",
         amt ?? "",
@@ -179,24 +206,27 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
       if (lastPrefillKeyRef.current === key) return;
       lastPrefillKeyRef.current = key;
 
-      if (dep) {
+      // ✅ AI confirm 단계에서 "연동"을 선택한 경우:
+      // departmentMode=select + selectedDepartmentId 가 넘어오면 드롭다운 자동 지정
+      if (depMode === "select" && depId) {
+        dept.setDepartmentMode("select");
+        dept.setSelectedDepartmentId(depId);
+        dept.setDepartment("");
+      } else if (dep) {
+        // ✅ 그 외는 direct 프리필
         dept.setDepartmentMode("direct");
         dept.setDepartment(dep);
       }
+
       if (t) setTime(t);
       if (loc) setLocation(loc);
 
-      if (items) {
-        itemsState.applyPrefillItems(items);
-      }
+      if (items) itemsState.applyPrefillItems(items);
 
       if (amt) {
-        // manual 모드 전환 + 값 주입(원자적)
-        // (총액 자동확정 금지 정책: amount가 들어온 경우만 manual로 고정)
+        // amount가 들어온 경우만 manual로 고정
         amountState.applyManualAmount(amt);
       }
-
-      // memo는 아직 폼에 필드 없음(Commit 6 범위 밖)
     },
     [amountState, dept, itemsState]
   );
@@ -265,6 +295,7 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
       showForm,
       addButtonIntent,
       handleAddButtonClick,
+
       openForm,
       applyAiPrefill,
     ]

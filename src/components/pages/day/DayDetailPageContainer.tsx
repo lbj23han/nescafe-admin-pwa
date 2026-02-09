@@ -103,6 +103,8 @@ export function DayDetailPageContainer({ date, aiPrefill = null }: Props) {
     applyAiPrefill({
       items: aiPrefill.parsedItems,
       department: aiPrefill.department ?? null,
+      departmentMode: aiPrefill.departmentMode,
+      selectedDepartmentId: aiPrefill.selectedDepartmentId ?? null,
       time: aiPrefill.time ?? null,
       location: aiPrefill.location ?? null,
       amount: aiPrefill.amount ?? null,
