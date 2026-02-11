@@ -45,13 +45,9 @@ function hasUnitPriceLikePattern(rawText: string) {
 
   // "10잔 3000원", "10개 8,000원" 등
   const withQty = /\d+\s*(잔|개|명|건)\s*(\d{1,3}(?:,\d{3})+|\d+)\s*원/.test(t);
-
   if (withQty) return true;
 
   // "아메 3000원" 같이 메뉴+단가만 있는 케이스(보수적으로)
-  // 너무 넓게 잡으면 총액/기타와 충돌하니:
-  // - 숫자 앞에 한글/영문 메뉴 토큰이 있고
-  // - "원"이 붙어있는 경우만
   const menuPriceOnly = /[가-힣A-Za-z]+\s*(\d{1,3}(?:,\d{3})+|\d+)\s*원/.test(
     t
   );
@@ -62,6 +58,25 @@ function hasUnitPriceLikePattern(rawText: string) {
 function shouldHideAmountAmbiguousWarning(w: string) {
   const t = w.trim();
   return /금액.*(단위|명확)/.test(t);
+}
+
+/**
+ * 모델이 department를 못 뽑는 케이스를 위한 "보수적" 폴백.
+ * - 조직 suffix가 있는 토큰만 추출
+ * - 예: 모아주택부서 / 모아주택과 / 안드로이드1팀 / 운영지원실
+ */
+function fallbackExtractDepartment(rawText: string): string | null {
+  const t = rawText.trim();
+  if (!t) return null;
+
+  const re =
+    /(?:^|[\s,])([가-힣A-Za-z0-9]+(?:부서|과|팀|파트|실|국|처))(?=$|[\s,])/;
+
+  const m = t.match(re);
+  if (!m) return null;
+
+  const out = (m[1] ?? "").trim();
+  return out ? out : null;
 }
 
 export function parseReservationIntent(params: {
@@ -128,9 +143,20 @@ export function parseReservationIntent(params: {
     }
   }
 
+  const modelDepartment = toStrOrNull(data.department);
+  const fallbackDepartment =
+    modelDepartment ?? fallbackExtractDepartment(rawText);
+
+  const assumptions = toStrArr(data.assumptions);
+  if (!modelDepartment && fallbackDepartment) {
+    assumptions.push(
+      `부서가 불명확하여 입력문에서 '${fallbackDepartment}'를 부서 후보로 추출했어요.`
+    );
+  }
+
   return {
     ...base,
-    department: toStrOrNull(data.department),
+    department: fallbackDepartment,
     menu: toStrOrNull(data.menu),
     amount: extractedAmount,
     time: toStrOrNull(data.time),
@@ -139,7 +165,7 @@ export function parseReservationIntent(params: {
     confidence: clamp01(
       typeof data.confidence === "number" ? data.confidence : 0.5
     ),
-    assumptions: toStrArr(data.assumptions),
+    assumptions,
     warnings,
     raw_text: rawText,
   };

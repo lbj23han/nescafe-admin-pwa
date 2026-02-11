@@ -1,4 +1,5 @@
 import type { ReservationIntent } from "./types";
+import { removeRelativeDateNoise } from "./textNoise";
 
 export type PrefillItem = {
   menu: string;
@@ -71,7 +72,9 @@ function sanitizeForItemParsing(text: string) {
     .replace(/(^|\s)(부서|장소|위치|시간|메모)\s*[:：]\s*/g, " ")
     .replace(/\s+/g, " ");
 
-  // 날짜 제거
+  t = removeRelativeDateNoise(t);
+
+  // 절대 날짜 제거
   t = t
     .replace(/\b\d{4}-\d{2}-\d{2}\b/g, " ")
     .replace(/\b\d{1,2}\s*[./-]\s*\d{1,2}\b/g, " ")
@@ -125,7 +128,7 @@ function removeKnownNoise(intent: ReservationIntent): string {
   if (loc) t = t.replaceAll(loc, " ");
   if (time) t = t.replaceAll(time, " ");
 
-  // 라벨/시간/날짜 등 일반 노이즈 제거
+  // 라벨/시간/날짜 등 일반 노이즈 제거 (+ 상대날짜 제거 포함)
   t = sanitizeForItemParsing(t);
 
   return t.replace(/\s+/g, " ").trim();
@@ -163,7 +166,8 @@ function extractItemsFromText(
     const p = digitsOnly(m[4]);
 
     let menu = menuRaw
-      .replace(/^(오늘|내일|어제)\s*/g, "")
+      // ✅ 단일 상대토큰 확장
+      .replace(/^(오늘|내일|모레|어제)\s*/g, "")
       .replace(/\s*(에서|으로|에)\s*$/g, "")
       .trim();
 

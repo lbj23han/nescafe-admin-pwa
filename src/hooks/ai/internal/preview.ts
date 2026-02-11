@@ -1,4 +1,5 @@
 import type { ReservationIntent } from "./types";
+import { removeRelativeDateNoise } from "./textNoise";
 
 function formatWon(amount: number) {
   return `${amount.toLocaleString("ko-KR")}원`;
@@ -43,7 +44,9 @@ function sanitizeForItemParsing(rawText: string) {
   // 라벨류 제거 (부서/장소/위치/시간/메모 등)
   t = t.replace(/(^|\s)(부서|장소|위치|시간|메모)\s*[:：]\s*/g, " ");
 
-  // 날짜 제거
+  t = removeRelativeDateNoise(t);
+
+  // 절대 날짜 제거
   t = t
     .replace(/\b\d{4}-\d{2}-\d{2}\b/g, " ")
     .replace(/\b\d{1,2}\s*[./-]\s*\d{1,2}\b/g, " ")
