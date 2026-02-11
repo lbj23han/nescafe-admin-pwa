@@ -20,6 +20,10 @@ function safeTrim(v: unknown) {
   return typeof v === "string" ? v.trim() : "";
 }
 
+function isIsoDate(v: unknown): v is string {
+  return typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v);
+}
+
 export async function POST(req: Request) {
   try {
     const apiKey = process.env.OPENAI_API_KEY;
@@ -43,8 +47,12 @@ export async function POST(req: Request) {
       return json(400, { ok: false, error: "INPUT_REQUIRED" });
     }
 
-    // 날짜 필수: input에서 먼저 추출/정규화
-    const normalized = extractNormalizedDate(input);
+    // 클라이언트가 확정한 날짜가 있으면 서버는 그대로 사용(추정/재해석 금지)
+    const resolvedDateIso = body.resolvedDateIso;
+    const normalized = isIsoDate(resolvedDateIso)
+      ? { ok: true as const, date: resolvedDateIso, matchedText: "resolved" }
+      : extractNormalizedDate(input);
+
     if (!normalized.ok) {
       return json(400, { ok: false, error: "DATE_REQUIRED" });
     }

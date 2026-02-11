@@ -3,6 +3,8 @@ export type AiTask = "reservation" | "ledger";
 export type AiAssistantRequest = {
   task: AiTask;
   input: string;
+  todayIso?: string;
+  resolvedDateIso?: string;
 };
 
 export type AiAssistantErrorCode =

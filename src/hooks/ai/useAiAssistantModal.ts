@@ -18,17 +18,30 @@ import {
   resolveDepartmentLink,
   type DepartmentLinkCandidate,
 } from "@/hooks/reservation/internal/departments/resolveDepartmentLink";
+import { getKstTodayIso } from "./internal/date/kstDate";
+import { resolveRelativeDate } from "./internal/date/resolveRelativeDate";
 
 type PostArgs = {
   task: Scope;
   text: string;
+
+  // commit8
+  todayIso?: string;
+  resolvedDateIso?: string;
 };
 
 async function postAiAssistant(args: PostArgs): Promise<AiAssistantResponse> {
   const res = await fetch("/api/ai/assistant", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ task: args.task, input: args.text }),
+    body: JSON.stringify({
+      task: args.task,
+      input: args.text,
+      ...(args.todayIso ? { todayIso: args.todayIso } : {}),
+      ...(args.resolvedDateIso
+        ? { resolvedDateIso: args.resolvedDateIso }
+        : {}),
+    }),
   });
 
   const json = (await res.json().catch(() => null)) as unknown;
@@ -55,11 +68,11 @@ function toUserErrorMessage(codeOrUnknown: unknown) {
   const code = String(codeOrUnknown ?? "");
   switch (code) {
     case "DATE_REQUIRED":
-      return "날짜를 포함해서 다시 입력해주세요. (예: 2/2, 2026-02-02)";
+      return '날짜를 포함해서 다시 입력해주세요. (예: "내일", "다음주 수요일", "2/2", "2026-02-02")';
     case "UNRECOGNIZED_INPUT":
       return (
         "입력을 이해하지 못했어요. 날짜 + (메뉴/부서/시간/금액) 중 1개 이상을 포함해 다시 입력해주세요.\n" +
-        '예: "2/2 3시 A부서 아메리카노 2잔 8000원"'
+        '예: "내일 3시 A부서 아메리카노 2잔 8000원"'
       );
     case "NOT_IMPLEMENTED":
       return "장부 관리는 아직 준비 중입니다. (예약관리만 가능)";
@@ -203,7 +216,19 @@ export function useAiAssistantModal() {
     setLoadingPreview(true);
 
     try {
-      const out = await postAiAssistant({ task: scope, text: trimmed });
+      // commit8: today는 클라이언트(KST) 기준
+      const todayIso = getKstTodayIso();
+
+      // commit8: 상대 날짜가 들어오면 클라에서 ISO로 확정
+      const resolved = resolveRelativeDate({ input: trimmed, todayIso });
+      const resolvedDateIso = resolved.ok ? resolved.date : undefined;
+
+      const out = await postAiAssistant({
+        task: scope,
+        text: trimmed,
+        todayIso,
+        resolvedDateIso,
+      });
 
       if (!out.ok) {
         setStep("input");
@@ -321,7 +346,6 @@ export function useAiAssistantModal() {
         return;
       }
 
-      // 아무것도 못 찾았으면 그래도 시트는 띄움(입력값 없음 → UI에서 안내)
       setDeptLink({
         open: true,
         inputText: "",
@@ -370,12 +394,12 @@ export function useAiAssistantModal() {
 
     const inputPlaceholder =
       scope === "reservation"
-        ? '예: "오늘 A부서 아메리카노 2잔 8000원"'
+        ? '예: "내일 3시 A부서 아메리카노 2잔 8000원"'
         : '예: "A부서 예치금 5만원 입금"';
 
     const helperText =
       scope === "reservation"
-        ? '예: "어제 예약 중 김철수 삭제" / "오늘 3시 B부서 라떼 2잔"'
+        ? '예: "내일 3시 B부서 라떼 2잔" / "다음주 수요일 A부서 아메 2잔 8000원"'
         : '예: "B부서 미수금 2만원 추가" / "A부서 예치금에서 1만원 차감"';
 
     return {
