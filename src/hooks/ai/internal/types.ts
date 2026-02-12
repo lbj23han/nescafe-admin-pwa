@@ -42,6 +42,28 @@ export type ReservationIntent = {
   raw_text: string;
 };
 
+export type LedgerAction =
+  | "deposit" // 예치금 입금
+  | "withdraw" // 예치금 차감
+  | "createDebt" // 미수금 생성
+  | "settleDebt"; // 미수금 정산
+
+export type LedgerIntent = {
+  kind: "ledger";
+
+  department: string | null;
+  action: LedgerAction | null;
+  amount: number | null;
+
+  confidence: number; // 0~1
+  assumptions: string[];
+  warnings: string[];
+
+  raw_text: string;
+};
+
+export type AiIntent = ReservationIntent | LedgerIntent;
+
 export type NormalizedDateResult =
   | { ok: true; date: string; matchedText: string }
   | { ok: false };
