@@ -4,11 +4,16 @@ import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type {
   AiAssistantResponse,
+  AiIntent,
+  LedgerIntent,
   ReservationIntent,
   Scope,
   Step,
 } from "./internal/types";
-import { toReservationPreviewText } from "./internal/preview";
+import {
+  toLedgerPreviewText,
+  toReservationPreviewText,
+} from "./internal/preview";
 import {
   buildDayReservationPrefillQuery,
   toQueryString,
@@ -61,6 +66,17 @@ function isReservationIntent(v: unknown): v is ReservationIntent {
     typeof obj.date === "string" &&
     "assumptions" in obj &&
     "warnings" in obj
+  );
+}
+
+function isLedgerIntent(v: unknown): v is LedgerIntent {
+  if (!v || typeof v !== "object") return false;
+  const obj = v as Record<string, unknown>;
+  return (
+    obj.kind === "ledger" &&
+    "assumptions" in obj &&
+    "warnings" in obj &&
+    "raw_text" in obj
   );
 }
 
@@ -157,9 +173,10 @@ export function useAiAssistantModal() {
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
 
-  const [intent, setIntent] = useState<ReservationIntent | null>(null);
+  const [intent, setIntent] = useState<AiIntent | null>(null);
 
-  // ✅ Dept link sheet state (단일 타입으로 고정)
+  const [noticeText, setNoticeText] = useState<string | null>(null);
+
   const [deptLink, setDeptLink] = useState<DeptLinkSheetState>({ open: false });
 
   const resetAll = useCallback(() => {
@@ -170,6 +187,7 @@ export function useAiAssistantModal() {
     setLoadingPreview(false);
     setErrorText(null);
     setIntent(null);
+    setNoticeText(null);
     setDeptLink({ open: false });
   }, []);
 
@@ -189,6 +207,7 @@ export function useAiAssistantModal() {
     setPreviewText(null);
     setErrorText(null);
     setIntent(null);
+    setNoticeText(null);
     setDeptLink({ open: false });
   }, []);
 
@@ -201,6 +220,7 @@ export function useAiAssistantModal() {
     setPreviewText(null);
     setErrorText(null);
     setIntent(null);
+    setNoticeText(null);
     setDeptLink({ open: false });
   }, []);
 
@@ -211,15 +231,14 @@ export function useAiAssistantModal() {
     setErrorText(null);
     setPreviewText(null);
     setIntent(null);
+    setNoticeText(null);
     setDeptLink({ open: false });
 
     setLoadingPreview(true);
 
     try {
-      // commit8: today는 클라이언트(KST) 기준
       const todayIso = getKstTodayIso();
 
-      // commit8: 상대 날짜가 들어오면 클라에서 ISO로 확정
       const resolved = resolveRelativeDate({ input: trimmed, todayIso });
       const resolvedDateIso = resolved.ok ? resolved.date : undefined;
 
@@ -236,18 +255,29 @@ export function useAiAssistantModal() {
         return;
       }
 
-      if (!isReservationIntent(out.data)) {
+      // scope별 intent 가드
+      if (scope === "reservation") {
+        if (!isReservationIntent(out.data)) {
+          setStep("input");
+          setErrorText("AI 응답 형식이 올바르지 않습니다. 다시 시도해주세요.");
+          return;
+        }
+
+        setIntent(out.data);
+        setPreviewText(toReservationPreviewText(out.data));
+        setStep("preview");
+        return;
+      }
+
+      // scope === "ledger"
+      if (!isLedgerIntent(out.data)) {
         setStep("input");
-        setErrorText(
-          scope === "ledger"
-            ? "장부 관리는 아직 준비 중입니다. (예약관리만 가능)"
-            : "AI 응답 형식이 올바르지 않습니다. 다시 시도해주세요."
-        );
+        setErrorText("AI 응답 형식이 올바르지 않습니다. 다시 시도해주세요.");
         return;
       }
 
       setIntent(out.data);
-      setPreviewText(toReservationPreviewText(out.data));
+      setPreviewText(toLedgerPreviewText(out.data));
       setStep("preview");
     } catch {
       setStep("input");
@@ -262,6 +292,7 @@ export function useAiAssistantModal() {
     setPreviewText(null);
     setErrorText(null);
     setIntent(null);
+    setNoticeText(null);
     setDeptLink({ open: false });
   }, []);
 
@@ -282,19 +313,28 @@ export function useAiAssistantModal() {
   );
 
   /**
-   * Confirm 버튼: "항상" 연동 여부 sheet를 띄우되,
-   * - 후보가 있으면 후보 리스트 포함
-   * - 후보가 없으면 candidates=[] 로 "연동 안 함/그대로" 선택만 하게(UX는 UI에서)
-   *
-   * 주의: open:false 케이스에 candidates를 두지 않아서 never[] 문제 원천 차단
+   * Confirm 버튼:
+   * - reservation: 기존 정책 그대로(항상 연동 sheet)
+   * - ledger: Commit9는 noop + 안내만 (실제 반영 없음)
    */
   const onConfirm = useCallback(async () => {
     if (!intent) return;
 
+    // ledger confirm: noop + 안내
+    if (intent.kind === "ledger") {
+      setNoticeText(
+        "확인되었습니다. 다음 단계에서 실제 장부에 반영됩니다. (Commit 9: 미반영)"
+      );
+      return;
+    }
+
+    // 아래는 reservation 전용
+    const reservationIntent = intent as ReservationIntent;
+
     try {
       const departments = await DepartmentsRepo.getDepartments();
 
-      const depFromModel = toNonEmpty(intent.department);
+      const depFromModel = toNonEmpty(reservationIntent.department);
       if (depFromModel) {
         const link = resolveDepartmentLink({
           inputText: depFromModel,
@@ -310,7 +350,6 @@ export function useAiAssistantModal() {
           return;
         }
 
-        // confirm이 아니면(= linked/unlinked)이라도, "항상 띄우기" 정책이면 sheet는 띄워야 함
         setDeptLink({
           open: true,
           inputText: depFromModel,
@@ -320,7 +359,9 @@ export function useAiAssistantModal() {
       }
 
       // department를 못 받았으면 raw_text에서 후보 시도
-      const candidateText = buildDeptCandidateTextFromRaw(intent.raw_text);
+      const candidateText = buildDeptCandidateTextFromRaw(
+        reservationIntent.raw_text
+      );
       const first = firstToken(candidateText);
 
       if (first) {
@@ -353,10 +394,9 @@ export function useAiAssistantModal() {
       });
     } catch (e) {
       console.error(e);
-      // 실패해도 시트는 띄우기(사용자가 unlink 선택 가능)
       setDeptLink({
         open: true,
-        inputText: toNonEmpty(intent.department) ?? "",
+        inputText: toNonEmpty(reservationIntent.department) ?? "",
         candidates: [],
       });
     }
@@ -368,7 +408,7 @@ export function useAiAssistantModal() {
 
   const onConfirmDeptLink = useCallback(
     (departmentId: string) => {
-      if (!intent) return;
+      if (!intent || intent.kind !== "reservation") return;
       setDeptLink({ open: false });
       pushToDay(intent, {
         departmentMode: "select",
@@ -379,7 +419,7 @@ export function useAiAssistantModal() {
   );
 
   const onConfirmDeptUnlink = useCallback(() => {
-    if (!intent) return;
+    if (!intent || intent.kind !== "reservation") return;
     setDeptLink({ open: false });
     pushToDay(intent, { departmentMode: "direct" });
   }, [intent, pushToDay]);
@@ -420,6 +460,7 @@ export function useAiAssistantModal() {
       loadingPreview,
       errorText,
       intent,
+      noticeText,
 
       deptLink,
       onCloseDeptLink,
@@ -445,6 +486,7 @@ export function useAiAssistantModal() {
       loadingPreview,
       errorText,
       intent,
+      noticeText,
 
       deptLink,
       onCloseDeptLink,

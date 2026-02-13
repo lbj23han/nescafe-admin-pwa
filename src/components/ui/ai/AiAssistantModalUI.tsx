@@ -22,6 +22,8 @@ type Props = {
   errorText: string | null;
   previewText: string | null;
 
+  noticeText?: string | null;
+
   departmentLink?: {
     open: boolean;
     inputText: string;
@@ -53,6 +55,7 @@ export function AiAssistantModalUI({
   helperText,
   errorText,
   previewText,
+  noticeText,
 
   departmentLink,
   onCloseDepartmentLink,
@@ -193,6 +196,12 @@ export function AiAssistantModalUI({
                   미리보기 생성 중…
                 </div>
               )}
+
+              {noticeText ? (
+                <div className={FLOATING_MENU_UI.helper} aria-live="polite">
+                  {noticeText}
+                </div>
+              ) : null}
 
               <div className={FLOATING_MENU_UI.actions}>
                 <button

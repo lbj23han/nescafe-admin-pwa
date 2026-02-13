@@ -1,4 +1,4 @@
-import type { ReservationIntent } from "./types";
+import type { LedgerIntent, ReservationIntent } from "./types";
 import { removeRelativeDateNoise } from "./textNoise";
 
 function formatWon(amount: number) {
@@ -167,6 +167,52 @@ export function toReservationPreviewText(intent: ReservationIntent) {
   lines.push(`- 장소: ${intent.location ?? "장소 없음"}`);
 
   if (intent.memo) lines.push(`- 메모: ${intent.memo}`);
+
+  if (intent.warnings?.length) {
+    lines.push("");
+    lines.push("⚠️ 확인 필요");
+    for (const w of intent.warnings) lines.push(`- ${w}`);
+  }
+
+  if (intent.assumptions?.length) {
+    lines.push("");
+    lines.push("ℹ️ 해석 근거");
+    for (const a of intent.assumptions) lines.push(`- ${a}`);
+  }
+
+  return lines.join("\n");
+}
+
+function formatLedgerAction(action: LedgerIntent["action"]) {
+  switch (action) {
+    case "deposit":
+      return "예치금 입금";
+    case "withdraw":
+      return "예치금 차감";
+    case "createDebt":
+      return "미수금 생성";
+    case "settleDebt":
+      return "미수금 정산";
+    default:
+      return "미확정";
+  }
+}
+
+export function toLedgerPreviewText(intent: LedgerIntent) {
+  const lines: string[] = [];
+
+  lines.push("장부 작업 미리보기");
+  lines.push(`- 부서: ${intent.department ?? "부서 미지정"}`);
+  lines.push(`- 작업: ${formatLedgerAction(intent.action)}`);
+
+  if (intent.amount == null) {
+    lines.push(`- 금액: 미확정`);
+  } else {
+    lines.push(`- 금액: ${formatWon(intent.amount)}`);
+  }
+
+  lines.push("");
+  lines.push("아직 실제 장부에 반영되지 않습니다.");
 
   if (intent.warnings?.length) {
     lines.push("");
