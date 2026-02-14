@@ -20,6 +20,7 @@ function Page({
   onChange,
   onDelete,
   canEditLedger,
+  ledgerPrefill, // ✅ NEW
 }: DepartmentPageProps) {
   const isEmpty = departments.length === 0;
 
@@ -101,6 +102,11 @@ function Page({
                 onChange={onChange}
                 onDelete={onDelete}
                 readOnly={!canEditLedger}
+                ledgerPrefill={
+                  ledgerPrefill && ledgerPrefill.departmentId === dept.id
+                    ? ledgerPrefill
+                    : null
+                }
               />
             ))}
           </div>
