@@ -29,8 +29,6 @@ import { resolveRelativeDate } from "./internal/date/resolveRelativeDate";
 type PostArgs = {
   task: Scope;
   text: string;
-
-  // commit8
   todayIso?: string;
   resolvedDateIso?: string;
 };
@@ -88,7 +86,7 @@ function toUserErrorMessage(codeOrUnknown: unknown) {
     case "UNRECOGNIZED_INPUT":
       return (
         "입력을 이해하지 못했어요. 날짜 + (메뉴/부서/시간/금액) 중 1개 이상을 포함해 다시 입력해주세요.\n" +
-        '예: "내일 3시 A부서 아메리카노 2잔 8000원"'
+        '예: "내일 3시 A과 아메리카노 2잔 8000원"'
       );
     case "NOT_IMPLEMENTED":
       return "장부 관리는 아직 준비 중입니다. (예약관리만 가능)";
@@ -157,6 +155,13 @@ function firstToken(v: string): string {
   const t = v.trim();
   if (!t) return "";
   return t.split(/\s+/)[0] ?? "";
+}
+
+function safePositiveInt(n: unknown): number | null {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return null;
+  const i = Math.floor(v);
+  return i > 0 ? i : null;
 }
 
 export function useAiAssistantModal() {
@@ -312,23 +317,100 @@ export function useAiAssistantModal() {
     [router]
   );
 
+  const pushToDepartmentsPrefill = useCallback(
+    (args: {
+      departmentId: string;
+      type: "deposit" | "order";
+      amount: number;
+    }) => {
+      const qs =
+        `?ai=1` +
+        `&deptId=${encodeURIComponent(args.departmentId)}` +
+        `&type=${encodeURIComponent(args.type)}` +
+        `&amount=${encodeURIComponent(String(args.amount))}`;
+
+      router.push(`/departments${qs}`);
+      setOpen(false);
+    },
+    [router]
+  );
+
   /**
    * Confirm 버튼:
    * - reservation: 기존 정책 그대로(항상 연동 sheet)
-   * - ledger: Commit9는 noop + 안내만 (실제 반영 없음)
+   * - ledger: departments 페이지로 이동 + 폼 프리필(실제 저장은 사용자가 버튼 클릭)
    */
   const onConfirm = useCallback(async () => {
     if (!intent) return;
 
-    // ledger confirm: noop + 안내
+    // ledger confirm: departments로 프리필 이동
     if (intent.kind === "ledger") {
-      setNoticeText(
-        "확인되었습니다. 다음 단계에서 실제 장부에 반영됩니다. (Commit 9: 미반영)"
-      );
+      const depText = toNonEmpty(intent.department);
+      if (!depText) {
+        setNoticeText(
+          "부서를 확인할 수 없어요. 부서명을 포함해서 다시 입력해주세요."
+        );
+        return;
+      }
+
+      // 이번 단계 정책: 입금/차감만
+      if (intent.action !== "deposit" && intent.action !== "withdraw") {
+        setNoticeText('현재 AI 장부 입력은 "입금/차감"만 지원합니다.');
+        return;
+      }
+
+      const amt = safePositiveInt(intent.amount);
+      if (!amt) {
+        setNoticeText("금액을 확인할 수 없어요. 예: “공정경제과 100만원 입금”");
+        return;
+      }
+
+      try {
+        const departments = await DepartmentsRepo.getDepartments();
+
+        // 완전 일치 우선
+        const exact = departments.find((d) => d.name.trim() === depText.trim());
+        if (exact) {
+          pushToDepartmentsPrefill({
+            departmentId: exact.id,
+            type: intent.action === "deposit" ? "deposit" : "order",
+            amount: amt,
+          });
+          return;
+        }
+
+        // 후보 확인 시트
+        const link = resolveDepartmentLink({
+          inputText: depText,
+          departments,
+        });
+
+        if (link.kind === "confirm") {
+          setDeptLink({
+            open: true,
+            inputText: link.inputText,
+            candidates: link.candidates,
+          });
+          return;
+        }
+
+        // 후보 없음
+        setDeptLink({
+          open: true,
+          inputText: depText,
+          candidates: [],
+        });
+      } catch (e) {
+        console.error(e);
+        setNoticeText(
+          "부서 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요."
+        );
+      }
+
       return;
     }
 
-    // 아래는 reservation 전용
+    // ===== reservation 전용 (pushToDay 안 씀) =====
     const reservationIntent = intent as ReservationIntent;
 
     try {
@@ -358,7 +440,6 @@ export function useAiAssistantModal() {
         return;
       }
 
-      // department를 못 받았으면 raw_text에서 후보 시도
       const candidateText = buildDeptCandidateTextFromRaw(
         reservationIntent.raw_text
       );
@@ -400,7 +481,7 @@ export function useAiAssistantModal() {
         candidates: [],
       });
     }
-  }, [intent]);
+  }, [intent, pushToDepartmentsPrefill]);
 
   const onCloseDeptLink = useCallback(() => {
     setDeptLink({ open: false });
@@ -408,14 +489,40 @@ export function useAiAssistantModal() {
 
   const onConfirmDeptLink = useCallback(
     (departmentId: string) => {
-      if (!intent || intent.kind !== "reservation") return;
+      if (!intent) return;
+
       setDeptLink({ open: false });
+
+      // ledger: 선택된 부서로 departments 프리필 이동
+      if (intent.kind === "ledger") {
+        if (intent.action !== "deposit" && intent.action !== "withdraw") {
+          setNoticeText('현재 AI 장부 입력은 "입금/차감"만 지원합니다.');
+          return;
+        }
+
+        const amt = safePositiveInt(intent.amount);
+        if (!amt) {
+          setNoticeText("금액을 확인할 수 없어요.");
+          return;
+        }
+
+        pushToDepartmentsPrefill({
+          departmentId,
+          type: intent.action === "deposit" ? "deposit" : "order",
+          amount: amt,
+        });
+        return;
+      }
+
+      // reservation: 기존 그대로
+      if (intent.kind !== "reservation") return;
+
       pushToDay(intent, {
         departmentMode: "select",
         selectedDepartmentId: departmentId,
       });
     },
-    [intent, pushToDay]
+    [intent, pushToDay, pushToDepartmentsPrefill]
   );
 
   const onConfirmDeptUnlink = useCallback(() => {
@@ -434,13 +541,13 @@ export function useAiAssistantModal() {
 
     const inputPlaceholder =
       scope === "reservation"
-        ? '예: "내일 3시 A부서 아메리카노 2잔 8000원"'
-        : '예: "A부서 예치금 5만원 입금"';
+        ? '예: "내일 3시 A과 아메리카노 2잔 8000원"'
+        : '예: "A과 예치금 5만원 입금"';
 
     const helperText =
       scope === "reservation"
-        ? '예: "내일 3시 B부서 라떼 2잔" / "다음주 수요일 A부서 아메 2잔 8000원"'
-        : '예: "B부서 미수금 2만원 추가" / "A부서 예치금에서 1만원 차감"';
+        ? '예: "내일 3시 B과 라떼 2잔" / "다음주 수요일 A과 아메 2잔 8000원"'
+        : '예: "B과 미수금 2만원 추가" / "A과 예치금에서 1만원 차감"';
 
     return {
       title: "AI비서",
