@@ -4,6 +4,7 @@ import type {
   DepartmentHistory,
   HistoryType,
 } from "@/lib/storage/departments.local";
+import type { LedgerPrefill } from "@/components/ui/departments/DepartmentPage.types";
 
 export type DepartmentCardProps = {
   department: Department;
@@ -13,6 +14,8 @@ export type DepartmentCardProps = {
   onDelete?: (id: string) => void;
 
   readOnly?: boolean;
+
+  ledgerPrefill?: LedgerPrefill | null;
 };
 
 /** UI primitives 타입들 */

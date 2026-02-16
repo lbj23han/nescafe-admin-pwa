@@ -1,7 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
+import { parseDayReservationPrefillQuery } from "@/hooks/ai/internal/prefill";
 
 const DayDetailPageContainer = dynamic(
   () =>
@@ -13,9 +14,14 @@ const DayDetailPageContainer = dynamic(
 
 export default function DayDetailPage() {
   const params = useParams<{ date: string }>();
-  const date = params.date;
+  const searchParams = useSearchParams();
 
+  const date = params.date;
   if (!date) return null;
 
-  return <DayDetailPageContainer date={date} />;
+  const aiPrefill = searchParams
+    ? parseDayReservationPrefillQuery(searchParams)
+    : null;
+
+  return <DayDetailPageContainer date={date} aiPrefill={aiPrefill} />;
 }

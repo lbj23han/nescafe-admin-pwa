@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent, useRef } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { DepartmentCardProps } from "../../DepartmentCard.types";
 import { DEPARTMENT_CARD_COPY } from "@/constants/departments/card";
 import { formatHistoryType } from "@/lib/departmentHistoryFormat";
@@ -8,7 +8,7 @@ import { DepartmentHistoryRepo } from "@/lib/data";
 import type { HistoryType } from "@/lib/storage/departments.local";
 
 export function useAddHistoryForm(
-  p: Pick<DepartmentCardProps, "department" | "onChange">
+  p: Pick<DepartmentCardProps, "department" | "onChange" | "ledgerPrefill">
 ) {
   const [type, setType] =
     useState<Parameters<typeof formatHistoryType>[0]>("deposit");
@@ -18,6 +18,29 @@ export function useAddHistoryForm(
 
   // 더블클릭/연타 방지
   const submittingRef = useRef(false);
+
+  // 프리필 “같은 값” 연속 적용 방지
+  const lastAppliedKeyRef = useRef<string>("");
+
+  useEffect(() => {
+    const pre = p.ledgerPrefill;
+    if (!pre) return;
+    if (pre.departmentId !== p.department.id) return;
+
+    // 사용자가 이미 입력 중이면 덮어쓰지 않음
+    if (amount.trim() || memo.trim()) return;
+
+    const key = `${pre.departmentId}:${pre.type}:${pre.amount}`;
+    if (lastAppliedKeyRef.current === key) return;
+
+    // 타입은 localStorage enum과 맞춰야 함
+    // 현재 DB constraint: deposit/order/debtPayment
+    // UI에서도 동일하게 사용 가능
+    setType(pre.type as HistoryType);
+    setAmount(String(pre.amount));
+
+    lastAppliedKeyRef.current = key;
+  }, [p.ledgerPrefill, p.department.id, amount, memo]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -42,7 +65,6 @@ export function useAddHistoryForm(
         memo,
       });
 
-      // repo가 리턴한 “정합성 확정값(next)”으로 Department를 갱신
       p.onChange({
         ...p.department,
         deposit: res.next.deposit,

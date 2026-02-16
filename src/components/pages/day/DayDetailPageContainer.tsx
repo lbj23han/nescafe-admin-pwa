@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { Reservation } from "@/hooks/reservation";
@@ -7,16 +8,28 @@ import { DayPageView } from "@/components/ui/day/DayPage.view";
 import { ReservationDebtSettleConfirmSheet } from "@/components/ui/day/reservations";
 import { useMyRoleKey } from "@/components/ui/day/hooks/useMyRoleKey";
 import { useReservationSettleFlow } from "@/components/ui/day/hooks/useReservationSettleFlow";
+import type {
+  PrefillItem,
+  DayReservationPrefillQuery,
+} from "@/hooks/ai/internal/prefill";
+import { toPrefillKey } from "@/hooks/ai/internal/prefill";
+
+type AiPrefillWithParsed =
+  | (DayReservationPrefillQuery & { parsedItems: PrefillItem[] | null })
+  | null;
 
 type Props = {
   date: string;
+  aiPrefill?: AiPrefillWithParsed;
 };
 
-export function DayDetailPageContainer({ date }: Props) {
+export function DayDetailPageContainer({ date, aiPrefill = null }: Props) {
   const router = useRouter();
   const isReady = useAuthGuard();
 
   const role = useMyRoleKey(isReady);
+
+  const appliedKeyRef = useRef<string | null>(null);
 
   const {
     list,
@@ -44,6 +57,9 @@ export function DayDetailPageContainer({ date }: Props) {
     addButtonIntent,
     handleAddButtonClick,
 
+    openForm,
+    applyAiPrefill,
+
     handleComplete,
     handleCancel,
     handleEdit,
@@ -66,10 +82,37 @@ export function DayDetailPageContainer({ date }: Props) {
     onComplete: handleComplete,
   });
 
-  if (!isReady) return null;
-
   const canManageActions = !!role.canManageActions;
   const showAddButton = canManageActions && editingId === null;
+
+  const prefillKey = useMemo(() => {
+    if (!aiPrefill) return null;
+    return toPrefillKey(aiPrefill);
+  }, [aiPrefill]);
+
+  useEffect(() => {
+    if (!isReady) return;
+    if (!aiPrefill) return;
+    if (!prefillKey) return;
+
+    if (appliedKeyRef.current === prefillKey) return;
+    appliedKeyRef.current = prefillKey;
+
+    openForm();
+
+    applyAiPrefill({
+      items: aiPrefill.parsedItems,
+      department: aiPrefill.department ?? null,
+      departmentMode: aiPrefill.departmentMode,
+      selectedDepartmentId: aiPrefill.selectedDepartmentId ?? null,
+      time: aiPrefill.time ?? null,
+      location: aiPrefill.location ?? null,
+      amount: aiPrefill.amount ?? null,
+      memo: aiPrefill.memo ?? null,
+    });
+  }, [aiPrefill, applyAiPrefill, isReady, openForm, prefillKey]);
+
+  if (!isReady) return null;
 
   return (
     <>
