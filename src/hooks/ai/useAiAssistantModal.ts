@@ -2,106 +2,47 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+
 import type {
-  AiAssistantResponse,
   AiIntent,
-  LedgerIntent,
   ReservationIntent,
   Scope,
   Step,
 } from "./internal/types";
+
 import {
   toLedgerPreviewText,
   toReservationPreviewText,
 } from "./internal/preview";
+
 import {
   buildDayReservationPrefillQuery,
   toQueryString,
 } from "./internal/prefill";
+
 import { DepartmentsRepo } from "@/lib/data";
+
 import {
   resolveDepartmentLink,
   type DepartmentLinkCandidate,
 } from "@/hooks/reservation/internal/departments/resolveDepartmentLink";
+
 import { getKstTodayIso } from "./internal/date/kstDate";
 import { resolveRelativeDate } from "./internal/date/resolveRelativeDate";
 
-type PostArgs = {
-  task: Scope;
-  text: string;
-  todayIso?: string;
-  resolvedDateIso?: string;
-};
+import { postAiAssistant } from "./internal/api";
+import { isLedgerIntent, isReservationIntent } from "./internal/guards";
+import {
+  buildDeptCandidateTextFromRaw,
+  firstToken,
+  toNonEmpty,
+} from "./internal/departmentCandidate";
+import { safePositiveInt } from "./internal/number";
 
-async function postAiAssistant(args: PostArgs): Promise<AiAssistantResponse> {
-  const res = await fetch("/api/ai/assistant", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      task: args.task,
-      input: args.text,
-      ...(args.todayIso ? { todayIso: args.todayIso } : {}),
-      ...(args.resolvedDateIso
-        ? { resolvedDateIso: args.resolvedDateIso }
-        : {}),
-    }),
-  });
-
-  const json = (await res.json().catch(() => null)) as unknown;
-
-  if (json && typeof json === "object" && "ok" in json) {
-    return json as AiAssistantResponse;
-  }
-
-  return { ok: false, error: "OPENAI_FAILED" };
-}
-
-function isReservationIntent(v: unknown): v is ReservationIntent {
-  if (!v || typeof v !== "object") return false;
-  const obj = v as Record<string, unknown>;
-  return (
-    obj.kind === "reservation" &&
-    typeof obj.date === "string" &&
-    "assumptions" in obj &&
-    "warnings" in obj
-  );
-}
-
-function isLedgerIntent(v: unknown): v is LedgerIntent {
-  if (!v || typeof v !== "object") return false;
-  const obj = v as Record<string, unknown>;
-  return (
-    obj.kind === "ledger" &&
-    "assumptions" in obj &&
-    "warnings" in obj &&
-    "raw_text" in obj
-  );
-}
-
-function toUserErrorMessage(codeOrUnknown: unknown) {
-  const code = String(codeOrUnknown ?? "");
-  switch (code) {
-    case "DATE_REQUIRED":
-      return '날짜를 포함해서 다시 입력해주세요. (예: "내일", "다음주 수요일", "2/2", "2026-02-02")';
-    case "UNRECOGNIZED_INPUT":
-      return (
-        "입력을 이해하지 못했어요. 날짜 + (메뉴/부서/시간/금액) 중 1개 이상을 포함해 다시 입력해주세요.\n" +
-        '예: "내일 3시 A과 아메리카노 2잔 8000원"'
-      );
-    case "NOT_IMPLEMENTED":
-      return "장부 관리는 아직 준비 중입니다. (예약관리만 가능)";
-    case "INPUT_REQUIRED":
-      return "내용을 입력해주세요.";
-    case "OPENAI_KEY_MISSING":
-      return "서버 설정이 필요합니다. (OPENAI 키 누락)";
-    case "INVALID_TASK":
-      return "지원하지 않는 업무 유형입니다. (예약/장부 중 선택)";
-    case "INVALID_MODEL_OUTPUT":
-      return "AI 응답 형식이 올바르지 않습니다. 다시 시도해주세요.";
-    default:
-      return "AI 요청에 실패했습니다. 잠시 후 다시 시도해주세요.";
-  }
-}
+import {
+  getAiAssistantCopy,
+  toAiAssistantUserErrorMessage,
+} from "@/constants/aiAssistant";
 
 type DeptLinkSheetState =
   | { open: false }
@@ -110,59 +51,6 @@ type DeptLinkSheetState =
       inputText: string;
       candidates: DepartmentLinkCandidate[];
     };
-
-function toNonEmpty(v: string | null | undefined): string | null {
-  if (!v) return null;
-  const t = v.trim();
-  return t ? t : null;
-}
-
-function buildDeptCandidateTextFromRaw(raw: string) {
-  let t = raw;
-
-  // 날짜
-  t = t
-    .replace(/\b\d{4}-\d{2}-\d{2}\b/g, " ")
-    .replace(/\b\d{1,2}[./]\d{1,2}\b/g, " ")
-    .replace(/\b\d{1,2}\s*월\s*\d{1,2}\s*일\b/g, " ");
-
-  // 시간(경계 문제로 시만 남는 케이스 방지: \b 제거)
-  t = t
-    .replace(/(?:^|[\s,])\d{1,2}\s*:\s*\d{2}(?=\s|,|$)/g, " ")
-    .replace(/(?:^|[\s,])\d{1,2}\s*시(\s*\d{1,2}\s*분)?(?=\s|,|$)/g, " ")
-    .replace(
-      /(?:^|[\s,])(오전|오후)\s*\d{1,2}\s*시(\s*\d{1,2}\s*분)?(?=\s|,|$)/g,
-      " "
-    );
-
-  // 금액
-  t = t.replace(/\b\d{1,3}(?:,\d{3})+\s*원\b/g, " ");
-  t = t.replace(/\b\d+\s*원\b/g, " ");
-
-  // 수량
-  t = t.replace(/\b\d+\s*(잔|개|명|건)\b/g, " ");
-
-  // 총액 키워드
-  t = t.replace(/(총액|합계|총\s*금액|총\s*계|총\s*[:：]?)/g, " ");
-
-  // 구두점
-  t = t.replace(/[(){}\[\]_.,:;'"“”‘’·\-]/g, " ");
-
-  return t.replace(/\s+/g, " ").trim();
-}
-
-function firstToken(v: string): string {
-  const t = v.trim();
-  if (!t) return "";
-  return t.split(/\s+/)[0] ?? "";
-}
-
-function safePositiveInt(n: unknown): number | null {
-  const v = Number(n);
-  if (!Number.isFinite(v)) return null;
-  const i = Math.floor(v);
-  return i > 0 ? i : null;
-}
 
 export function useAiAssistantModal() {
   const router = useRouter();
@@ -256,15 +144,14 @@ export function useAiAssistantModal() {
 
       if (!out.ok) {
         setStep("input");
-        setErrorText(toUserErrorMessage(out.error));
+        setErrorText(toAiAssistantUserErrorMessage(out.error));
         return;
       }
 
-      // scope별 intent 가드
       if (scope === "reservation") {
         if (!isReservationIntent(out.data)) {
           setStep("input");
-          setErrorText("AI 응답 형식이 올바르지 않습니다. 다시 시도해주세요.");
+          setErrorText(toAiAssistantUserErrorMessage("INVALID_MODEL_OUTPUT"));
           return;
         }
 
@@ -277,7 +164,7 @@ export function useAiAssistantModal() {
       // scope === "ledger"
       if (!isLedgerIntent(out.data)) {
         setStep("input");
-        setErrorText("AI 응답 형식이 올바르지 않습니다. 다시 시도해주세요.");
+        setErrorText(toAiAssistantUserErrorMessage("INVALID_MODEL_OUTPUT"));
         return;
       }
 
@@ -286,7 +173,7 @@ export function useAiAssistantModal() {
       setStep("preview");
     } catch {
       setStep("input");
-      setErrorText("AI 요청에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      setErrorText(toAiAssistantUserErrorMessage("OPENAI_FAILED"));
     } finally {
       setLoadingPreview(false);
     }
@@ -532,29 +419,7 @@ export function useAiAssistantModal() {
   }, [intent, pushToDay]);
 
   const copy = useMemo(() => {
-    const subtitle =
-      step === "pickScope"
-        ? "업무를 선택한 뒤 명령하면, 확인 후 적용할 수 있어요."
-        : step === "input"
-        ? "입력 후 [등록]을 누르면 미리보기가 표시됩니다."
-        : "미리보기 확인 후 [확인] 또는 [수정]을 선택하세요.";
-
-    const inputPlaceholder =
-      scope === "reservation"
-        ? '예: "내일 3시 A과 아메리카노 2잔 8000원"'
-        : '예: "A과 예치금 5만원 입금"';
-
-    const helperText =
-      scope === "reservation"
-        ? '예: "내일 3시 B과 라떼 2잔" / "다음주 수요일 A과 아메 2잔 8000원"'
-        : '예: "B과 미수금 2만원 추가" / "A과 예치금에서 1만원 차감"';
-
-    return {
-      title: "AI비서",
-      subtitle,
-      inputPlaceholder,
-      helperText,
-    };
+    return getAiAssistantCopy({ step, scope });
   }, [scope, step]);
 
   return useMemo(
