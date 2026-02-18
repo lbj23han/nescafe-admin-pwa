@@ -1,4 +1,4 @@
-import type { LedgerAction, LedgerIntent, ReservationIntent } from "./types";
+import type { LedgerAction, LedgerIntent, ReservationIntent } from "../types";
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === "object" && !Array.isArray(v);

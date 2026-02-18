@@ -13,12 +13,12 @@ import type {
 import {
   toLedgerPreviewText,
   toReservationPreviewText,
-} from "./internal/preview";
+} from "./internal/pipeline/preview";
 
 import {
   buildDayReservationPrefillQuery,
   toQueryString,
-} from "./internal/prefill";
+} from "./internal/prefill/prefill";
 
 import { DepartmentsRepo } from "@/lib/data";
 
@@ -30,14 +30,14 @@ import {
 import { getKstTodayIso } from "./internal/date/kstDate";
 import { resolveRelativeDate } from "./internal/date/resolveRelativeDate";
 
-import { postAiAssistant } from "./internal/api";
-import { isLedgerIntent, isReservationIntent } from "./internal/guards";
+import { postAiAssistant } from "./internal/api/api";
+import { isLedgerIntent, isReservationIntent } from "./internal/guards/guards";
 import {
   buildDeptCandidateTextFromRaw,
   firstToken,
   toNonEmpty,
-} from "./internal/departmentCandidate";
-import { safePositiveInt } from "./internal/number";
+} from "./internal/utils/departmentCandidate";
+import { safePositiveInt } from "./internal/utils/number";
 
 import {
   getAiAssistantCopy,

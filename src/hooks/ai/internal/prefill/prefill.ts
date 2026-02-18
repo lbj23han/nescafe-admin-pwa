@@ -1,5 +1,5 @@
-import type { ReservationIntent } from "./types";
-import { removeRelativeDateNoise } from "./textNoise";
+import type { ReservationIntent } from "../types";
+import { removeRelativeDateNoise } from "../utils/textNoise";
 
 export type PrefillItem = {
   menu: string;

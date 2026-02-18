@@ -4,17 +4,17 @@ import type {
   AiAssistantRequest,
   AiAssistantResponse,
 } from "@/hooks/ai/internal/types";
-import { extractNormalizedDate } from "@/hooks/ai/internal/date";
+import { extractNormalizedDate } from "@/hooks/ai/internal/date/date";
 import {
   extractAmountKRW,
   extractAmountKRWLoose,
-} from "@/hooks/ai/internal/amount";
-import { RESERVATION_INTENT_SCHEMA } from "@/hooks/ai/internal/schema";
-import { buildReservationPrompt } from "@/hooks/ai/internal/prompt";
+} from "@/hooks/ai/internal/utils/amount";
+import { RESERVATION_INTENT_SCHEMA } from "@/hooks/ai/internal/pipeline/schema";
+import { buildReservationPrompt } from "@/hooks/ai/internal/pipeline/prompt";
 import {
   parseLedgerIntent,
   parseReservationIntent,
-} from "@/hooks/ai/internal/parser";
+} from "@/hooks/ai/internal/pipeline/parser";
 
 export const runtime = "nodejs";
 

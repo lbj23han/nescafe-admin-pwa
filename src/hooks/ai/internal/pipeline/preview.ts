@@ -1,5 +1,5 @@
-import type { LedgerIntent, ReservationIntent } from "./types";
-import { removeRelativeDateNoise } from "./textNoise";
+import type { LedgerIntent, ReservationIntent } from "../types";
+import { removeRelativeDateNoise } from "../utils/textNoise";
 
 function formatWon(amount: number) {
   return `${amount.toLocaleString("ko-KR")}원`;

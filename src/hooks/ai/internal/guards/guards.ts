@@ -1,4 +1,4 @@
-import type { LedgerIntent, ReservationIntent } from "./types";
+import type { LedgerIntent, ReservationIntent } from "../types";
 
 export function isReservationIntent(v: unknown): v is ReservationIntent {
   if (!v || typeof v !== "object") return false;

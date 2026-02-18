@@ -11,8 +11,8 @@ import { useReservationSettleFlow } from "@/components/ui/day/hooks/useReservati
 import type {
   PrefillItem,
   DayReservationPrefillQuery,
-} from "@/hooks/ai/internal/prefill";
-import { toPrefillKey } from "@/hooks/ai/internal/prefill";
+} from "@/hooks/ai/internal/prefill/prefill";
+import { toPrefillKey } from "@/hooks/ai/internal/prefill/prefill";
 
 type AiPrefillWithParsed =
   | (DayReservationPrefillQuery & { parsedItems: PrefillItem[] | null })

@@ -1,4 +1,4 @@
-import type { AiAssistantResponse, Scope } from "./types";
+import type { AiAssistantResponse, Scope } from "../types";
 
 export type PostAiAssistantArgs = {
   task: Scope;
