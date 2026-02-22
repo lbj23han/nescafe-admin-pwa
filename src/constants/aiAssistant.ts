@@ -51,7 +51,7 @@ export function getAiAssistantCopy(args: {
   const helperText =
     scope === "reservation"
       ? '예: "내일 3시 B과 라떼 2잔" / "다음주 수요일 A과 아메 2잔 8000원"'
-      : '예: "B과 미수금 2만원 추가" / "A과 예치금에서 1만원 차감"';
+      : '예: "B부서 2만원 추가" / "A과 1만원 차감"';
 
   return {
     title: AI_ASSISTANT_TITLE,
