@@ -4,7 +4,10 @@ import { postAiAssistant } from "../api/api";
 import { getKstTodayIso } from "../date/kstDate";
 import { resolveRelativeDate } from "../date/resolveRelativeDate";
 import { isLedgerIntent, isReservationIntent } from "../guards/guards";
-import { toLedgerPreviewText, toReservationPreviewText } from "./preview";
+import {
+  toLedgerPreviewText,
+  toReservationPreviewText,
+} from "./preview/preview";
 
 type PreviewOk = {
   ok: true;

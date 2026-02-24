@@ -3,7 +3,7 @@ import { extractNormalizedDate } from "@/hooks/ai/internal/date/date";
 import { extractAmountKRW } from "@/hooks/ai/internal/utils/amount";
 import { RESERVATION_INTENT_SCHEMA } from "@/hooks/ai/internal/pipeline/schema";
 import { buildReservationPrompt } from "@/hooks/ai/internal/pipeline/prompt";
-import { parseReservationIntent } from "@/hooks/ai/internal/pipeline/parser";
+import { parseReservationIntent } from "@/hooks/ai/internal/pipeline/parser/parser";
 import { runJsonSchema } from "./openaiJson";
 
 export async function handleReservation(args: {

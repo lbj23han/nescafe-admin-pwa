@@ -1,6 +1,6 @@
 import type OpenAI from "openai";
 import { extractAmountKRWLoose } from "@/hooks/ai/internal/utils/amount";
-import { parseLedgerIntent } from "@/hooks/ai/internal/pipeline/parser";
+import { parseLedgerIntent } from "@/hooks/ai/internal/pipeline/parser/parser";
 import { runJsonSchema } from "./openaiJson";
 
 const LEDGER_INTENT_SCHEMA = {
