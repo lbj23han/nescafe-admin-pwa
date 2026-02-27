@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useParams, useSearchParams } from "next/navigation";
-import { parseDayReservationPrefillQuery } from "@/hooks/ai/internal/prefill";
+import { parseDayReservationPrefillQuery } from "@/hooks/ai/internal/prefill/prefill";
 
 const DayDetailPageContainer = dynamic(
   () =>

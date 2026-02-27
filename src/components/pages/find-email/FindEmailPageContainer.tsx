@@ -37,14 +37,14 @@ export function FindEmailPageContainer() {
         ? `${origin}/auth/callback?next=/reset-password`
         : undefined;
 
-      // 존재 여부를 알려주지 않기 위해: 성공/실패 메시지는 "일반화"한다.
+      // 존재 여부를 알려주지 않기 위해: 성공/실패 메시지는 일반화
       const { error } = await supabase.auth.resetPasswordForEmail(
         email.trim(),
         { redirectTo }
       );
 
       if (error) {
-        // 보안 관점에서 상세 에러를 그대로 노출하고 싶지 않으면 COPY.errors.generic로 통일해도 됨.
+        // 보안 관점에서 상세 에러를 그대로 노출하고 싶지 않으면 COPY.errors.generic로 통일
         setError(COPY.errors.requestFailed);
       } else {
         setDoneMessage(COPY.messages.done);
