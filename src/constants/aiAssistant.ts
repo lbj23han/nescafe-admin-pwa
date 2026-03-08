@@ -1,6 +1,6 @@
 import type { Scope, Step } from "@/hooks/ai/internal/types";
 
-export const AI_ASSISTANT_TITLE = "AI비서";
+export const AI_ASSISTANT_TITLE = "AI비서(Beta)";
 
 export const AI_ASSISTANT_ERROR_MESSAGE_BY_CODE: Record<string, string> = {
   DATE_REQUIRED:
@@ -40,8 +40,8 @@ export function getAiAssistantCopy(args: {
     step === "pickScope"
       ? "업무를 선택한 뒤 명령하면, 확인 후 적용할 수 있어요."
       : step === "input"
-      ? "입력 후 [등록]을 누르면 미리보기가 표시됩니다."
-      : "미리보기 확인 후 [확인] 또는 [수정]을 선택하세요.";
+        ? "입력 후 [등록]을 누르면 미리보기가 표시됩니다."
+        : "미리보기 확인 후 [확인] 또는 [수정]을 선택하세요.";
 
   const inputPlaceholder =
     scope === "reservation"

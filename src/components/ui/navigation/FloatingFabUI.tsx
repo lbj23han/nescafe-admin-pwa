@@ -37,7 +37,7 @@ export function FloatingFabUI({
       aria-label={isOpen ? "플로팅 메뉴 닫기" : "플로팅 메뉴 열기"}
       aria-expanded={isOpen}
     >
-      <span className="text-xl leading-none">{isOpen ? "×" : "+"}</span>
+      <span className="text-xl leading-none">{isOpen ? "닫기" : "AI"}</span>
     </button>
   );
 }
