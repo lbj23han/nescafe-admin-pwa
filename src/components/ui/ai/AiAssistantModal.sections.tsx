@@ -1,6 +1,7 @@
 "use client";
 
 import { FLOATING_MENU_UI } from "@/components/ui/navigation/floatingMenu.ui";
+import { Spinner } from "@/components/Spinner";
 import { AI_ASSISTANT_MODAL_TEXT as T } from "@/constants/aiAssistantModal";
 
 type Scope = "reservation" | "ledger";
@@ -49,6 +50,7 @@ export function InputSection(props: {
   inputPlaceholder: string;
   helperText: string;
   errorText: string | null;
+  loading: boolean;
 
   onBack: () => void;
   onChangeInput: (v: string) => void;
@@ -68,7 +70,7 @@ export function InputSection(props: {
         value={props.input}
         placeholder={props.inputPlaceholder}
         onChange={(e) => props.onChangeInput(e.target.value)}
-        disabled={props.linkOpen}
+        disabled={props.linkOpen || props.loading}
       />
 
       {props.errorText ? (
@@ -88,18 +90,20 @@ export function InputSection(props: {
           type="button"
           className={FLOATING_MENU_UI.ghostBtn}
           onClick={props.onBack}
-          disabled={props.linkOpen}
+          disabled={props.linkOpen || props.loading}
         >
           {T.back}
         </button>
 
         <button
           type="button"
-          className={FLOATING_MENU_UI.primaryBtn}
+          className={`${FLOATING_MENU_UI.primaryBtn} min-w-[50px] flex items-center justify-center`}
           onClick={props.onRequestPreview}
-          disabled={props.linkOpen || !props.input.trim()}
+          disabled={props.linkOpen || props.loading || !props.input.trim()}
+          aria-busy={props.loading}
+          aria-label={props.loading ? "로딩 중" : T.requestPreview}
         >
-          {T.requestPreview}
+          {props.loading ? <Spinner size="sm" /> : T.requestPreview}
         </button>
       </div>
     </div>

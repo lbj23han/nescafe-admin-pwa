@@ -15,6 +15,7 @@ type AiAssistantScope = "reservation" | "ledger";
 
 type Props = {
   open: boolean;
+  loading: boolean;
   title: string;
   subtitle: string;
 
@@ -104,6 +105,7 @@ export function AiAssistantModalUI(props: Props) {
               inputPlaceholder={props.inputPlaceholder}
               helperText={props.helperText}
               errorText={props.errorText}
+              loading={props.loading}
               onBack={props.onBack}
               onChangeInput={props.onChangeInput}
               onRequestPreview={props.onRequestPreview}

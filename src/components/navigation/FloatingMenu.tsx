@@ -28,6 +28,7 @@ export function FloatingMenu() {
 
       <AiAssistantModalUI
         open={ai.open}
+        loading={ai.loadingPreview}
         title={ai.copy.title}
         subtitle={ai.copy.subtitle}
         step={ai.step}
@@ -37,6 +38,7 @@ export function FloatingMenu() {
         helperText={ai.copy.helperText}
         errorText={ai.errorText}
         previewText={ai.previewText}
+        noticeText={ai.noticeText}
         onClose={ai.onClose}
         onBack={ai.onBack}
         onPickScope={ai.onPickScope}
