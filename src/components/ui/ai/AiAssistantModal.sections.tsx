@@ -4,12 +4,13 @@ import { FLOATING_MENU_UI } from "@/components/ui/navigation/floatingMenu.ui";
 import { Spinner } from "@/components/Spinner";
 import { AI_ASSISTANT_MODAL_TEXT as T } from "@/constants/aiAssistantModal";
 
-type Scope = "reservation" | "ledger";
+import type {
+  InputSectionProps,
+  PickScopeSectionProps,
+  PreviewSectionProps,
+} from "./AiAssistantModal.types";
 
-export function PickScopeSection(props: {
-  linkOpen: boolean;
-  onPickScope: (scope: Scope) => void;
-}) {
+export function PickScopeSection(props: PickScopeSectionProps) {
   return (
     <div className={FLOATING_MENU_UI.section}>
       <div className={FLOATING_MENU_UI.sectionTitle}>{T.pickScopeTitle}</div>
@@ -43,19 +44,7 @@ export function PickScopeSection(props: {
   );
 }
 
-export function InputSection(props: {
-  linkOpen: boolean;
-  scope: Scope | null;
-  input: string;
-  inputPlaceholder: string;
-  helperText: string;
-  errorText: string | null;
-  loading: boolean;
-
-  onBack: () => void;
-  onChangeInput: (v: string) => void;
-  onRequestPreview: () => void;
-}) {
+export function InputSection(props: InputSectionProps) {
   const title =
     props.scope === "reservation"
       ? T.scopeReservationTitle
@@ -110,14 +99,7 @@ export function InputSection(props: {
   );
 }
 
-export function PreviewSection(props: {
-  linkOpen: boolean;
-  previewText: string | null;
-  noticeText?: string | null;
-
-  onEdit: () => void;
-  onConfirm: () => void;
-}) {
+export function PreviewSection(props: PreviewSectionProps) {
   return (
     <div className={FLOATING_MENU_UI.section}>
       <div className={FLOATING_MENU_UI.sectionTitle}>{T.previewTitle}</div>
