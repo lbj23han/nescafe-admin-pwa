@@ -21,7 +21,7 @@ export const LOGIN_PAGE_COPY = {
   placeholders: {
     shopName: "Nescafe",
     email: "email@example.com",
-    password: "8자 이상을 권장합니다",
+    password: "비밀번호를 입력해주세요",
     confirmPassword: "비밀번호를 다시 입력",
   },
 
