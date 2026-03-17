@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { DAY_PAGE_COPY } from "@/constants/dayPage";
 import { DayUI } from "../DayUI";
 import type { ReservationListProps } from "../DayPage.types";
@@ -21,6 +22,17 @@ export function ReservationListSection({
   onCancelEdit,
   canManageActions,
 }: ReservationListProps) {
+  const [manuallyExpandedReservationId, setManuallyExpandedReservationId] =
+    useState<string | null>(null);
+
+  const expandedReservationId = editingId ?? manuallyExpandedReservationId;
+
+  const handleToggleExpand = (id: string) => {
+    if (editingId === id) return;
+
+    setManuallyExpandedReservationId((prev) => (prev === id ? null : id));
+  };
+
   if (list.length === 0) {
     return (
       <DayUI.Section>
@@ -34,12 +46,15 @@ export function ReservationListSection({
       <ul className={RESERVATION_UI.stack2}>
         {list.map((r) => {
           const isEditing = editingId === r.id;
+          const isExpanded = expandedReservationId === r.id;
 
           return (
             <li key={r.id}>
               <ReservationRow
                 r={r}
+                expanded={isExpanded}
                 canManageActions={canManageActions}
+                onToggleExpand={() => handleToggleExpand(r.id)}
                 onEdit={onEdit}
                 onComplete={onComplete}
                 onCancel={onCancel}
