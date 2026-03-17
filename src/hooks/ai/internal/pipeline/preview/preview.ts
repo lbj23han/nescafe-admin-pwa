@@ -22,9 +22,9 @@ export function toReservationPreviewText(intent: ReservationIntent) {
     lines.push(
       expectedTotal != null
         ? `- 금액: 총액은 입력되지 않았어요 (예상 합계: ${formatWon(
-            expectedTotal
+            expectedTotal,
           )})`
-        : `- 금액: 총액은 입력되지 않았어요`
+        : `- 금액: 총액은 입력되지 않았어요`,
     );
   } else {
     lines.push(`- 금액: ${formatWon(intent.amount)}`);
@@ -40,7 +40,7 @@ export function toReservationPreviewText(intent: ReservationIntent) {
   }
 
   if (intent.assumptions?.length) {
-    lines.push("", "ℹ️ 해석 근거", ...intent.assumptions.map((a) => `- ${a}`));
+    lines.push("", "ℹ️ 참고", ...intent.assumptions.map((a) => `- ${a}`));
   }
 
   return lines.join("\n");
@@ -55,7 +55,7 @@ export function toLedgerPreviewText(intent: LedgerIntent) {
   lines.push(
     intent.amount == null
       ? `- 금액: 미확정`
-      : `- 금액: ${formatWon(intent.amount)}`
+      : `- 금액: ${formatWon(intent.amount)}`,
   );
 
   lines.push("", "아직 실제 장부에 반영되지 않습니다.");
@@ -65,7 +65,7 @@ export function toLedgerPreviewText(intent: LedgerIntent) {
   }
 
   if (intent.assumptions?.length) {
-    lines.push("", "ℹ️ 해석 근거", ...intent.assumptions.map((a) => `- ${a}`));
+    lines.push("", "ℹ️ 참고", ...intent.assumptions.map((a) => `- ${a}`));
   }
 
   return lines.join("\n");

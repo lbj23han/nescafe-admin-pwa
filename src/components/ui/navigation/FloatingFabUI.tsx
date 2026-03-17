@@ -34,10 +34,10 @@ export function FloatingFabUI({
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
-      aria-label={isOpen ? "플로팅 메뉴 닫기" : "플로팅 메뉴 열기"}
+      aria-label={isOpen ? "닫기" : "열기"}
       aria-expanded={isOpen}
     >
-      <span className="text-xl leading-none">{isOpen ? "×" : "+"}</span>
+      <span className="text-medium leading-none">{isOpen ? "X" : "AI"}</span>
     </button>
   );
 }

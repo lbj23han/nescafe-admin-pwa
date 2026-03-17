@@ -1,14 +1,16 @@
 "use client";
 
 import { FLOATING_MENU_UI } from "@/components/ui/navigation/floatingMenu.ui";
+import { Spinner } from "@/components/Spinner";
 import { AI_ASSISTANT_MODAL_TEXT as T } from "@/constants/aiAssistantModal";
 
-type Scope = "reservation" | "ledger";
+import type {
+  InputSectionProps,
+  PickScopeSectionProps,
+  PreviewSectionProps,
+} from "./AiAssistantModal.types";
 
-export function PickScopeSection(props: {
-  linkOpen: boolean;
-  onPickScope: (scope: Scope) => void;
-}) {
+export function PickScopeSection(props: PickScopeSectionProps) {
   return (
     <div className={FLOATING_MENU_UI.section}>
       <div className={FLOATING_MENU_UI.sectionTitle}>{T.pickScopeTitle}</div>
@@ -42,18 +44,7 @@ export function PickScopeSection(props: {
   );
 }
 
-export function InputSection(props: {
-  linkOpen: boolean;
-  scope: Scope | null;
-  input: string;
-  inputPlaceholder: string;
-  helperText: string;
-  errorText: string | null;
-
-  onBack: () => void;
-  onChangeInput: (v: string) => void;
-  onRequestPreview: () => void;
-}) {
+export function InputSection(props: InputSectionProps) {
   const title =
     props.scope === "reservation"
       ? T.scopeReservationTitle
@@ -68,7 +59,7 @@ export function InputSection(props: {
         value={props.input}
         placeholder={props.inputPlaceholder}
         onChange={(e) => props.onChangeInput(e.target.value)}
-        disabled={props.linkOpen}
+        disabled={props.linkOpen || props.loading}
       />
 
       {props.errorText ? (
@@ -88,32 +79,27 @@ export function InputSection(props: {
           type="button"
           className={FLOATING_MENU_UI.ghostBtn}
           onClick={props.onBack}
-          disabled={props.linkOpen}
+          disabled={props.linkOpen || props.loading}
         >
           {T.back}
         </button>
 
         <button
           type="button"
-          className={FLOATING_MENU_UI.primaryBtn}
+          className={`${FLOATING_MENU_UI.primaryBtn} min-w-[50px] flex items-center justify-center`}
           onClick={props.onRequestPreview}
-          disabled={props.linkOpen || !props.input.trim()}
+          disabled={props.linkOpen || props.loading || !props.input.trim()}
+          aria-busy={props.loading}
+          aria-label={props.loading ? "로딩 중" : T.requestPreview}
         >
-          {T.requestPreview}
+          {props.loading ? <Spinner size="sm" /> : T.requestPreview}
         </button>
       </div>
     </div>
   );
 }
 
-export function PreviewSection(props: {
-  linkOpen: boolean;
-  previewText: string | null;
-  noticeText?: string | null;
-
-  onEdit: () => void;
-  onConfirm: () => void;
-}) {
+export function PreviewSection(props: PreviewSectionProps) {
   return (
     <div className={FLOATING_MENU_UI.section}>
       <div className={FLOATING_MENU_UI.sectionTitle}>{T.previewTitle}</div>

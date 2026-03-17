@@ -2,55 +2,16 @@
 
 import { FLOATING_MENU_UI } from "@/components/ui/navigation/floatingMenu.ui";
 import { ReservationDepartmentLinkConfirmSheet } from "@/components/ui/day/reservations/ReservationDepartmentLinkConfirmSheet";
-import type { DepartmentLinkCandidate } from "@/hooks/reservation/internal/departments/resolveDepartmentLink";
 import { AI_ASSISTANT_MODAL_TEXT as T } from "@/constants/aiAssistantModal";
 
+import type { AiAssistantModalUIProps } from "./AiAssistantModal.types";
 import {
   PickScopeSection,
   InputSection,
   PreviewSection,
 } from "./AiAssistantModal.sections";
 
-type AiAssistantScope = "reservation" | "ledger";
-
-type Props = {
-  open: boolean;
-  title: string;
-  subtitle: string;
-
-  step: "pickScope" | "input" | "preview";
-  scope: AiAssistantScope | null;
-
-  input: string;
-  inputPlaceholder: string;
-  helperText: string;
-
-  errorText: string | null;
-  previewText: string | null;
-
-  noticeText?: string | null;
-
-  departmentLink?: {
-    open: boolean;
-    inputText: string;
-    candidates: DepartmentLinkCandidate[];
-  };
-  onCloseDepartmentLink?: () => void;
-  onConfirmDepartmentLink?: (departmentId: string) => void;
-  onConfirmDepartmentUnlink?: () => void;
-
-  onClose: () => void;
-  onBack: () => void;
-
-  onPickScope: (scope: AiAssistantScope) => void;
-  onChangeInput: (v: string) => void;
-
-  onRequestPreview: () => void;
-  onEdit: () => void;
-  onConfirm: () => void;
-};
-
-export function AiAssistantModalUI(props: Props) {
+export function AiAssistantModalUI(props: AiAssistantModalUIProps) {
   if (!props.open) return null;
 
   const linkOpen = !!props.departmentLink?.open;
@@ -104,6 +65,7 @@ export function AiAssistantModalUI(props: Props) {
               inputPlaceholder={props.inputPlaceholder}
               helperText={props.helperText}
               errorText={props.errorText}
+              loading={props.loading}
               onBack={props.onBack}
               onChangeInput={props.onChangeInput}
               onRequestPreview={props.onRequestPreview}

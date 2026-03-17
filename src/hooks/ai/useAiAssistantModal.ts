@@ -3,66 +3,52 @@
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import type {
-  AiIntent,
-  ReservationIntent,
-  Scope,
-  Step,
-} from "./internal/types";
-
-import {
-  buildDayReservationPrefillQuery,
-  toQueryString,
-} from "./internal/prefill/prefill";
-
+import type { Scope, Step } from "./internal/types";
+import { useAiPreviewFlow } from "./internal/hooks/useAiPreviewFlow";
 import {
   confirmAiIntent,
   confirmDeptLink,
   confirmDeptUnlink,
-  type DeptLinkSheetState,
 } from "./internal/pipeline/confirm/confirm";
-
-import { requestAiPreview } from "./internal/pipeline/requestPreview";
-
 import {
-  getAiAssistantCopy,
-  toAiAssistantUserErrorMessage,
-} from "@/constants/aiAssistant";
+  navigateToDayReservation,
+  navigateToDepartmentsPrefill,
+} from "./internal/pipeline/navigation";
+import { getAiAssistantCopy } from "@/constants/aiAssistant";
 
 export function useAiAssistantModal() {
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
-
   const [step, setStep] = useState<Step>("pickScope");
   const [scope, setScope] = useState<Scope | null>(null);
-
   const [input, setInput] = useState("");
-  const [previewText, setPreviewText] = useState<string | null>(null);
 
-  const [loadingPreview, setLoadingPreview] = useState(false);
-  const [errorText, setErrorText] = useState<string | null>(null);
-
-  const [intent, setIntent] = useState<AiIntent | null>(null);
-  const [noticeText, setNoticeText] = useState<string | null>(null);
-
-  const [deptLink, setDeptLink] = useState<DeptLinkSheetState>({ open: false });
-
-  const clearPreviewState = useCallback(() => {
-    setPreviewText(null);
-    setErrorText(null);
-    setIntent(null);
-    setNoticeText(null);
-    setDeptLink({ open: false });
-  }, []);
+  const {
+    previewText,
+    loadingPreview,
+    errorText,
+    intent,
+    noticeText,
+    deptLink,
+    setDeptLink,
+    setNoticeText,
+    clearPreviewState,
+    resetPreviewFlow,
+    onRequestPreview,
+    onEdit,
+  } = useAiPreviewFlow({
+    input,
+    scope,
+    setStep,
+  });
 
   const resetAll = useCallback(() => {
     setStep("pickScope");
     setScope(null);
     setInput("");
-    clearPreviewState();
-    setLoadingPreview(false);
-  }, [clearPreviewState]);
+    resetPreviewFlow();
+  }, [resetPreviewFlow]);
 
   const onOpen = useCallback(() => {
     setOpen(true);
@@ -74,13 +60,13 @@ export function useAiAssistantModal() {
   }, []);
 
   const onPickScope = useCallback(
-    (s: Scope) => {
-      setScope(s);
+    (nextScope: Scope) => {
+      setScope(nextScope);
       setStep("input");
       setInput("");
       clearPreviewState();
     },
-    [clearPreviewState]
+    [clearPreviewState],
   );
 
   const onBack = useCallback(() => {
@@ -88,59 +74,26 @@ export function useAiAssistantModal() {
   }, [resetAll]);
 
   const onChangeInput = useCallback(
-    (v: string) => {
-      setInput(v);
+    (value: string) => {
+      setInput(value);
       clearPreviewState();
     },
-    [clearPreviewState]
+    [clearPreviewState],
   );
-
-  const onRequestPreview = useCallback(async () => {
-    const trimmed = input.trim();
-    if (!trimmed || !scope) return;
-
-    clearPreviewState();
-    setLoadingPreview(true);
-
-    try {
-      const r = await requestAiPreview({ scope, input: trimmed });
-
-      if (!r.ok) {
-        setStep("input");
-        setErrorText(toAiAssistantUserErrorMessage(r.errorCode));
-        return;
-      }
-
-      setIntent(r.intent);
-      setPreviewText(r.previewText);
-      setStep("preview");
-    } catch {
-      setStep("input");
-      setErrorText(toAiAssistantUserErrorMessage("OPENAI_FAILED"));
-    } finally {
-      setLoadingPreview(false);
-    }
-  }, [clearPreviewState, input, scope]);
-
-  const onEdit = useCallback(() => {
-    setStep("input");
-    clearPreviewState();
-  }, [clearPreviewState]);
 
   const pushToDay = useCallback(
     (
-      it: ReservationIntent,
-      extra?: {
-        departmentMode?: "select" | "direct";
-        selectedDepartmentId?: string;
-      }
+      intent: Parameters<typeof navigateToDayReservation>[0]["intent"],
+      extra?: Parameters<typeof navigateToDayReservation>[0]["extra"],
     ) => {
-      const q = buildDayReservationPrefillQuery(it, extra);
-      const qs = toQueryString(q);
-      router.push(`/day/${it.date}${qs}`);
+      navigateToDayReservation({
+        router,
+        intent,
+        extra,
+      });
       setOpen(false);
     },
-    [router]
+    [router],
   );
 
   const pushToDepartmentsPrefill = useCallback(
@@ -149,16 +102,15 @@ export function useAiAssistantModal() {
       type: "deposit" | "order";
       amount: number;
     }) => {
-      const qs =
-        `?ai=1` +
-        `&deptId=${encodeURIComponent(args.departmentId)}` +
-        `&type=${encodeURIComponent(args.type)}` +
-        `&amount=${encodeURIComponent(String(args.amount))}`;
-
-      router.push(`/departments${qs}`);
+      navigateToDepartmentsPrefill({
+        router,
+        departmentId: args.departmentId,
+        type: args.type,
+        amount: args.amount,
+      });
       setOpen(false);
     },
-    [router]
+    [router],
   );
 
   const onConfirm = useCallback(async () => {
@@ -171,11 +123,11 @@ export function useAiAssistantModal() {
       pushToDay,
       pushToDepartmentsPrefill,
     });
-  }, [intent, pushToDay, pushToDepartmentsPrefill]);
+  }, [intent, pushToDay, pushToDepartmentsPrefill, setDeptLink, setNoticeText]);
 
   const onCloseDeptLink = useCallback(() => {
     setDeptLink({ open: false });
-  }, []);
+  }, [setDeptLink]);
 
   const onConfirmDeptLink = useCallback(
     (departmentId: string) => {
@@ -190,7 +142,7 @@ export function useAiAssistantModal() {
         pushToDepartmentsPrefill,
       });
     },
-    [intent, pushToDay, pushToDepartmentsPrefill]
+    [intent, pushToDay, pushToDepartmentsPrefill, setDeptLink, setNoticeText],
   );
 
   const onConfirmDeptUnlink = useCallback(() => {
@@ -201,11 +153,11 @@ export function useAiAssistantModal() {
       setDeptLink,
       pushToDay,
     });
-  }, [intent, pushToDay]);
+  }, [intent, pushToDay, setDeptLink]);
 
   const copy = useMemo(
     () => getAiAssistantCopy({ step, scope }),
-    [scope, step]
+    [scope, step],
   );
 
   return {
