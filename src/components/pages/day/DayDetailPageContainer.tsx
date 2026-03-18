@@ -36,6 +36,7 @@ export function DayDetailPageContainer({ date, aiPrefill = null }: Props) {
     department,
     location,
     time,
+    memo,
 
     items,
     onAddItem,
@@ -53,6 +54,7 @@ export function DayDetailPageContainer({ date, aiPrefill = null }: Props) {
     setDepartment,
     setTime,
     setLocation,
+    setMemo,
 
     addButtonIntent,
     handleAddButtonClick,
@@ -142,6 +144,7 @@ export function DayDetailPageContainer({ date, aiPrefill = null }: Props) {
                 department,
                 location,
                 time,
+                memo,
 
                 items,
                 onAddItem,
@@ -156,6 +159,7 @@ export function DayDetailPageContainer({ date, aiPrefill = null }: Props) {
                 onChangeDepartment: setDepartment,
                 onChangeLocation: setLocation,
                 onChangeTime: setTime,
+                onChangeMemo: setMemo,
 
                 departmentMode,
                 departments,
