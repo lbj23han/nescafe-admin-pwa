@@ -15,6 +15,7 @@ export type ReservationEditForm = {
   location: string;
   time: string;
   amount: string;
+  memo: string;
 };
 
 type Args = {
@@ -45,12 +46,13 @@ export function useReservationEdit({ date, list, setList, departments }: Args) {
       location: target.location ?? "",
       time: target.time ?? "",
       amount: target.amount != null ? String(target.amount) : "",
+      memo: target.memo ?? "",
     });
   };
 
   const handleChangeEditField = (
     field: keyof ReservationEditForm,
-    value: string
+    value: string,
   ) => {
     setEditForm((prev) => (prev ? { ...prev, [field]: value } : prev));
   };
@@ -71,7 +73,7 @@ export function useReservationEdit({ date, list, setList, departments }: Args) {
 
     const { resolvedDepartmentId, resolvedDepartmentName } = resolveDepartment(
       departments,
-      formToSave
+      formToSave,
     );
 
     if (!resolvedDepartmentName || !formToSave.menu.trim()) {
@@ -87,6 +89,7 @@ export function useReservationEdit({ date, list, setList, departments }: Args) {
       location: formToSave.location,
       time: formToSave.time,
       amount: formToSave.amount ? Number(formToSave.amount) || 0 : 0,
+      memo: formToSave.memo.trim() || undefined,
     };
 
     setList((prev) => prev.map((r) => (r.id === editingId ? updated : r)));

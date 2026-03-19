@@ -13,6 +13,7 @@ export function ReservationFormSection(props: ReservationFormProps) {
     department,
     location,
     time,
+    memo,
 
     items,
     onAddItem,
@@ -33,6 +34,7 @@ export function ReservationFormSection(props: ReservationFormProps) {
 
     onChangeLocation,
     onChangeTime,
+    onChangeMemo,
   } = props;
 
   const isDirect = !selectedDepartmentId;
@@ -103,6 +105,14 @@ export function ReservationFormSection(props: ReservationFormProps) {
             value={time}
             onChange={onChangeTime}
             placeholder={DAY_PAGE_COPY.form.time.placeholder}
+          />
+        </DayUI.Field>
+
+        <DayUI.Field label="메모">
+          <DayUI.TextInput
+            value={memo}
+            onChange={onChangeMemo}
+            placeholder="간단한 전달사항을 입력해주세요"
           />
         </DayUI.Field>
 

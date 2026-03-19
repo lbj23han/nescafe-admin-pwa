@@ -108,6 +108,14 @@ export function ReservationEditFields({
           />
         </DayUI.Field>
 
+        <DayUI.Field label="메모">
+          <DayUI.TextInput
+            value={editForm.memo}
+            onChange={(v) => onChangeEditField?.("memo", v)}
+            placeholder="간단한 전달사항을 입력해주세요"
+          />
+        </DayUI.Field>
+
         <DayUI.Field label={DAY_PAGE_COPY.form.amount.label}>
           <AmountSection
             items={items}

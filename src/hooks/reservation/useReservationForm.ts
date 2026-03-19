@@ -44,7 +44,7 @@ function digitsOnly(v: string | null): string | null {
 }
 
 function normalizePrefillItems(
-  items: PrefillFormItem[] | null
+  items: PrefillFormItem[] | null,
 ): PrefillFormItem[] | null {
   if (!items || items.length === 0) return null;
 
@@ -66,6 +66,7 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
 
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
+  const [memo, setMemo] = useState("");
   const [showForm, setShowForm] = useState(false);
 
   const lastPrefillKeyRef = useRef<string | null>(null);
@@ -88,6 +89,7 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
     amountState.resetAmount();
     setTime("");
     setLocation("");
+    setMemo("");
     setShowForm(false);
     lastPrefillKeyRef.current = null;
   }, [amountState, dept, itemsState]);
@@ -112,6 +114,7 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
         amount,
         time,
         location,
+        memo: memo.trim() || undefined,
         status: "pending",
       };
 
@@ -123,8 +126,9 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
       amountState.manualAmount,
       itemsState.items,
       location,
+      memo,
       time,
-    ]
+    ],
   );
 
   const saveDraft = useCallback(
@@ -133,7 +137,7 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
       onAdded(saved);
       resetForm();
     },
-    [date, onAdded, resetForm]
+    [date, onAdded, resetForm],
   );
 
   const handleAdd = useCallback(async () => {
@@ -206,14 +210,11 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
       if (lastPrefillKeyRef.current === key) return;
       lastPrefillKeyRef.current = key;
 
-      // ✅ AI confirm 단계에서 "연동"을 선택한 경우:
-      // departmentMode=select + selectedDepartmentId 가 넘어오면 드롭다운 자동 지정
       if (depMode === "select" && depId) {
         dept.setDepartmentMode("select");
         dept.setSelectedDepartmentId(depId);
         dept.setDepartment("");
       } else if (dep) {
-        // ✅ 그 외는 direct 프리필
         dept.setDepartmentMode("direct");
         dept.setDepartment(dep);
       }
@@ -224,11 +225,10 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
       if (items) itemsState.applyPrefillItems(items);
 
       if (amt) {
-        // amount가 들어온 경우만 manual로 고정
         amountState.applyManualAmount(amt);
       }
     },
-    [amountState, dept, itemsState]
+    [amountState, dept, itemsState],
   );
 
   return useMemo(
@@ -250,11 +250,14 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
 
       time,
       location,
+      memo,
       setTime,
       setLocation,
+      setMemo,
       onChangeDepartment: dept.setDepartment,
       onChangeLocation: setLocation,
       onChangeTime: setTime,
+      onChangeMemo: setMemo,
 
       amount: amountState.amount,
       amountMode: amountState.amountMode,
@@ -286,6 +289,7 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
 
       time,
       location,
+      memo,
 
       amountState.amount,
       amountState.amountMode,
@@ -298,6 +302,6 @@ export function useReservationForm({ date, onAdded }: UseReservationFormArgs) {
 
       openForm,
       applyAiPrefill,
-    ]
+    ],
   );
 }

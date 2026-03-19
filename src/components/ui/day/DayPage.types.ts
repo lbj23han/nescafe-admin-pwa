@@ -22,6 +22,7 @@ export type ReservationEditForm = {
   location: string;
   time: string;
   amount: string;
+  memo: string;
 };
 
 export type ReservationListProps = {
@@ -33,7 +34,7 @@ export type ReservationListProps = {
   onComplete: (
     id: string,
     settleType?: SettleType,
-    options?: { skipConfirm?: boolean }
+    options?: { skipConfirm?: boolean },
   ) => void | Promise<void>;
 
   onCancel: (id: string) => void;
@@ -43,7 +44,7 @@ export type ReservationListProps = {
   editForm?: ReservationEditForm | null;
   onChangeEditField?: (field: keyof ReservationEditForm, value: string) => void;
   onSubmitEdit?: (
-    override?: Partial<ReservationEditForm>
+    override?: Partial<ReservationEditForm>,
   ) => void | Promise<void>;
   onCancelEdit?: () => void;
 
@@ -56,6 +57,7 @@ export type ReservationFormProps = {
   department: string;
   location: string;
   time: string;
+  memo: string;
 
   items: ItemWithId[];
   onAddItem: () => void;
@@ -63,7 +65,7 @@ export type ReservationFormProps = {
   onChangeItemField: (
     id: string,
     field: "menu" | "quantity" | "unitPrice",
-    value: string
+    value: string,
   ) => void;
 
   amountMode: AmountMode;
@@ -82,6 +84,7 @@ export type ReservationFormProps = {
   onChangeDepartment: (v: string) => void;
   onChangeLocation: (v: string) => void;
   onChangeTime: (v: string) => void;
+  onChangeMemo: (v: string) => void;
 };
 
 export type AddButtonProps = {
